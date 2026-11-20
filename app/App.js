@@ -14,7 +14,7 @@ import Mapa from './src/Mapa';
 import Album from './src/Album';
 import Drop from './src/Drop';
 import Ayuda from './src/Ayuda';
-import { estadoAvisos, activarAvisos, descartarAvisos, ubicarAviso, alTocarAviso } from './src/avisos';
+import { estadoAvisos, activarAvisos, descartarAvisos, ubicarAviso, alTocarAviso, avisarPuerta } from './src/avisos';
 
 export default function App() {
   return <IdiomaProvider><Caserito /></IdiomaProvider>;
@@ -93,6 +93,8 @@ function Caserito() {
     });
   }, [usuario, hayPos, idioma]);
   useEffect(() => { if (avisos === 'activo' && usuario) ubicarAviso(pos); }, [pos, avisos, usuario]);
+  // Llegó a la puerta de un local con drop: aviso con su QR listo
+  useEffect(() => { if (avisos === 'activo' && !lejos) avisarPuerta(drops, tur); }, [drops, avisos, lejos, tur]);
   const cargarRef = useRef(cargar);
   cargarRef.current = cargar;
   useEffect(() => alTocarAviso((id) => { setAbierto(id); setPestana('inicio'); cargarRef.current(); }), []);

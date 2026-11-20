@@ -5,3 +5,4 @@ export async function descartarAvisos() {}
 export async function activarAvisos() { return { ok: false, motivo: 'no_soportado' }; }
 export async function ubicarAviso() {}
 export function alTocarAviso() { return () => {}; }
+export async function avisarPuerta() {}

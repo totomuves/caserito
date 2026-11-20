@@ -110,7 +110,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
           <Text style={{ fontFamily: F.normal, fontSize: 14 }}>
             {avisos === 'bloqueado'
               ? t('Tienes las notificaciones apagadas para Caserito. Actívalas en Ajustes del teléfono → Caserito → Notificaciones.', 'Notifications are off for Caserito. Turn them on in your phone Settings → Caserito → Notifications.')
-              : t('Solo de locales a pocas cuadras de donde andas, máximo 3 al día y nunca de noche.', 'Only shops a few blocks from you, max 3 a day, never at night.')}
+              : t('Cuando un local a pocas cuadras suelta un drop y cuando llegas a su puerta con tu QR listo. Máximo 3 al día y nunca de noche.', 'When a shop a few blocks away drops a deal, and when you reach its door with your QR ready. Max 3 a day, never at night.')}
           </Text>
           {avisoMotivo === 'no_soportado' ? (
             <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.rojoTexto }}>{t('Este teléfono no puede recibir avisos en la versión de prueba. Funcionarán en la app de la tienda.', 'This phone can’t get pings in the test version. They’ll work in the store app.')}</Text>

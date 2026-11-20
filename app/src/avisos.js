@@ -86,3 +86,34 @@ export function alTocarAviso(abrir) {
   }).catch(() => {});
   return () => sub.remove();
 }
+
+// Aviso "estás en la puerta": cuando el caserito llega a un local con drop (a ~50 m).
+// Es una notificación local del teléfono; sale una sola vez por drop.
+const CLAVE_PUERTA = 'caserito_avisos_puerta';
+let puertaAvisada = null;
+export async function avisarPuerta(drops, tur) {
+  const enLaPuerta = drops.filter((d) => d.dentro_del_radio && d.quedan > 0);
+  if (!enLaPuerta.length) return;
+  if (!puertaAvisada) {
+    try { puertaAvisada = new Set(JSON.parse((await AsyncStorage.getItem(CLAVE_PUERTA)) || '[]')); } catch { puertaAvisada = new Set(); }
+  }
+  const nuevos = enLaPuerta.filter((d) => !puertaAvisada.has(d.drop_id));
+  if (!nuevos.length) return;
+  const p = await Notifications.getPermissionsAsync().catch(() => null);
+  if (!p || !p.granted) return;
+  await prepararCanal().catch(() => {});
+  for (const d of nuevos.slice(0, 2)) {
+    puertaAvisada.add(d.drop_id);
+    const que = d.tipo === 'sorpresa' ? (tur ? 'the mystery box' : 'la caja sorpresa') : d.titulo;
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: tur ? `You’re at ${d.local_nombre}!` : `¡Estás en la puerta de ${d.local_nombre}!`,
+        body: tur ? `Your QR for ${que} is ready · ${d.quedan} left. Show it at the counter.` : `Tu QR para ${que} ya está listo · quedan ${d.quedan}. Muéstralo en la caja.`,
+        data: { drop_id: d.drop_id },
+        sound: 'default',
+      },
+      trigger: null,
+    }).catch(() => {});
+  }
+  await AsyncStorage.setItem(CLAVE_PUERTA, JSON.stringify([...puertaAvisada].slice(-200))).catch(() => {});
+}

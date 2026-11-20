@@ -18,7 +18,7 @@ const DUDAS = [
   ['¿Qué es un drop grupal?', 'Una oferta que mejora mientras más gente canjea: por ejemplo 10% con 10 personas, 20% con 25. Invita a tus amigos para subir de nivel.'],
   ['¿Qué es un drop sorpresa?', 'No sabes qué es hasta que llegas al local. Puede ser un descuento, un regalo o la lámina dorada.'],
   ['¿Por qué no me aparece el QR?', 'El QR aparece cuando estás en el local (a unos 50 m). Revisa que Caserito tenga permiso de ubicación precisa; si estás adentro y no aparece, sal a la puerta un momento para que el GPS te ubique.'],
-  ['¿Me avisan cuando hay un drop?', 'Sí, si activas los avisos en Inicio. Te llega una notificación cuando un local a pocas cuadras de donde andas suelta un drop: máximo 3 al día y nunca entre las 22:00 y las 9:00. Se apagan en Ajustes del teléfono → Caserito → Notificaciones.'],
+  ['¿Me avisan cuando hay un drop?', 'Sí, si activas los avisos en Inicio. Te llega una notificación cuando un local a pocas cuadras de donde andas suelta un drop (máximo 3 al día y nunca entre las 22:00 y las 9:00), y otra cuando llegas a la puerta de un local con drop, con tu QR listo. Se apagan en Ajustes del teléfono → Caserito → Notificaciones.'],
   ['¿Necesito cuenta?', 'No. Caserito te reconoce en este teléfono sin pedirte correo ni clave. Si borras la app o los datos del navegador, pierdes tus láminas.'],
   ['¿Qué datos guardan de mí?', 'Tus drops, láminas y gustos, para mostrarte primero lo que te tinca. Los locales no ven quién eres; solo cuántos canjearon.'],
   ['¿Cómo apago lo que Caserito aprendió?', 'En Inicio, abajo, en "Caserito aprendió que…": toca un gusto para apagarlo.'],
@@ -35,7 +35,7 @@ const PASOS_TUR = [
 const DUDAS_TUR = [
   ['What’s a “group drop”?', 'A deal that gets better the more people redeem it: e.g. 10% with 10 people, 20% with 25. Bring your friends!'],
   ['What’s a “mystery drop”?', 'You find out what it is at the shop: a discount, a gift or the golden sticker.'],
-  ['Do you send notifications?', 'Yes, if you turn on pings on Home. You get one when a shop a few blocks from you drops a deal: max 3 a day, never between 10 pm and 9 am.'],
+  ['Do you send notifications?', 'Yes, if you turn on pings on Home. You get one when a shop a few blocks from you drops a deal (max 3 a day, never between 10 pm and 9 am), and another when you reach the door of a shop with a drop, with your QR ready.'],
   ['What do the underlined words mean?', 'Shops write in their own slang (Chilean, Venezuelan, Peruvian…). Tap an underlined word to see its meaning. ¡Bacán!'],
   ['How far is a cuadra?', 'About 100 m, around a 1–2 minute walk. We show meters and minutes next to it.'],
   ['Do I need an account?', 'No. Caserito remembers you on this phone without email or password.'],
