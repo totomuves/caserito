@@ -19,7 +19,7 @@ export default function Album({ usuario, alIrAlMapa }) {
 
   useEffect(() => {
     (async () => {
-      const l = await supabase.from('locales').select('id, nombre, categoria, producto_estrella, creado_at').eq('activo', true).eq('barrio', 'Barrio Italia').order('creado_at');
+      const l = await supabase.from('locales').select('id, nombre, categoria, producto_estrella, creado_at').eq('activo', true).eq('aprobado', true).eq('barrio', 'Barrio Italia').order('creado_at');
       if (l.error) { setError(explicar(l.error)); return; }
       const m = await supabase.from('laminas').select('local_id, ganada_at').eq('usuario_id', usuario.id);
       const mapa = {};

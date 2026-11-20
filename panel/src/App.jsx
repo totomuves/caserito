@@ -5,12 +5,15 @@ import ConfigurarLocal from './ConfigurarLocal.jsx';
 import Crear from './Crear.jsx';
 import Escanear from './Escanear.jsx';
 import Resultados from './Resultados.jsx';
+import Admin from './Admin.jsx';
 
 export default function App() {
   const [sesion, setSesion] = useState(undefined);
   const [local, setLocal] = useState(undefined);
   const [pestana, setPestana] = useState('crear');
   const [error, setError] = useState('');
+  const [admin, setAdmin] = useState(false);
+  const [soloAdmin, setSoloAdmin] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSesion(data.session));
@@ -24,6 +27,8 @@ export default function App() {
       setError('');
       const p = await supabase.rpc('mi_perfil');
       if (p.error) { setError(explicar(p.error)); return; }
+      const a = await supabase.rpc('es_admin');
+      setAdmin(!a.error && a.data === true);
       const { data, error } = await supabase
         .from('locales').select('*').eq('dueno_id', sesion.user.id).limit(1).maybeSingle();
       if (error) { setError(explicar(error)); return; }
@@ -35,10 +40,30 @@ export default function App() {
   if (!sesion) return <Login />;
   if (error) return <Marco><div className="contenido"><div className="error">{error}</div></div></Marco>;
   if (local === undefined) return <Cargando />;
+  if (admin && (soloAdmin || !local)) {
+    return (
+      <Marco>
+        <Admin />
+        {!local && (
+          <div className="contenido" style={{ paddingTop: 0 }}>
+            <button className="pildora" onClick={() => { setSoloAdmin(false); setLocal(null); setAdmin(false); }}>Inscribir un local con esta cuenta</button>
+          </div>
+        )}
+        {local && <div className="contenido" style={{ paddingTop: 0 }}><button className="pildora" onClick={() => setSoloAdmin(false)}>Volver a mi local</button></div>}
+      </Marco>
+    );
+  }
   if (!local) return <Marco><ConfigurarLocal usuario={sesion.user} alGuardar={setLocal} /></Marco>;
 
   return (
     <Marco local={local}>
+      {!local.aprobado && (
+        <div className="tarjeta" style={{ margin: '16px 16px 0', borderColor: 'var(--rojo)' }}>
+          <b>Tu local está en revisión</b>
+          <span className="ayuda">Puedes preparar drops, pero los caseritos los verán cuando aprobemos tu local. Normalmente es el mismo día.</span>
+        </div>
+      )}
+      {admin && <div style={{ margin: '12px 16px 0' }}><button className="pildora activa" onClick={() => setSoloAdmin(true)}>Ir al admin</button></div>}
       {pestana === 'crear' && <Crear local={local} />}
       {pestana === 'escanear' && <Escanear />}
       {pestana === 'resultados' && <Resultados local={local} />}

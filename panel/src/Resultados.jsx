@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, explicar } from './supabase.js';
 import { formatoPrecio } from './frases.js';
+import { Estrellas } from './Admin.jsx';
 
 const HORAS = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
 
@@ -78,10 +79,62 @@ export default function Resultados({ local }) {
         </div>
       )}
 
+      <ResenasLocal local={local} />
+
       {porDrop.map((d) => (
         <div className="tarjeta" key={d.id}>
           <b>{d.titulo}</b>
           <span className="ayuda">{d.tipo} · {d.canjes} canjes de {d.cupo} · {d.anotados} anotados · terminó {new Date(d.termina_at).toLocaleString('es-CL', { weekday: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ResenasLocal({ local }) {
+  const [resenas, setResenas] = useState(null);
+  const [nota, setNota] = useState(null);
+  const [borrador, setBorrador] = useState({});
+  const [msg, setMsg] = useState('');
+
+  async function cargar() {
+    const r = await supabase.from('resenas').select('id, estrellas, texto, respuesta, oculta, creado_at')
+      .eq('local_id', local.id).order('creado_at', { ascending: false }).limit(50);
+    const c = await supabase.from('calificaciones').select('promedio, cantidad').eq('local_id', local.id).maybeSingle();
+    if (r.error) setMsg(explicar(r.error)); else setResenas(r.data);
+    setNota(c.data || null);
+  }
+  useEffect(() => { cargar(); }, [local.id]);
+
+  async function responder(id) {
+    const { error } = await supabase.rpc('responder_resena', { p_resena: id, p_respuesta: borrador[id] || '' });
+    if (error) setMsg(explicar(error)); else { setBorrador({ ...borrador, [id]: undefined }); cargar(); }
+  }
+
+  if (!resenas) return null;
+  return (
+    <div className="tarjeta">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <b>Reseñas de tus caseritos</b>
+        {nota && <span><Estrellas n={Math.round(nota.promedio)} /> {nota.promedio} ({nota.cantidad})</span>}
+      </div>
+      <p className="ayuda">Solo pueden reseñar quienes canjearon en tu local: son reseñas verificadas.</p>
+      {msg && <div className="error">{msg}</div>}
+      {resenas.length === 0 && <p className="ayuda">Todavía no tienes reseñas.</p>}
+      {resenas.map((r) => (
+        <div key={r.id} style={{ borderTop: '2px dashed #CDBF9F', paddingTop: 10, display: 'flex', flexDirection: 'column', gap: 6, opacity: r.oculta ? 0.5 : 1 }}>
+          <Estrellas n={r.estrellas} />
+          {r.texto && <span>{r.texto}</span>}
+          {r.respuesta ? (
+            <span className="ayuda">Tu respuesta: {r.respuesta}</span>
+          ) : (
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input aria-label="Responder reseña" placeholder="Responder…" value={borrador[r.id] || ''}
+                onChange={(e) => setBorrador({ ...borrador, [r.id]: e.target.value })}
+                style={{ flex: 1, height: 42, borderRadius: 12, border: '2px solid var(--negro)', background: '#fff', padding: '0 12px' }} maxLength={280} />
+              <button className="pildora activa" onClick={() => responder(r.id)} disabled={!borrador[r.id]}>Enviar</button>
+            </div>
+          )}
         </div>
       ))}
     </div>

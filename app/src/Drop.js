@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Share, Text, View } from 'react-native';
+import { Pressable, ScrollView, Share, Text, TextInput, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import Svg, { Path } from 'react-native-svg';
 import { supabase, explicar } from './supabase';
@@ -12,6 +12,7 @@ export default function Drop({ drop, usuario, alCerrar }) {
   const [niveles, setNiveles] = useState([]);
   const [error, setError] = useState('');
   const [ahora, setAhora] = useState(Date.now());
+  const [nota, setNota] = useState(null);
 
   useEffect(() => {
     supabase.from('participaciones').select('codigo, canjeado_at')
@@ -21,6 +22,8 @@ export default function Drop({ drop, usuario, alCerrar }) {
       supabase.from('drop_niveles').select('umbral, beneficio').eq('drop_id', drop.drop_id).order('umbral')
         .then(({ data }) => setNiveles(data || []));
     }
+    supabase.from('calificaciones').select('promedio, cantidad').eq('local_id', drop.local_id).maybeSingle()
+      .then(({ data }) => setNota(data || null));
     const leer = () => supabase.rpc('estado_drop', { p_drop: drop.drop_id })
       .then(({ data }) => data && setEstado(Array.isArray(data) ? data[0] : data));
     leer();
@@ -57,7 +60,9 @@ export default function Drop({ drop, usuario, alCerrar }) {
         </Pressable>
         <View style={{ flex: 1 }}>
           <Text style={{ fontFamily: F.negrita, fontSize: 17 }} numberOfLines={1}>{drop.local_nombre}</Text>
-          <Text style={{ fontFamily: F.media, fontSize: 13 }}>{textoCategoria(drop.categoria)} · {cuadras(drop.cuadras)}</Text>
+          <Text style={{ fontFamily: F.media, fontSize: 13 }}>
+            {textoCategoria(drop.categoria)} · {cuadras(drop.cuadras)}{nota ? ` · ★ ${nota.promedio} (${nota.cantidad})` : ''}
+          </Text>
         </View>
       </View>
       <Ola color={C.amarillo} />
@@ -105,6 +110,7 @@ export default function Drop({ drop, usuario, alCerrar }) {
             <Text style={{ fontFamily: F.normal, color: '#FFFFFF', fontSize: 14 }}>Tu código para canjear aparece cuando llegues al local. Estás {cuadras(drop.cuadras)}.</Text>
           </View>
         )}
+        {mio && mio.canjeado_at ? <Resena localId={drop.local_id} usuario={usuario} /> : null}
         {error ? <Text style={{ fontFamily: F.negrita, color: C.rojoTexto }}>{error}</Text> : null}
       </View>
 
@@ -119,5 +125,44 @@ export default function Drop({ drop, usuario, alCerrar }) {
         </Pressable>
       </View>
     </ScrollView>
+  );
+}
+
+function Resena({ localId, usuario }) {
+  const [estrellas, setEstrellas] = useState(0);
+  const [texto, setTexto] = useState('');
+  const [enviada, setEnviada] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    supabase.from('resenas').select('estrellas, texto').eq('local_id', localId).eq('usuario_id', usuario.id).maybeSingle()
+      .then(({ data }) => { if (data) { setEstrellas(data.estrellas); setTexto(data.texto || ''); setEnviada(true); } });
+  }, [localId]);
+
+  async function enviar() {
+    setError('');
+    const { error } = await supabase.rpc('resenar', { p_local: localId, p_estrellas: estrellas, p_texto: texto });
+    if (error) setError(explicar(error)); else setEnviada(true);
+  }
+
+  return (
+    <View style={{ marginTop: 10, borderTopWidth: 2, borderStyle: 'dashed', borderColor: '#CDBF9F', paddingTop: 12, gap: 8 }}>
+      <Text style={{ ...letrista, fontSize: 18 }}>{enviada ? '¡GRACIAS POR TU RESEÑA!' : '¿QUÉ TAL ESTUVO?'}</Text>
+      <View style={{ flexDirection: 'row', gap: 6 }}>
+        {[1, 2, 3, 4, 5].map((n) => (
+          <Pressable key={n} onPress={() => { setEstrellas(n); setEnviada(false); }} accessibilityRole="button" accessibilityLabel={`${n} estrellas`} hitSlop={6}>
+            <Svg width={34} height={34} viewBox="0 0 24 24">
+              <Path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17.1l-5.9 3.2 1.3-6.5-4.9-4.5 6.6-.8z" fill={n <= estrellas ? C.rojo : 'none'} stroke={C.negro} strokeWidth={1.6} strokeLinejoin="round" />
+            </Svg>
+          </Pressable>
+        ))}
+      </View>
+      <TextInput value={texto} onChangeText={(t) => { setTexto(t); setEnviada(false); }} maxLength={280} multiline
+        placeholder="Cuéntale al barrio (opcional)" placeholderTextColor={C.gris}
+        style={{ minHeight: 70, borderWidth: 2, borderColor: C.negro, borderRadius: 12, backgroundColor: '#FFFFFF', padding: 10, fontFamily: F.normal, fontSize: 15, textAlignVertical: 'top' }} />
+      {!enviada && <Boton texto="Publicar reseña" deshabilitado={!estrellas} onPress={enviar} />}
+      <Text style={{ fontFamily: F.normal, fontSize: 12, color: C.gris }}>Reseña verificada: solo reseñan quienes canjearon aquí.</Text>
+      {error ? <Text style={{ fontFamily: F.negrita, color: C.rojoTexto }}>{error}</Text> : null}
+    </View>
   );
 }

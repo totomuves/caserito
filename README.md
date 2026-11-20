@@ -7,7 +7,7 @@
 | Carpeta | Qué es | Tecnología |
 |---|---|---|
 | `app/` | App del cliente (Inicio con pizarra, Mapa, Drop con QR, Álbum) | Expo SDK 58 (React Native) |
-| `panel/` | Panel del local: crear drop con frases con modismos, escanear QR, resultados | React + Vite (web/PWA) |
+| `panel/` | Panel del local (crear drop con frases con modismos, escanear QR, resultados y reseñas) y admin general | React + Vite (web/PWA) |
 | `supabase/` | Base de datos (schema `caserito`) | Supabase / Postgres + PostGIS |
 
 ## Supabase
@@ -17,6 +17,11 @@ Proyecto: `https://mkmcfeezspgjdygustpd.supabase.co` (compartido con otra app; t
 1. SQL Editor → pegar `supabase/002_caserito_en_schema_propio.sql` → Run (una vez).
 2. Settings → API → **Exposed schemas** → agregar `caserito`.
 3. Authentication → **Allow anonymous sign-ins** (los caseritos entran sin registrarse).
+4. SQL Editor → pegar `supabase/003_admin_y_resenas.sql` → Run (admin, aprobación de locales y reseñas verificadas).
+5. Crear tu cuenta en el panel del local y hacerte admin:
+   `insert into caserito.admins (user_id) select id from auth.users where email = 'TU_CORREO';`
+
+Los locales nuevos quedan **en revisión** hasta que el admin los aprueba desde el panel.
 
 La llave del cliente es la *publishable* (pública por diseño). La `service_role`/`secret` nunca va en el repo.
 
