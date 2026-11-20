@@ -8,11 +8,11 @@ import Logo from './Logo';
 import Svg, { Path } from 'react-native-svg';
 
 function etiquetaPara(d, hora, t, cuad) {
-  if (d.tipo === 'grupal') return t('¡ENTRE TODOS!', 'GROUP DROP · ¡ENTRE TODOS!');
-  if (d.tipo === 'recien_llegado') return t('¡RECIÉN LLEGADO!', 'JUST ARRIVED · ¡RECIÉN LLEGADO!');
-  if (d.tipo === 'sorpresa') return t('¿UNA SORPRESA?', 'MYSTERY DROP · ¿SORPRESA?');
-  if (d.categoria === 'comer' && hora >= 12 && hora < 15) return t('HORA DE ALMUERZO', 'LUNCH TIME · ALMUERZO');
-  if (d.categoria === 'cafe' && hora >= 15 && hora < 19) return t('TU CAFÉ DE LA TARDE', 'AFTERNOON COFFEE · CAFECITO');
+  if (d.tipo === 'grupal') return t('¡ENTRE TODOS!', "¡ENTRE TODOS! GROUP DROP");
+  if (d.tipo === 'recien_llegado') return t('¡RECIÉN LLEGADO!', "¡RECIÉN LLEGADO! JUST IN");
+  if (d.tipo === 'sorpresa') return t('¿UNA SORPRESA?', "¿SORPRESA? MYSTERY DROP");
+  if (d.categoria === 'comer' && hora >= 12 && hora < 15) return t('HORA DE ALMUERZO', "HORA DE ALMUERZO · LUNCH");
+  if (d.categoria === 'cafe' && hora >= 15 && hora < 19) return t('TU CAFÉ DE LA TARDE', "CAFECITO DE LA TARDE · COFFEE");
   return cuad(d.cuadras).toUpperCase();
 }
 
@@ -40,7 +40,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
       texto: (d.frase || `${d.titulo} ${precio(d.precio)} en ${d.local_nombre}, ${cuad(d.cuadras)}.`).toUpperCase(),
       drop: d,
     }));
-    return lista.length ? lista : [{ tag: 'BARRIO ITALIA', texto: t('TODAVÍA NO HAY DROPS CERCA. DATE UNA VUELTA, QUE LOS LOCALES SUELTAN SORPRESAS DURANTE EL DÍA.', 'NO DROPS NEARBY YET. TAKE A WALK: LOCAL SHOPS DROP SURPRISES ALL DAY · ¡DATE UNA VUELTA!'), drop: null }];
+    return lista.length ? lista : [{ tag: 'BARRIO ITALIA', texto: t('TODAVÍA NO HAY DROPS CERCA. DATE UNA VUELTA, QUE LOS LOCALES SUELTAN SORPRESAS DURANTE EL DÍA.', "NO DROPS CERCA YET. ¡DATE UNA VUELTA! LOS LOCALES SUELTAN SORPRESAS ALL DAY."), drop: null }];
   }, [drops, gustos, tur]);
 
   useEffect(() => {
@@ -63,12 +63,12 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
         <Brillo tam={20} style={{ position: 'absolute', left: 14, top: 18 }} />
         <Brillo tam={14} style={{ position: 'absolute', right: 40, top: 12 }} />
         <Logo ancho={190} style={{ marginLeft: 22, marginTop: 4, marginBottom: 2 }} />
-        <Text style={{ fontFamily: F.negrita, fontSize: 13, paddingLeft: 26 }}>{t('Barrio Italia · tu barrio te tiene ofertas', 'Barrio Italia · local deals, like a local')}</Text>
+        <Text style={{ fontFamily: F.negrita, fontSize: 13, paddingLeft: 26 }}>{t('Barrio Italia · tu barrio te tiene ofertas', "Barrio Italia · ofertas like a local")}</Text>
         <Pressable onPress={() => setTur(!tur)} accessibilityRole="switch" accessibilityState={{ checked: tur }}
           style={{ position: 'absolute', right: 68, top: 14, height: 44, paddingHorizontal: 12, borderRadius: 22, borderWidth: 2.5, borderColor: C.negro, backgroundColor: tur ? C.negro : C.papel, justifyContent: 'center' }}>
           <Text style={{ fontFamily: F.negrita, fontSize: 12, color: tur ? C.amarillo : C.negro }}>{tur ? 'Español' : 'Tourist?'}</Text>
         </Pressable>
-        <Pressable onPress={alAyuda} accessibilityRole="button" accessibilityLabel={t('¿Cómo funciona Caserito?', 'How does Caserito work?')}
+        <Pressable onPress={alAyuda} accessibilityRole="button" accessibilityLabel={t('¿Cómo funciona Caserito?', "¿Cómo funciona Caserito?")}
           style={{ position: 'absolute', right: 16, top: 14, minWidth: 44, height: 44, paddingHorizontal: 14, borderRadius: 22, borderWidth: 2.5, borderColor: C.negro, backgroundColor: C.papel, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ ...letrista, fontSize: 20 }}>?</Text>
         </Pressable>
@@ -78,23 +78,23 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
       {lejos ? (
         <View style={{ marginHorizontal: 16, marginBottom: 6, backgroundColor: C.papel, borderWidth: 2, borderColor: C.negro, borderRadius: 14, padding: 10 }}>
           <Text style={{ fontFamily: F.media, fontSize: 13 }}>
-            {t('Estás lejos de Barrio Italia: te mostramos sus drops. Para canjear, tienes que llegar al local.', 'You’re far from Barrio Italia: here are its drops. To redeem, you need to be at the shop.')}
+            {t('Estás lejos de Barrio Italia: te mostramos sus drops. Para canjear, tienes que llegar al local.', "Estás lejos de Barrio Italia: these are sus drops. Para canjear, tienes que estar en el local.")}
           </Text>
         </View>
       ) : null}
 
       <View style={{ marginHorizontal: 16, marginTop: 8, backgroundColor: C.negro, borderRadius: 18, padding: 16, gap: 10 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text style={{ ...letrista, fontSize: 16, color: C.amarillo }}>{f.tag}</Text>
+          <FraseGlosario texto={f.tag} style={{ ...letrista, fontSize: 16, color: C.amarillo }} />
           <Pressable onPress={() => setI(i + 1)} accessibilityRole="button" accessibilityLabel="Otra sugerencia"
             style={{ height: 32, paddingHorizontal: 12, borderRadius: 16, borderWidth: 1.5, borderColor: '#FFFFFF66', justifyContent: 'center' }}>
-            <Text style={{ fontFamily: F.negrita, fontSize: 12, color: '#FFFFFF' }}>{t('Otra', 'Next')}</Text>
+            <Text style={{ fontFamily: F.negrita, fontSize: 12, color: '#FFFFFF' }}>{t('Otra', "Siguiente")}</Text>
           </Pressable>
         </View>
         <FraseGlosario texto={f.texto} style={{ ...letrista, fontSize: 20, lineHeight: 26, color: '#FFFFFF', minHeight: 78 }} />
         {f.drop && (
           <Pressable onPress={() => alAbrir(f.drop)} style={{ alignSelf: 'flex-start', height: 40, paddingHorizontal: 16, borderRadius: 20, backgroundColor: C.amarillo, justifyContent: 'center' }}>
-            <Text style={{ fontFamily: F.negrita, fontSize: 14 }}>{t('Ir al drop →', 'Go to drop →')}</Text>
+            <Text style={{ fontFamily: F.negrita, fontSize: 14 }}>{t('Ir al drop →', "Ver drop →")}</Text>
           </Pressable>
         )}
       </View>
@@ -105,21 +105,21 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
             <Svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke={C.rojo} strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" accessibilityElementsHidden importantForAccessibility="no">
               <Path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0" />
             </Svg>
-            <Text style={{ ...letrista, fontSize: 17, flex: 1 }}>{t('¿TE AVISAMOS CUANDO SUELTEN UN DROP CERCA?', 'WANT A PING WHEN A DROP GOES LIVE NEARBY?')}</Text>
+            <Text style={{ ...letrista, fontSize: 17, flex: 1 }}>{t('¿TE AVISAMOS CUANDO SUELTEN UN DROP CERCA?', "¿TE AVISAMOS WHEN UN DROP SALE CERCA?")}</Text>
           </View>
           <Text style={{ fontFamily: F.normal, fontSize: 14 }}>
             {avisos === 'bloqueado'
-              ? t('Tienes las notificaciones apagadas para Caserito. Actívalas en Ajustes del teléfono → Caserito → Notificaciones.', 'Notifications are off for Caserito. Turn them on in your phone Settings → Caserito → Notifications.')
-              : t('Cuando un local a pocas cuadras suelta un drop y cuando llegas a su puerta con tu QR listo. Máximo 3 al día y nunca de noche.', 'When a shop a few blocks away drops a deal, and when you reach its door with your QR ready. Max 3 a day, never at night.')}
+              ? t('Tienes las notificaciones apagadas para Caserito. Actívalas en Ajustes del teléfono → Caserito → Notificaciones.', "Las notifications están off para Caserito. Actívalas en Settings → Caserito → Notifications.")
+              : t('Cuando un local a pocas cuadras suelta un drop y cuando llegas a su puerta con tu QR listo. Máximo 3 al día y nunca de noche.', "Cuando un local a pocas cuadras suelta un drop, y cuando llegas a su puerta con tu QR listo. Max 3 al día, nunca de noche.")}
           </Text>
           {avisoMotivo === 'no_soportado' ? (
-            <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.rojoTexto }}>{t('Este teléfono no puede recibir avisos en la versión de prueba. Funcionarán en la app de la tienda.', 'This phone can’t get pings in the test version. They’ll work in the store app.')}</Text>
+            <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.rojoTexto }}>{t('Este teléfono no puede recibir avisos en la versión de prueba. Funcionarán en la app de la tienda.', "Este phone no recibe avisos en la versión de prueba. Van a funcionar en la app de la tienda.")}</Text>
           ) : avisoMotivo === 'error' ? (
-            <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.rojoTexto }}>{t('No pudimos activarlos. Prueba de nuevo en un rato.', 'Couldn’t turn them on. Try again in a bit.')}</Text>
+            <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.rojoTexto }}>{t('No pudimos activarlos. Prueba de nuevo en un rato.', "No se pudieron activar. Try again en un rato.")}</Text>
           ) : null}
           <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-            {avisos === 'pendiente' && <Boton texto={t('Avísame', 'Ping me')} fondo={C.rojo} onPress={alPrenderAvisos} />}
-            <Boton texto={t('Ahora no', 'Not now')} fondo={C.papel} color={C.negro} onPress={alCerrarAvisos} />
+            {avisos === 'pendiente' && <Boton texto={t('Avísame', "Avísame · Ping me")} fondo={C.rojo} onPress={alPrenderAvisos} />}
+            <Boton texto={t('Ahora no', "Ahora no")} fondo={C.papel} color={C.negro} onPress={alCerrarAvisos} />
           </View>
         </View>
       )}
@@ -131,21 +131,21 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
       <View style={{ marginTop: 14 }}>
         <Ola color={C.rojo} abajo={false} />
         <View style={{ backgroundColor: C.rojo, paddingTop: 4, paddingBottom: 18, gap: 12 }}>
-          <Text style={{ ...letrista, fontSize: 24, color: C.amarillo, paddingHorizontal: 20 }}>{t('CERCA DE TI', 'NEAR YOU · CERCA')}</Text>
+          <Text style={{ ...letrista, fontSize: 24, color: C.amarillo, paddingHorizontal: 20 }}>{t('CERCA DE TI', "CERCA · NEAR YOU")}</Text>
           {visibles.length === 0 && (
-            <Text style={{ fontFamily: F.media, color: '#FFFFFF', paddingHorizontal: 20 }}>{t(`No hay drops de ${textoCategoria(filtro).toLowerCase()} ahora. Vuelve más rato.`, 'No drops here right now. Check back later · Vuelve más rato.')}</Text>
+            <Text style={{ fontFamily: F.media, color: '#FFFFFF', paddingHorizontal: 20 }}>{t(`No hay drops de ${textoCategoria(filtro).toLowerCase()} ahora. Vuelve más rato.`, "No drops acá right now. Vuelve más rato.")}</Text>
           )}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingHorizontal: 16, paddingTop: 12 }}>
             {visibles.map((d, k) => (
               <Pressable key={d.drop_id} onPress={() => alAbrir(d)} style={{ width: 216, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: 16, padding: 14, gap: 6 }}>
                 <EtiquetaPrecio valor={d.tipo === 'sorpresa' ? '¿?' : precio(d.precio)} giro={k % 2 ? '-4deg' : '5deg'} />
-                <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.rojoTexto, textTransform: 'uppercase' }}>{tur ? CATEGORIA_TUR[d.categoria] || textoCategoria(d.categoria) : textoCategoria(d.categoria)} · {t('quedan', 'left:')} {d.quedan}</Text>
+                <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.rojoTexto, textTransform: 'uppercase' }}>{tur ? CATEGORIA_TUR[d.categoria] || textoCategoria(d.categoria) : textoCategoria(d.categoria)} · {t('quedan', "quedan:")} {d.quedan}</Text>
                 <Text style={{ fontFamily: F.negrita, fontSize: 17 }} numberOfLines={1}>{d.local_nombre}</Text>
                 <FraseGlosario texto={(d.frase || d.titulo).toUpperCase()} colorAyuda={C.rojoTexto} numberOfLines={3} style={{ ...letrista, fontSize: 14, lineHeight: 18 }} />
                 <Text style={{ fontFamily: F.media, fontSize: 13, color: C.gris }}>
-                  {cuad(d.cuadras)} · {t('hasta las', 'until')} {new Date(d.termina_at).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
+                  {cuad(d.cuadras)} · {t('hasta las', "hasta")} {new Date(d.termina_at).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
                 </Text>
-                {d.tipo === 'grupal' && d.nivel_actual ? <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.azul }}>{t('Nivel actual', 'Now')}: {d.nivel_actual}</Text> : null}
+                {d.tipo === 'grupal' && d.nivel_actual ? <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.azul }}>{t('Nivel actual', "Ahora")}: {d.nivel_actual}</Text> : null}
               </Pressable>
             ))}
           </ScrollView>
@@ -156,12 +156,12 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
       <View style={{ marginTop: 18 }}>
         <Ola color={C.amarillo} abajo={false} />
         <View style={{ backgroundColor: C.amarillo, paddingHorizontal: 16, paddingBottom: 20, gap: 10 }}>
-          <Text style={{ ...letrista, fontSize: 21 }}>{t('CASERITO APRENDIÓ QUE…', 'CASERITO LEARNED THAT…')}</Text>
+          <Text style={{ ...letrista, fontSize: 21 }}>{t('CASERITO APRENDIÓ QUE…', "CASERITO APRENDIÓ QUE…")}</Text>
           {gustos.length === 0 ? (
-            <Text style={{ fontFamily: F.normal, fontSize: 14 }}>{t('Todavía te estamos conociendo. Súmate a un drop y aquí aparece lo que te tinca.', "We're still getting to know you. Join a drop and your likes show up here.")}</Text>
+            <Text style={{ fontFamily: F.normal, fontSize: 14 }}>{t('Todavía te estamos conociendo. Súmate a un drop y aquí aparece lo que te tinca.', "Todavía te estamos conociendo. Súmate a un drop y tus gustos show up here.")}</Text>
           ) : (
             <>
-              <Text style={{ fontFamily: F.normal, fontSize: 13 }}>{t('Con esto elegimos qué mostrarte primero. Toca uno para apagarlo.', 'We use this to show you the good stuff first. Tap to turn one off.')}</Text>
+              <Text style={{ fontFamily: F.normal, fontSize: 13 }}>{t('Con esto elegimos qué mostrarte primero. Toca uno para apagarlo.', "Con esto te mostramos lo bueno first. Toca uno para apagarlo.")}</Text>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                 {gustos.map((g) => (
                   <Pressable key={g.id} onPress={() => alternar(g)} accessibilityRole="switch" accessibilityState={{ checked: g.activo }}

@@ -31,32 +31,32 @@ export default function Cuenta({ usuario, alAyuda }) {
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 120, gap: 14 }} keyboardShouldPersistTaps="handled">
       <View style={{ backgroundColor: C.amarillo, paddingHorizontal: 20, paddingTop: 16, paddingBottom: 4 }}>
-        <Text style={{ ...letrista, fontSize: 30 }}>{apodoGuardado ? apodoGuardado.toUpperCase() : t('TÚ', 'YOU · TÚ')}</Text>
+        <Text style={{ ...letrista, fontSize: 30 }}>{apodoGuardado ? apodoGuardado.toUpperCase() : t('TÚ', "TÚ · YOU")}</Text>
         <Text style={{ fontFamily: F.negrita, fontSize: 14 }}>
-          {anonimo ? t('Caserito de prueba · sin cuenta', 'Guest caserito · no account yet') : usuario.email}
-          {' · '}{laminas} {laminas === 1 ? t('lámina', 'sticker') : t('láminas', 'stickers')}
+          {anonimo ? t('Caserito de prueba · sin cuenta', "Caserito de prueba · no account yet") : usuario.email}
+          {' · '}{laminas} {laminas === 1 ? t('lámina', "lámina") : t('láminas', "láminas")}
         </Text>
       </View>
       <Ola color={C.amarillo} />
 
       <View style={tarjeta}>
-        <Text style={{ ...letrista, fontSize: 18 }}>{t('TU APODO', 'YOUR NICKNAME')}</Text>
-        <Text style={{ fontFamily: F.normal, fontSize: 14 }}>{t('Así te ven los locales cuando dejas una reseña.', 'Shops see this when you leave a review.')}</Text>
-        <TextInput value={apodo} onChangeText={setApodo} maxLength={30} placeholder={t('Ej: La Pancha', 'E.g. Sam')}
-          placeholderTextColor={C.gris} style={campo} accessibilityLabel={t('Apodo', 'Nickname')} />
-        <Boton texto={apodo.trim() === apodoGuardado ? t('Guardado', 'Saved') : t('Guardar apodo', 'Save nickname')}
+        <Text style={{ ...letrista, fontSize: 18 }}>{t('TU APODO', "TU APODO · NICKNAME")}</Text>
+        <Text style={{ fontFamily: F.normal, fontSize: 14 }}>{t('Así te ven los locales cuando dejas una reseña.', "Los locales see it cuando dejas una reseña.")}</Text>
+        <TextInput value={apodo} onChangeText={setApodo} maxLength={30} placeholder={t('Ej: La Pancha', "Ej: La Pancha")}
+          placeholderTextColor={C.gris} style={campo} accessibilityLabel={t('Apodo', "Apodo")} />
+        <Boton texto={apodo.trim() === apodoGuardado ? t('Guardado', "¡Guardado!") : t('Guardar apodo', "Guardar apodo")}
           deshabilitado={apodo.trim() === apodoGuardado} onPress={guardarApodo} />
       </View>
 
       {anonimo ? <CrearCuenta laminas={laminas} apodo={apodo} /> : <MiCuenta usuario={usuario} />}
 
       <View style={tarjeta}>
-        <Text style={{ ...letrista, fontSize: 18 }}>{t('IDIOMA', 'LANGUAGE')}</Text>
+        <Text style={{ ...letrista, fontSize: 18 }}>{t('IDIOMA', "IDIOMA · LANGUAGE")}</Text>
         <View style={{ flexDirection: 'row', gap: 8 }}>
           <Boton texto="Español" fondo={tur ? C.papel : C.negro} color={tur ? C.negro : C.papel} onPress={() => setTur(false)} style={{ flex: 1 }} />
           <Boton texto="Tourist (Spanglish)" fondo={tur ? C.negro : C.papel} color={tur ? C.papel : C.negro} onPress={() => setTur(true)} style={{ flex: 1 }} />
         </View>
-        <Boton texto={t('¿Cómo funciona Caserito?', 'How does Caserito work?')} fondo={C.papel} color={C.negro} onPress={alAyuda} />
+        <Boton texto={t('¿Cómo funciona Caserito?', "¿Cómo funciona Caserito?")} fondo={C.papel} color={C.negro} onPress={alAyuda} />
       </View>
 
       <Comentarios />
@@ -77,7 +77,7 @@ function CrearCuenta({ laminas, apodo }) {
   function cambiarModo(m) { setModo(m); setPaso('correo'); setCodigo(''); setMsg(''); }
 
   async function pedirCodigo() {
-    if (!correoValido(correo)) { setMsg(t('Ese correo no parece válido.', 'That email doesn’t look right.')); return; }
+    if (!correoValido(correo)) { setMsg(t('Ese correo no parece válido.', "Ese email no se ve bien. Check it.")); return; }
     setOcupado(true); setMsg('');
     const email = correo.trim().toLowerCase();
     const r = modo === 'guardar'
@@ -96,7 +96,7 @@ function CrearCuenta({ laminas, apodo }) {
 
   async function verificar() {
     const token = codigo.replace(/\D/g, '');
-    if (token.length < 6) { setMsg(t('El código tiene 6 números o más.', 'The code has at least 6 digits.')); return; }
+    if (token.length < 6) { setMsg(t('El código tiene 6 números o más.', "El código has at least 6 números.")); return; }
     setOcupado(true); setMsg('');
     const { error } = await supabase.auth.verifyOtp({ email: correo.trim().toLowerCase(), token, type: modo === 'guardar' ? 'email_change' : 'email' });
     setOcupado(false);
@@ -107,40 +107,40 @@ function CrearCuenta({ laminas, apodo }) {
 
   return (
     <View style={tarjeta}>
-      <Text style={{ ...letrista, fontSize: 18 }}>{modo === 'guardar' ? t('GUARDA TU CUENTA', 'SAVE YOUR ACCOUNT') : t('ENTRA A TU CUENTA', 'LOG IN')}</Text>
+      <Text style={{ ...letrista, fontSize: 18 }}>{modo === 'guardar' ? t('GUARDA TU CUENTA', "GUARDA TU ACCOUNT") : t('ENTRA A TU CUENTA', "ENTRA · LOG IN")}</Text>
       <Text style={{ fontFamily: F.normal, fontSize: 14 }}>
         {modo === 'guardar'
-          ? t('Con tu correo no pierdes tus láminas ni tus drops si cambias de teléfono o borras la app. No necesitas clave: te mandamos un código.', 'Add your email so you keep your stickers if you switch phones. No password: we email you a code.')
-          : t('Te mandamos un código a tu correo para entrar.', 'We’ll email you a code to log in.')}
+          ? t('Con tu correo no pierdes tus láminas ni tus drops si cambias de teléfono o borras la app. No necesitas clave: te mandamos un código.', "Pon tu email y no pierdes tus láminas si cambias de phone. Sin password: te mandamos un código.")
+          : t('Te mandamos un código a tu correo para entrar.', "Te mandamos un código para entrar.")}
       </Text>
       {modo === 'entrar' && laminas > 0 && (
         <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.rojoTexto }}>
-          {t(`Ojo: las ${laminas} láminas de este teléfono no se pasan a esa cuenta. Si quieres guardarlas, mejor usa "Guardar mi cuenta".`, `Heads up: the ${laminas} stickers on this phone won’t move to that account.`)}
+          {t(`Ojo: las ${laminas} láminas de este teléfono no se pasan a esa cuenta. Si quieres guardarlas, mejor usa "Guardar mi cuenta".`, `Ojo: las ${laminas} láminas de este phone don’t move a esa account.`)}
         </Text>
       )}
       {paso === 'correo' ? (
         <>
           <TextInput value={correo} onChangeText={(v) => { setCorreo(v); setMsg(''); }} placeholder="tu@correo.cl" placeholderTextColor={C.gris}
             keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" textContentType="emailAddress"
-            style={campo} accessibilityLabel={t('Correo', 'Email')} onSubmitEditing={pedirCodigo} />
-          <Boton texto={ocupado ? t('Mandando…', 'Sending…') : t('Mandarme el código', 'Email me the code')} deshabilitado={ocupado || !correo.trim()} fondo={C.rojo} onPress={pedirCodigo} />
+            style={campo} accessibilityLabel={t('Correo', "Email")} onSubmitEditing={pedirCodigo} />
+          <Boton texto={ocupado ? t('Mandando…', "Mandando…") : t('Mandarme el código', "Mándame el código")} deshabilitado={ocupado || !correo.trim()} fondo={C.rojo} onPress={pedirCodigo} />
         </>
       ) : (
         <>
-          <Text style={{ fontFamily: F.negrita, fontSize: 14 }}>{t(`Revisa ${correo.trim()} (y la carpeta de spam) y escribe el código.`, `Check ${correo.trim()} (and spam) and type the code.`)}</Text>
+          <Text style={{ fontFamily: F.negrita, fontSize: 14 }}>{t(`Revisa ${correo.trim()} (y la carpeta de spam) y escribe el código.`, `Revisa ${correo.trim()} (y el spam) y escribe el código.`)}</Text>
           <TextInput value={codigo} onChangeText={(v) => { setCodigo(v); setMsg(''); }} placeholder="123456" placeholderTextColor={C.gris}
             keyboardType="number-pad" maxLength={10} autoComplete="one-time-code" textContentType="oneTimeCode"
-            style={{ ...campo, fontSize: 22, letterSpacing: 4, textAlign: 'center' }} accessibilityLabel={t('Código', 'Code')} onSubmitEditing={verificar} />
-          <Boton texto={ocupado ? t('Revisando…', 'Checking…') : t('Confirmar', 'Confirm')} deshabilitado={ocupado} fondo={C.rojo} onPress={verificar} />
+            style={{ ...campo, fontSize: 22, letterSpacing: 4, textAlign: 'center' }} accessibilityLabel={t('Código', "Código")} onSubmitEditing={verificar} />
+          <Boton texto={ocupado ? t('Revisando…', "Revisando…") : t('Confirmar', "Confirmar")} deshabilitado={ocupado} fondo={C.rojo} onPress={verificar} />
           <Pressable onPress={() => { setPaso('correo'); setCodigo(''); }} accessibilityRole="button" style={{ minHeight: 44, justifyContent: 'center' }}>
-            <Text style={{ fontFamily: F.negrita, fontSize: 14, color: C.azul }}>{t('Cambiar correo o pedir otro código', 'Change email or get a new code')}</Text>
+            <Text style={{ fontFamily: F.negrita, fontSize: 14, color: C.azul }}>{t('Cambiar correo o pedir otro código', "Cambiar email o pedir otro código")}</Text>
           </Pressable>
         </>
       )}
       {msg ? <Text style={{ fontFamily: F.negrita, fontSize: 14, color: C.rojoTexto }} accessibilityLiveRegion="polite">{msg}</Text> : null}
       <Pressable onPress={() => cambiarModo(modo === 'guardar' ? 'entrar' : 'guardar')} accessibilityRole="button" style={{ minHeight: 44, justifyContent: 'center' }}>
         <Text style={{ fontFamily: F.negrita, fontSize: 14, color: C.azul }}>
-          {modo === 'guardar' ? t('¿Ya tienes cuenta? Entra aquí', 'Already have an account? Log in') : t('No tengo cuenta: guardar la de este teléfono', 'No account: save this one')}
+          {modo === 'guardar' ? t('¿Ya tienes cuenta? Entra aquí', "¿Ya tienes account? Entra acá") : t('No tengo cuenta: guardar la de este teléfono', "No account: guarda esta")}
         </Text>
       </Pressable>
     </View>
@@ -152,20 +152,20 @@ function MiCuenta({ usuario }) {
   const [seguro, setSeguro] = useState(false);
   return (
     <View style={tarjeta}>
-      <Text style={{ ...letrista, fontSize: 18 }}>{t('TU CUENTA', 'YOUR ACCOUNT')}</Text>
+      <Text style={{ ...letrista, fontSize: 18 }}>{t('TU CUENTA', "TU ACCOUNT")}</Text>
       <Text style={{ fontFamily: F.normal, fontSize: 14 }}>
-        {t(`Tu cuenta está guardada con ${usuario.email}. Para entrar en otro teléfono, usa "Ya tengo cuenta" y te llega un código.`, `Saved with ${usuario.email}. On another phone, use "Log in" and we’ll email you a code.`)}
+        {t(`Tu cuenta está guardada con ${usuario.email}. Para entrar en otro teléfono, usa "Ya tengo cuenta" y te llega un código.`, `Guardada con ${usuario.email}. En otro phone, toca "Entra" y te mandamos un código.`)}
       </Text>
       {seguro ? (
         <View style={{ gap: 8 }}>
-          <Text style={{ fontFamily: F.negrita, fontSize: 14 }}>{t('¿Cerrar sesión en este teléfono? Tus láminas quedan guardadas en tu cuenta.', 'Log out on this phone? Your stickers stay in your account.')}</Text>
+          <Text style={{ fontFamily: F.negrita, fontSize: 14 }}>{t('¿Cerrar sesión en este teléfono? Tus láminas quedan guardadas en tu cuenta.', "¿Log out en este phone? Tus láminas quedan en tu account.")}</Text>
           <View style={{ flexDirection: 'row', gap: 8 }}>
-            <Boton texto={t('Sí, cerrar', 'Yes, log out')} fondo={C.rojo} onPress={() => supabase.auth.signOut()} style={{ flex: 1 }} />
-            <Boton texto={t('No', 'No')} fondo={C.papel} color={C.negro} onPress={() => setSeguro(false)} style={{ flex: 1 }} />
+            <Boton texto={t('Sí, cerrar', "Sí, log out")} fondo={C.rojo} onPress={() => supabase.auth.signOut()} style={{ flex: 1 }} />
+            <Boton texto={t('No', "No")} fondo={C.papel} color={C.negro} onPress={() => setSeguro(false)} style={{ flex: 1 }} />
           </View>
         </View>
       ) : (
-        <Boton texto={t('Cerrar sesión', 'Log out')} fondo={C.papel} color={C.negro} onPress={() => setSeguro(true)} />
+        <Boton texto={t('Cerrar sesión', "Log out · Salir")} fondo={C.papel} color={C.negro} onPress={() => setSeguro(true)} />
       )}
     </View>
   );
@@ -184,16 +184,16 @@ function Comentarios() {
   }
   return (
     <View style={[tarjeta, { backgroundColor: C.negro }]}>
-      <Text style={{ ...letrista, fontSize: 18, color: C.amarillo }}>{t('ESTAMOS EN PRUEBA', 'BETA · EN PRUEBA')}</Text>
+      <Text style={{ ...letrista, fontSize: 18, color: C.amarillo }}>{t('ESTAMOS EN PRUEBA', "BETA · EN PRUEBA")}</Text>
       <Text style={{ fontFamily: F.normal, fontSize: 14, color: C.papel }}>
-        {t('Caserito lo están probando amigos y locales amigos de Barrio Italia. ¿Algo no funcionó o se te ocurre algo? Cuéntanos.', 'Friends and friendly shops in Barrio Italia are testing Caserito. Something broke or got an idea? Tell us.')}
+        {t('Caserito lo están probando amigos y locales amigos de Barrio Italia. ¿Algo no funcionó o se te ocurre algo? Cuéntanos.', "Amigos y locales amigos de Barrio Italia are testing Caserito. ¿Algo falló o tienes una idea? Cuéntanos.")}
       </Text>
       <TextInput value={texto} onChangeText={(v) => { setTexto(v); setEstado(''); }} maxLength={1000} multiline
-        placeholder={t('Ej: no me apareció el QR en el café de la esquina', 'E.g. my QR didn’t show up at the café')} placeholderTextColor={C.gris}
-        style={{ ...campo, minHeight: 90, paddingTop: 10, textAlignVertical: 'top' }} accessibilityLabel={t('Comentario', 'Feedback')} />
-      <Boton texto={estado === 'enviando' ? t('Enviando…', 'Sending…') : t('Enviar', 'Send')} fondo={C.amarillo} color={C.negro}
+        placeholder={t('Ej: no me apareció el QR en el café de la esquina', "Ej: my QR no apareció en el café")} placeholderTextColor={C.gris}
+        style={{ ...campo, minHeight: 90, paddingTop: 10, textAlignVertical: 'top' }} accessibilityLabel={t('Comentario', "Comentario")} />
+      <Boton texto={estado === 'enviando' ? t('Enviando…', "Mandando…") : t('Enviar', "Mandar · Send")} fondo={C.amarillo} color={C.negro}
         deshabilitado={!texto.trim() || estado === 'enviando'} onPress={enviar} />
-      {estado === 'ok' ? <Text style={{ fontFamily: F.negrita, color: C.amarillo }}>{t('¡Gracias! Lo leemos todo.', 'Thanks! We read everything.')}</Text>
+      {estado === 'ok' ? <Text style={{ fontFamily: F.negrita, color: C.amarillo }}>{t('¡Gracias! Lo leemos todo.', "¡Gracias! We read todo.")}</Text>
         : estado && estado !== 'enviando' ? <Text style={{ fontFamily: F.negrita, color: '#FF8A8A' }}>{estado}</Text> : null}
     </View>
   );

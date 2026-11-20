@@ -104,11 +104,11 @@ export async function avisarPuerta(drops, tur) {
   await prepararCanal().catch(() => {});
   for (const d of nuevos.slice(0, 2)) {
     puertaAvisada.add(d.drop_id);
-    const que = d.tipo === 'sorpresa' ? (tur ? 'the mystery box' : 'la caja sorpresa') : d.titulo;
+    const que = d.tipo === 'sorpresa' ? (tur ? 'la caja sorpresa (mystery box)' : 'la caja sorpresa') : d.titulo;
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: tur ? `You’re at ${d.local_nombre}!` : `¡Estás en la puerta de ${d.local_nombre}!`,
-        body: tur ? `Your QR for ${que} is ready · ${d.quedan} left. Show it at the counter.` : `Tu QR para ${que} ya está listo · quedan ${d.quedan}. Muéstralo en la caja.`,
+        title: tur ? `¡Llegaste a ${d.local_nombre}! You’re here` : `¡Estás en la puerta de ${d.local_nombre}!`,
+        body: tur ? `Tu QR para ${que} ya está listo · quedan ${d.quedan}. Show it en la caja.` : `Tu QR para ${que} ya está listo · quedan ${d.quedan}. Muéstralo en la caja.`,
         data: { drop_id: d.drop_id },
         sound: 'default',
       },

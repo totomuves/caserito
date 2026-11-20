@@ -26,7 +26,7 @@ export function IdiomaProvider({ children }) {
   // t('texto en español', 'texto en Spanglish')
   const t = (es, sp) => (tur && sp !== undefined ? sp : es);
   const cuad = (n) => {
-    if (n >= 99) return tur ? 'far, in Barrio Italia' : 'lejos, en Barrio Italia';
+    if (n >= 99) return tur ? 'lejos, en Barrio Italia (far)' : 'lejos, en Barrio Italia';
     const base = n <= 1 ? '1 cuadra' : `${n} cuadras`;
     if (!tur) return base;
     const m = Math.max(1, n) * 100;
@@ -63,6 +63,18 @@ const GLOSARIO = [
   ['bandeja paisa', 'big Colombian platter'], ['chingón', 'awesome (Mexican, informal)'], ['órale', 'come on! (Mexican)'],
   ['ándale', 'hurry up! (Mexican)'], ['qué onda', "what's up (Mexican)"], ['cuates', 'buddies (Mexican)'], ['nomás', 'just, only'],
   ['che', 'hey (Argentine)'], ['posta', 'for real (Argentine)'], ['drop', 'a limited deal: few units, ends soon'],
+  // Spanglish de la app
+  ['date una vuelta', 'take a walk around'], ['cuadras', 'blocks (~100 m each)'], ['cuadra', 'a block (~100 m)'],
+  ['láminas', 'stickers for your album'], ['lámina', 'a sticker for your album'], ['álbum', 'album'],
+  ['canjear', 'to redeem'], ['canjea', 'redeem'], ['canjeados', 'redeemed'], ['canjeado', 'redeemed'], ['canje', 'a redeem'],
+  ['locales', 'shops, places'], ['local', 'shop, place'], ['quedan', 'left (how many are left)'],
+  ['súmate', 'join in'], ['me sumo', 'I’m in'], ['pásale el dato', 'pass on the tip'], ['cafecito', 'a little coffee'],
+  ['almuerzo', 'lunch'], ['hora de almuerzo', 'lunch time'], ['sorpresa', 'surprise'], ['sorpresas', 'surprises'],
+  ['recién llegado', 'just arrived (new stock)'], ['entre todos', 'all together'], ['la caja', 'the counter, where you pay'],
+  ['reseña', 'review'], ['apodo', 'nickname'], ['avísame', 'let me know'], ['pa’llá', 'over there (casual)'],
+  ['listo', 'ready / done'], ['llegaste', 'you made it'], ['cerca', 'nearby'], ['lejos', 'far'], ['ahora', 'now'],
+  ['ofertas', 'deals'], ['barrio', 'neighborhood'], ['gustos', 'likes, tastes'], ['vuelve más rato', 'come back in a bit'],
+  ['estás dentro', 'you’re in'], ['¿qué tal?', 'how was it?'], ['gracias', 'thanks'], ['siguiente', 'next'],
 ];
 const LETRAS = 'A-Za-zÁÉÍÓÚÜÑáéíóúüñ';
 const escapar = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

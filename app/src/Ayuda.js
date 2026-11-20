@@ -3,7 +3,7 @@ import { Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { C, F, letrista } from './tema';
 import { Ola } from './componentes';
-import { useIdioma } from './idioma';
+import { useIdioma, FraseGlosario } from './idioma';
 
 // Manual para caseritos: corto, en pasos, con lo que más se pregunta
 const PASOS = [
@@ -25,21 +25,21 @@ const DUDAS = [
 ];
 
 const PASOS_TUR = [
-  ['Check the drops', 'A drop is a deal from a local shop in Barrio Italia: few units, ends soon. Find them on Home (the pizarra) and on the Map.'],
-  ['Join · Súmate', 'Tap a drop and "Join". You don’t need to be at the shop yet.'],
-  ['Walk there', 'When you get to the shop (~50 m, half a cuadra), your QR code shows up. Show it at the counter (la caja) and pay the drop price.'],
-  ['Collect láminas', 'Your first redeem at each shop gives you its sticker for the Barrio Italia album. Collect more, win prizes.'],
-  ['Leave a review', 'After redeeming you can rate the shop. Only buyers can review: real reviews, no fakes.'],
+  ['Mira los drops', 'Un drop is a deal de un local de Barrio Italia: pocas unidades, termina pronto. Los ves en Inicio (la pizarra) y en el Mapa.'],
+  ['Súmate · Join', 'Toca un drop y "Me sumo". No necesitas estar en el local yet.'],
+  ['Camina pa’llá', 'Cuando llegas al local (~50 m, media cuadra), aparece tu código QR. Muéstralo en la caja y paga el precio del drop.'],
+  ['Junta láminas', 'Tu primer canje en cada local te da su lámina for the álbum de Barrio Italia. Más láminas, más premios.'],
+  ['Deja tu reseña', 'Después de canjear puedes calificar el local. Solo opinan quienes compraron: reseñas reales, nada de fakes.'],
 ];
 
 const DUDAS_TUR = [
-  ['What’s a “group drop”?', 'A deal that gets better the more people redeem it: e.g. 10% with 10 people, 20% with 25. Bring your friends!'],
-  ['What’s a “mystery drop”?', 'You find out what it is at the shop: a discount, a gift or the golden sticker.'],
-  ['Do you send notifications?', 'Yes, if you turn on pings on Home. You get one when a shop a few blocks from you drops a deal (max 3 a day, never between 10 pm and 9 am), and another when you reach the door of a shop with a drop, with your QR ready.'],
-  ['What do the underlined words mean?', 'Shops write in their own slang (Chilean, Venezuelan, Peruvian…). Tap an underlined word to see its meaning. ¡Bacán!'],
-  ['How far is a cuadra?', 'About 100 m, around a 1–2 minute walk. We show meters and minutes next to it.'],
-  ['Do I need an account?', 'Not to start. But save your account in "Me" with your email (no password, we send a code) so you keep your stickers if you switch phones.'],
-  ['Prices?', 'All prices are in Chilean pesos (CLP). Pay at the shop as usual.'],
+  ['¿Qué es un drop grupal?', 'Un deal que mejora mientras más gente canjea: ej. 10% con 10 personas, 20% con 25. ¡Trae a tus amigos!'],
+  ['¿Y un drop sorpresa?', 'Lo descubres en el local: un descuento, un regalo o la lámina dorada.'],
+  ['¿Me avisan?', 'Sí, si activas los avisos en Inicio. Te llega uno cuando un local a pocas cuadras suelta un drop (max 3 al día, nunca entre 22:00 y 9:00), y otro cuando llegas a la puerta con tu QR listo.'],
+  ['¿Y las palabras subrayadas?', 'Los locales escriben con sus modismos (chilenos, venezolanos, peruanos…). Toca una palabra subrayada y te sale qué significa. ¡Bacán!'],
+  ['¿Cuánto es una cuadra?', 'Unos 100 m, 1–2 minutos caminando. Te mostramos metros y minutos al lado.'],
+  ['¿Necesito account?', 'No para empezar. Pero guarda tu account en "Tú" con tu email (sin password, te mandamos un código) y no pierdes tus láminas si cambias de phone.'],
+  ['¿Precios?', 'Todo en pesos chilenos (CLP). Pagas en el local, como siempre.'],
 ];
 
 export default function Ayuda({ alCerrar }) {
@@ -50,11 +50,11 @@ export default function Ayuda({ alCerrar }) {
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 110 }}>
       <View style={{ backgroundColor: C.amarillo, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-        <Pressable onPress={alCerrar} accessibilityRole="button" accessibilityLabel={t('Volver', 'Back')}
+        <Pressable onPress={alCerrar} accessibilityRole="button" accessibilityLabel={t('Volver', "Volver · Back")}
           style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 2.5, borderColor: C.negro, backgroundColor: C.papel, alignItems: 'center', justifyContent: 'center' }}>
           <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={C.negro} strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round"><Path d="M15 18l-6-6 6-6" /></Svg>
         </Pressable>
-        <Text style={{ ...letrista, fontSize: 26, color: C.rojo, textShadowColor: C.azul, textShadowOffset: { width: 2, height: 2 }, textShadowRadius: 0 }}>{t('¿CÓMO FUNCIONA?', 'HOW IT WORKS')}</Text>
+        <Text style={{ ...letrista, fontSize: 26, color: C.rojo, textShadowColor: C.azul, textShadowOffset: { width: 2, height: 2 }, textShadowRadius: 0 }}>{t('¿CÓMO FUNCIONA?', "CÓMO FUNCIONA · HOW IT WORKS")}</Text>
       </View>
       <Ola color={C.amarillo} />
 
@@ -64,25 +64,25 @@ export default function Ayuda({ alCerrar }) {
             <Text style={{ ...letrista, fontSize: 30, color: C.rojo, width: 26 }}>{i + 1}</Text>
             <View style={{ flex: 1, gap: 4 }}>
               <Text style={{ fontFamily: F.negrita, fontSize: 16 }}>{titulo}</Text>
-              <Text style={{ fontFamily: F.normal, fontSize: 15, lineHeight: 21 }}>{d}</Text>
+              <FraseGlosario texto={d} colorAyuda={C.rojoTexto} style={{ fontFamily: F.normal, fontSize: 15, lineHeight: 21 }} />
             </View>
           </View>
         ))}
 
         {web && (
           <View style={{ backgroundColor: C.negro, borderRadius: 16, padding: 14, gap: 4 }}>
-            <Text style={{ fontFamily: F.negrita, fontSize: 15, color: C.amarillo }}>{t('Tenla a mano', 'Keep it handy')}</Text>
+            <Text style={{ fontFamily: F.negrita, fontSize: 15, color: C.amarillo }}>{t('Tenla a mano', "Tenla a mano")}</Text>
             <Text style={{ fontFamily: F.normal, fontSize: 14, lineHeight: 20, color: C.papel }}>
-              {t('En iPhone: botón Compartir → "Agregar a pantalla de inicio". En Android: menú ⋮ → "Agregar a la pantalla principal". Queda como una app.', 'iPhone: Share → "Add to Home Screen". Android: menu ⋮ → "Add to Home screen". It works like an app.')}
+              {t('En iPhone: botón Compartir → "Agregar a pantalla de inicio". En Android: menú ⋮ → "Agregar a la pantalla principal". Queda como una app.', "iPhone: Share → \"Add to Home Screen\". Android: menú ⋮ → \"Add to Home screen\". Funciona like an app, al tiro.")}
             </Text>
           </View>
         )}
 
-        <Text style={{ ...letrista, fontSize: 21, marginTop: 8 }}>{t('PREGUNTAS FRECUENTES', 'FAQ · PREGUNTAS')}</Text>
+        <Text style={{ ...letrista, fontSize: 21, marginTop: 8 }}>{t('PREGUNTAS FRECUENTES', "PREGUNTAS · FAQ")}</Text>
         {dudas.map(([p, r]) => (
           <View key={p} style={{ borderTopWidth: 2, borderStyle: 'dashed', borderColor: '#CDBF9F', paddingTop: 10, gap: 4 }}>
             <Text style={{ fontFamily: F.negrita, fontSize: 15 }}>{p}</Text>
-            <Text style={{ fontFamily: F.normal, fontSize: 15, lineHeight: 21 }}>{r}</Text>
+            <FraseGlosario texto={r} colorAyuda={C.rojoTexto} style={{ fontFamily: F.normal, fontSize: 15, lineHeight: 21 }} />
           </View>
         ))}
       </View>
