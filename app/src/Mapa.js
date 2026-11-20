@@ -10,7 +10,7 @@ export default function Mapa({ drops, pos, alAbrir }) {
   const [sel, setSel] = useState(null);
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, zIndex: 0 }}>
       <MapView style={{ flex: 1 }} showsUserLocation
         initialRegion={{ latitude: pos.lat, longitude: pos.lng, latitudeDelta: 0.012, longitudeDelta: 0.012 }}>
         {drops.map((d) => coords[d.local_id] && (

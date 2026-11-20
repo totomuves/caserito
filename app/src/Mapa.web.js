@@ -75,7 +75,7 @@ export default function Mapa({ drops, pos, alAbrir }) {
   }, [drops, coords]);
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, zIndex: 0, isolation: 'isolate' }}>
       <View ref={caja} style={{ flex: 1 }} accessibilityLabel="Mapa de drops del barrio" />
       <HojaMapa drops={drops} pos={pos} sel={sel} alAbrir={alAbrir} />
     </View>

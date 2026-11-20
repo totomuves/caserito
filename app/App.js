@@ -110,7 +110,7 @@ function Caserito() {
           )}
 
           {!dropAbierto && (
-            <View style={{ position: 'absolute', left: 12, right: 12, bottom: 14, height: 64, backgroundColor: C.negro, borderRadius: 22, flexDirection: 'row' }}>
+            <View style={{ position: 'absolute', left: 12, right: 12, bottom: 14, height: 64, backgroundColor: C.negro, borderRadius: 22, flexDirection: 'row', zIndex: 5000, elevation: 20 }}>
               <Tab id="inicio" texto={t("Inicio", "Home")} actual={pestana} setear={setPestana} d="M3 10l9-6 9 6M5 10v10h14V10M10 20v-5h4v5" />
               <Tab id="mapa" texto={t("Mapa", "Map")} actual={pestana} setear={setPestana} d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14" />
               <Tab id="album" texto={t("Álbum", "Album")} actual={pestana} setear={setPestana} d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM4 12h16M12 3v18" />
