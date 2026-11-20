@@ -8,6 +8,7 @@ import Resultados from './Resultados.jsx';
 import Admin from './Admin.jsx';
 import MisDrops from './MisDrops.jsx';
 import Ayuda from './Ayuda.jsx';
+import Qr, { URL_APP } from './Qr.jsx';
 
 export default function App() {
   const [sesion, setSesion] = useState(undefined);
@@ -22,6 +23,7 @@ export default function App() {
   const [aviso, setAviso] = useState('');
   const [avisoInv, setAvisoInv] = useState('');
   const [ayuda, setAyuda] = useState(false);
+  const [verQr, setVerQr] = useState(false);
 
   useEffect(() => { leerInvitacion(); }, []);
 
@@ -82,6 +84,20 @@ export default function App() {
       </Marco>
     );
   }
+  if (verQr && local) {
+    return (
+      <Marco local={local}>
+        <div className="contenido">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h1 className="letrista">MI QR</h1>
+            <button className="pildora" onClick={() => setVerQr(false)}>Volver</button>
+          </div>
+          <Qr url={`${URL_APP}/?local=${local.id}`} titulo={local.nombre} archivo={`caserito-qr-${local.nombre.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.png`}
+            bajada="Imprímelo y ponlo en la caja y en la vitrina. Quien lo escanea abre Caserito directo, sin instalar nada, y ve tus drops." />
+        </div>
+      </Marco>
+    );
+  }
   if (ayuda) return <Marco local={local}><Ayuda alCerrar={() => setAyuda(false)} /></Marco>;
   if (!local) return <Marco alAyuda={() => setAyuda(true)}><ConfigurarLocal usuario={sesion.user} alGuardar={setLocal} /></Marco>;
   if (editandoLocal) {
@@ -104,6 +120,7 @@ export default function App() {
       )}
       <div style={{ margin: '12px 16px 0', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <button className="pildora" onClick={() => setEditandoLocal(true)}>Editar mi local</button>
+        <button className="pildora" onClick={() => setVerQr(true)}>Mi QR</button>
         {admin && <button className="pildora activa" onClick={() => setSoloAdmin(true)}>Ir al admin</button>}
       </div>
       {pestana === 'crear' && (

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase, explicar } from './supabase.js';
 import { formatoPrecio } from './frases.js';
 import { textoCategoria } from './categorias.js';
+import Qr, { URL_APP } from './Qr.jsx';
 
 const SECCIONES = [
   { id: 'resumen', texto: 'Resumen' },
@@ -9,6 +10,7 @@ const SECCIONES = [
   { id: 'drops', texto: 'Drops' },
   { id: 'resenas', texto: 'Reseñas' },
   { id: 'invitar', texto: 'Invitar locales' },
+  { id: 'qr', texto: 'QR' },
 ];
 
 export default function Admin() {
@@ -26,6 +28,10 @@ export default function Admin() {
       {seccion === 'drops' && <Drops />}
       {seccion === 'resenas' && <Resenas />}
       {seccion === 'invitar' && <Invitar />}
+      {seccion === 'qr' && (
+        <Qr url={URL_APP} titulo="CASERITO" archivo="caserito-qr-app.png"
+          bajada="QR general de la app para caseritos: one-pager, flyers, redes y el 'último flyer'." />
+      )}
     </div>
   );
 }

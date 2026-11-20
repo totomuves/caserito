@@ -10,9 +10,10 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2",
+    "jsqr": "^1.4.0",
+    "qrcode": "^1.5.4",
     "react": "^19",
-    "react-dom": "^19",
-    "jsqr": "^1.4.0"
+    "react-dom": "^19"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "latest",
