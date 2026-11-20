@@ -52,9 +52,9 @@ function Caserito() {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') { setPos({ ...BARRIO_ITALIA, aprox: true }); return; }
-      const p = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const p = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
       setPos({ lat: p.coords.latitude, lng: p.coords.longitude });
-      sub = await Location.watchPositionAsync({ accuracy: Location.Accuracy.Balanced, distanceInterval: 40 },
+      sub = await Location.watchPositionAsync({ accuracy: Location.Accuracy.High, distanceInterval: 10 },
         (q) => setPos({ lat: q.coords.latitude, lng: q.coords.longitude }));
     })().catch(() => setPos({ ...BARRIO_ITALIA, aprox: true }));
     return () => sub && sub.remove();

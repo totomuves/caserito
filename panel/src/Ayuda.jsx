@@ -18,7 +18,7 @@ const TIPOS = [
 
 const DUDAS = [
   ['¿Cuándo conviene soltar un drop?', 'En tu hora más tranquila (mírala en Resultados). Un drop de 10 unidades por 2 horas funciona mejor que uno de 100 todo el día.'],
-  ['¿A qué distancia lo ven?', 'Lo ven en el mapa quienes están cerca, y el código para canjear aparece cuando están a 1 cuadra de tu local.'],
+  ['¿A qué distancia lo ven?', 'Lo ven en el mapa quienes están cerca, y el código para canjear aparece cuando llegan a tu local (a unos 50 m, media cuadra).'],
   ['¿Puedo cambiar el precio después?', 'Solo si nadie se ha anotado. Si ya hay caseritos anotados, puedes cambiar la frase, la hora o subir el cupo, para no cambiarle las condiciones a quien ya se sumó.'],
   ['¿Qué pasa si alguien no viene?', 'Nada: anotarse no ocupa cupo. El cupo baja solo con los canjes reales en tu caja.'],
   ['¿Y las reseñas?', 'Solo puede reseñarte quien canjeó en tu local. Puedes responder cada una desde Resultados.'],

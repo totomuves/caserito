@@ -9,7 +9,7 @@ import { useIdioma } from './idioma';
 const PASOS = [
   ['Mira los drops', 'Un drop es una oferta de un local del barrio, con cupo y hora de término. Los ves en Inicio, en la pizarra y en el Mapa.'],
   ['Súmate', 'Toca un drop y "Me sumo". No necesitas estar en el local para anotarte.'],
-  ['Llega al local', 'Cuando estás a 1 cuadra, aparece tu código QR. Muéstralo en la caja (o dicta el código) y te cobran el precio del drop.'],
+  ['Llega al local', 'Cuando llegas al local (a unos 50 m, media cuadra), aparece tu código QR. Muéstralo en la caja (o dicta el código) y te cobran el precio del drop.'],
   ['Junta láminas', 'Tu primer canje en cada local te da su lámina del álbum de Barrio Italia. Al juntar varias hay premios.'],
   ['Deja tu reseña', 'Después de canjear puedes poner estrellas y un comentario. Solo reseña quien compró: por eso son reseñas de verdad.'],
 ];
@@ -17,7 +17,7 @@ const PASOS = [
 const DUDAS = [
   ['¿Qué es un drop grupal?', 'Una oferta que mejora mientras más gente canjea: por ejemplo 10% con 10 personas, 20% con 25. Invita a tus amigos para subir de nivel.'],
   ['¿Qué es un drop sorpresa?', 'No sabes qué es hasta que llegas al local. Puede ser un descuento, un regalo o la lámina dorada.'],
-  ['¿Por qué no me aparece el QR?', 'El QR aparece solo cuando estás a 1 cuadra del local. Revisa que Caserito tenga permiso de ubicación.'],
+  ['¿Por qué no me aparece el QR?', 'El QR aparece cuando estás en el local (a unos 50 m). Revisa que Caserito tenga permiso de ubicación precisa; si estás adentro y no aparece, sal a la puerta un momento para que el GPS te ubique.'],
   ['¿Necesito cuenta?', 'No. Caserito te reconoce en este teléfono sin pedirte correo ni clave. Si borras la app o los datos del navegador, pierdes tus láminas.'],
   ['¿Qué datos guardan de mí?', 'Tus drops, láminas y gustos, para mostrarte primero lo que te tinca. Los locales no ven quién eres; solo cuántos canjearon.'],
   ['¿Cómo apago lo que Caserito aprendió?', 'En Inicio, abajo, en "Caserito aprendió que…": toca un gusto para apagarlo.'],
@@ -26,7 +26,7 @@ const DUDAS = [
 const PASOS_TUR = [
   ['Check the drops', 'A drop is a deal from a local shop in Barrio Italia: few units, ends soon. Find them on Home (the pizarra) and on the Map.'],
   ['Join · Súmate', 'Tap a drop and "Join". You don’t need to be at the shop yet.'],
-  ['Walk there', 'When you’re 1 cuadra (block, ~100 m) away, your QR code shows up. Show it at the counter (la caja) and pay the drop price.'],
+  ['Walk there', 'When you get to the shop (~50 m, half a cuadra), your QR code shows up. Show it at the counter (la caja) and pay the drop price.'],
   ['Collect láminas', 'Your first redeem at each shop gives you its sticker for the Barrio Italia album. Collect more, win prizes.'],
   ['Leave a review', 'After redeeming you can rate the shop. Only buyers can review: real reviews, no fakes.'],
 ];

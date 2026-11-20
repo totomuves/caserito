@@ -77,7 +77,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
       {lejos ? (
         <View style={{ marginHorizontal: 16, marginBottom: 6, backgroundColor: C.papel, borderWidth: 2, borderColor: C.negro, borderRadius: 14, padding: 10 }}>
           <Text style={{ fontFamily: F.media, fontSize: 13 }}>
-            {t('Estás lejos de Barrio Italia: te mostramos sus drops. Para canjear, tienes que estar a 1 cuadra del local.', 'You’re far from Barrio Italia: here are its drops. To redeem, you need to be 1 cuadra (block) from the shop.')}
+            {t('Estás lejos de Barrio Italia: te mostramos sus drops. Para canjear, tienes que llegar al local.', 'You’re far from Barrio Italia: here are its drops. To redeem, you need to be at the shop.')}
           </Text>
         </View>
       ) : null}
