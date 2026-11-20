@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { supabase, explicar } from './supabase.js';
 import { formatoPrecio } from './frases.js';
+import jsQR from 'jsqr';
 
 export default function Escanear() {
   const video = useRef(null);
@@ -13,21 +14,35 @@ export default function Escanear() {
   useEffect(() => {
     let stream, timer, cancelado = false;
     (async () => {
-      if (!('BarcodeDetector' in window) || !navigator.mediaDevices) { setCamara('sin-lector'); return; }
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { setCamara('sin-lector'); return; }
       try {
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
         if (cancelado) return;
         video.current.srcObject = stream;
         await video.current.play();
         setCamara('lista');
-        const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
+        // Android/Chrome trae lector nativo; iPhone/Safari no, ahí usamos jsQR.
+        const nativo = 'BarcodeDetector' in window ? new window.BarcodeDetector({ formats: ['qr_code'] }) : null;
+        const lienzo = document.createElement('canvas');
+        const ctx = lienzo.getContext('2d', { willReadFrequently: true });
         timer = setInterval(async () => {
-          if (ocupado.current || !video.current || video.current.readyState < 2) return;
+          const v = video.current;
+          if (ocupado.current || !v || v.readyState < 2 || !v.videoWidth) return;
           try {
-            const codigos = await detector.detect(video.current);
-            if (codigos.length) canjear(codigos[0].rawValue);
+            if (nativo) {
+              const codigos = await nativo.detect(v);
+              if (codigos.length) canjear(codigos[0].rawValue);
+            } else {
+              const escala = Math.min(1, 640 / v.videoWidth);
+              lienzo.width = Math.round(v.videoWidth * escala);
+              lienzo.height = Math.round(v.videoHeight * escala);
+              ctx.drawImage(v, 0, 0, lienzo.width, lienzo.height);
+              const img = ctx.getImageData(0, 0, lienzo.width, lienzo.height);
+              const qr = jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
+              if (qr && qr.data) canjear(qr.data);
+            }
           } catch { /* sigue intentando */ }
-        }, 400);
+        }, 350);
       } catch {
         setCamara('sin-permiso');
       }
@@ -68,7 +83,7 @@ export default function Escanear() {
           <p style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--papel)', textAlign: 'center', padding: 24, margin: 0, fontWeight: 700 }}>
             {camara === 'iniciando' && 'Abriendo cámara…'}
             {camara === 'sin-permiso' && 'Dale permiso a la cámara en el navegador, o escribe el código abajo.'}
-            {camara === 'sin-lector' && 'Este navegador no lee QR. Usa Chrome en Android o escribe el código abajo.'}
+            {camara === 'sin-lector' && 'Este navegador no deja usar la cámara. Abre el panel en Safari o Chrome, o escribe el código abajo.'}
           </p>
         )}
       </div>

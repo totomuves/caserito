@@ -11,7 +11,8 @@
   "dependencies": {
     "@supabase/supabase-js": "^2",
     "react": "^19",
-    "react-dom": "^19"
+    "react-dom": "^19",
+    "jsqr": "^1.4.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "latest",
