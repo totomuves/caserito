@@ -1,9 +1,16 @@
-import React, { useState } from 'react';
-import { supabase, explicar, leerInvitacion } from './supabase.js';
+import React, { useEffect, useState } from 'react';
+import { supabase, explicar, leerInvitacion, leerInvitacionEquipo } from './supabase.js';
 
 export default function Login() {
   const [invitado] = useState(() => !!leerInvitacion());
-  const [modo, setModo] = useState(invitado ? 'crear' : 'entrar');
+  const [codigoEquipo] = useState(() => leerInvitacionEquipo());
+  const [equipo, setEquipo] = useState(null);
+  const [modo, setModo] = useState(invitado || codigoEquipo ? 'crear' : 'entrar');
+
+  useEffect(() => {
+    if (!codigoEquipo) return;
+    supabase.rpc('ver_invitacion_equipo', { p_codigo: codigoEquipo }).then(({ data }) => setEquipo((data && data[0]) || { vigente: false }));
+  }, [codigoEquipo]);
   const [correo, setCorreo] = useState('');
   const [clave, setClave] = useState('');
   const [msg, setMsg] = useState('');
@@ -33,9 +40,17 @@ export default function Login() {
       <header className="barra"><span className="marca"><img src="/logo.svg" alt="Caserito" style={{ height: 30, display: 'block' }} /><small style={{ color: 'var(--amarillo)', fontWeight: 800 }}>Local</small></span></header>
       <div className="toldo" />
       <form className="contenido" onSubmit={enviar}>
-        <h1 className="letrista">{modo === 'entrar' ? 'ENTRA A TU LOCAL' : modo === 'crear' ? 'INSCRIBE TU LOCAL' : 'RECUPERA TU CLAVE'}</h1>
+        <h1 className="letrista">{codigoEquipo && modo === 'crear' ? 'CREA TU CUENTA' : modo === 'entrar' ? 'ENTRA A TU LOCAL' : modo === 'crear' ? 'INSCRIBE TU LOCAL' : 'RECUPERA TU CLAVE'}</h1>
         <p className="ayuda">Suelta drops para que los caseritos del barrio lleguen a tu local.</p>
-        {invitado && <div className="tarjeta" style={{ borderColor: 'var(--azul)' }}><b>¡Te invitaron a Caserito!</b><span className="ayuda">Crea tu cuenta e inscribe tu local: queda aprobado al tiro.</span></div>}
+        {codigoEquipo && equipo && (equipo.vigente ? (
+          <div className="tarjeta" style={{ borderColor: 'var(--azul)' }}>
+            <b>Te invitaron al equipo de {equipo.local_nombre}</b>
+            <span className="ayuda">Tu rol: {equipo.rol}. Crea tu cuenta con tu correo (o entra si ya tienes una) y quedas en el equipo.</span>
+          </div>
+        ) : (
+          <div className="error">Esa invitación ya se usó o venció. Pídele al dueño del local un link nuevo.</div>
+        ))}
+        {invitado && !codigoEquipo && <div className="tarjeta" style={{ borderColor: 'var(--azul)' }}><b>¡Te invitaron a Caserito!</b><span className="ayuda">Crea tu cuenta e inscribe tu local: queda aprobado al tiro.</span></div>}
         <label className="campo">Correo
           <input type="email" autoComplete="email" required value={correo} onChange={(e) => setCorreo(e.target.value)} />
         </label>
@@ -48,7 +63,7 @@ export default function Login() {
         {msg && <div className="tarjeta">{msg}</div>}
         <button className="boton grande" disabled={enviando}>{modo === 'entrar' ? 'Entrar' : modo === 'crear' ? 'Crear cuenta' : 'Mandarme el correo'}</button>
         <button type="button" className="pildora" onClick={() => { setModo(modo === 'entrar' ? 'crear' : 'entrar'); setError(''); setMsg(''); }}>
-          {modo === 'entrar' ? '¿Primera vez? Inscribe tu local' : 'Ya tengo cuenta'}
+          {modo === 'entrar' ? (codigoEquipo ? '¿Primera vez? Crea tu cuenta' : '¿Primera vez? Inscribe tu local') : 'Ya tengo cuenta'}
         </button>
         {modo === 'entrar' && (
           <button type="button" className="pildora" style={{ background: 'transparent' }} onClick={() => { setModo('olvide'); setError(''); setMsg(''); }}>

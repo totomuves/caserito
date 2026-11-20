@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { supabase, explicar, leerInvitacion, olvidarInvitacion } from './supabase.js';
+import { supabase, explicar, leerInvitacion, olvidarInvitacion, leerInvitacionEquipo, olvidarInvitacionEquipo } from './supabase.js';
+import Equipo from './Equipo.jsx';
+
+const TODOS = ['drops', 'escanear', 'resultados', 'resenas', 'local', 'equipo'];
 import Login from './Login.jsx';
 import ConfigurarLocal from './ConfigurarLocal.jsx';
 import Crear from './Crear.jsx';
@@ -24,12 +27,16 @@ export default function App() {
   const [avisoInv, setAvisoInv] = useState('');
   const [ayuda, setAyuda] = useState(false);
   const [verQr, setVerQr] = useState(false);
+  const [verEquipo, setVerEquipo] = useState(false);
+  const [permisos, setPermisos] = useState(TODOS);
+  const [rol, setRol] = useState('Dueño');
+  const puede = (p) => permisos.includes(p);
 
-  useEffect(() => { leerInvitacion(); }, []);
+  useEffect(() => { leerInvitacion(); leerInvitacionEquipo(); }, []);
 
   // Si llegó con link de invitación, al tener local se aprueba solo
   useEffect(() => {
-    if (!local || local.aprobado) return;
+    if (!local || local.aprobado || rol !== 'Dueño') return;
     const codigo = leerInvitacion();
     if (!codigo) return;
     supabase.rpc('usar_invitacion', { p_codigo: codigo }).then(async ({ error }) => {
@@ -59,10 +66,28 @@ export default function App() {
       if (p.error) { setError(explicar(p.error)); return; }
       const a = await supabase.rpc('es_admin');
       setAdmin(!a.error && a.data === true);
-      const { data, error } = await supabase
-        .from('locales').select('*').eq('dueno_id', sesion.user.id).limit(1).maybeSingle();
-      if (error) { setError(explicar(error)); return; }
-      setLocal(data || null);
+      // Llegó con link para sumarse al equipo de un local
+      const codigoEq = leerInvitacionEquipo();
+      if (codigoEq) {
+        const u = await supabase.rpc('usar_invitacion_equipo', { p_codigo: codigoEq });
+        olvidarInvitacionEquipo();
+        setAvisoInv(u.error ? explicar(u.error) : '¡Listo! Ya eres parte del equipo del local.');
+      }
+      // Mis locales: como dueño o como parte de un equipo
+      const m = await supabase.rpc('mis_locales');
+      if (m.error) {
+        // Sin el SQL 011 todavía: solo dueños, como antes
+        const { data, error } = await supabase.from('locales').select('*').eq('dueno_id', sesion.user.id).limit(1).maybeSingle();
+        if (error) { setError(explicar(error)); return; }
+        setPermisos(TODOS); setRol('Dueño'); setLocal(data || null);
+        return;
+      }
+      const filas = m.data || [];
+      const fila = filas.find((f) => f.rol === 'Dueño') || filas[0];
+      if (!fila) { setPermisos(TODOS); setRol('Dueño'); setLocal(null); return; }
+      const l = await supabase.from('locales').select('*').eq('id', fila.local_id).single();
+      if (l.error) { setError(explicar(l.error)); return; }
+      setPermisos(fila.permisos || []); setRol(fila.rol); setLocal(l.data);
     })();
   }, [sesion]);
 
@@ -98,9 +123,10 @@ export default function App() {
       </Marco>
     );
   }
-  if (ayuda) return <Marco local={local}><Ayuda alCerrar={() => setAyuda(false)} /></Marco>;
+  if (ayuda) return <Marco local={local} rol={rol}><Ayuda alCerrar={() => setAyuda(false)} /></Marco>;
+  if (verEquipo && local && puede('equipo')) return <Marco local={local} rol={rol}><Equipo local={local} alCerrar={() => setVerEquipo(false)} /></Marco>;
   if (!local) return <Marco alAyuda={() => setAyuda(true)}><ConfigurarLocal usuario={sesion.user} alGuardar={setLocal} /></Marco>;
-  if (editandoLocal) {
+  if (editandoLocal && puede('local')) {
     return (
       <Marco local={local}>
         <ConfigurarLocal usuario={sesion.user} local={local}
@@ -109,48 +135,56 @@ export default function App() {
     );
   }
 
+  const pestanas = [
+    puede('drops') && 'crear', puede('drops') && 'drops', puede('escanear') && 'escanear',
+    (puede('resultados') || puede('resenas')) && 'resultados',
+  ].filter(Boolean);
+  const vista = pestanas.includes(pestana) ? pestana : pestanas[0];
+
   return (
-    <Marco local={local} alAyuda={() => setAyuda(true)}>
+    <Marco local={local} rol={rol} alAyuda={() => setAyuda(true)}>
       {avisoInv && <div className="tarjeta" style={{ margin: '16px 16px 0', borderColor: 'var(--azul)' }}>{avisoInv}</div>}
-      {!local.aprobado && (
+      {!local.aprobado && puede('drops') && (
         <div className="tarjeta" style={{ margin: '16px 16px 0', borderColor: 'var(--rojo)' }}>
           <b>Tu local está en revisión</b>
           <span className="ayuda">Puedes preparar drops, pero los caseritos los verán cuando aprobemos tu local. Normalmente es el mismo día.</span>
         </div>
       )}
       <div style={{ margin: '12px 16px 0', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <button className="pildora" onClick={() => setEditandoLocal(true)}>Editar mi local</button>
+        {puede('local') && <button className="pildora" onClick={() => setEditandoLocal(true)}>Editar mi local</button>}
+        {puede('equipo') && <button className="pildora" onClick={() => setVerEquipo(true)}>Mi equipo</button>}
         <button className="pildora" onClick={() => setVerQr(true)}>Mi QR</button>
         {admin && <button className="pildora activa" onClick={() => setSoloAdmin(true)}>Ir al admin</button>}
       </div>
-      {pestana === 'crear' && (
+      {pestanas.length === 0 && <div className="contenido"><div className="tarjeta">Tu rol todavía no tiene permisos para drops ni para escanear. Pídele al dueño del local que te los dé.</div></div>}
+      {vista === 'crear' && (
         <Crear key={base ? base.id + (base.editarId ? '-e' : '-d') : 'nuevo'} local={local} base={base}
           alTerminar={(m) => { setBase(null); setAviso(m || ''); setPestana('drops'); }} />
       )}
-      {pestana === 'drops' && (
+      {vista === 'drops' && (
         <MisDrops key={aviso} local={local} aviso={aviso}
           alDuplicar={(d) => { setAviso(''); setBase(d); setPestana('crear'); }}
           alEditar={(d) => { setAviso(''); setBase({ ...d, editarId: d.id }); setPestana('crear'); }} />
       )}
-      {pestana === 'escanear' && <Escanear />}
-      {pestana === 'resultados' && <Resultados local={local} />}
-      <nav className="nav" aria-label="Secciones">
-        <Tab id="crear" actual={pestana} setear={(p) => { setBase(null); setPestana(p); }} texto="Crear" icono="M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM12 8v8M8 12h8" />
-        <Tab id="drops" actual={pestana} setear={(p) => { setAviso(''); setPestana(p); }} texto="Mis drops" icono="M4 6h16M4 12h16M4 18h10" />
-        <Tab id="escanear" actual={pestana} setear={setPestana} texto="Escanear" icono="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M4 12h16" />
-        <Tab id="resultados" actual={pestana} setear={setPestana} texto="Resultados" icono="M5 20V10M12 20V4M19 20v-7" />
-      </nav>
+      {vista === 'escanear' && <Escanear />}
+      {vista === 'resultados' && <Resultados local={local} />}
+      {pestanas.length > 1 && <nav className="nav" aria-label="Secciones">
+        {pestanas.includes('crear') && <Tab id="crear" actual={vista} setear={(p) => { setBase(null); setPestana(p); }} texto="Crear" icono="M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM12 8v8M8 12h8" />
+        {pestanas.includes('drops') && <Tab id="drops" actual={vista} setear={(p) => { setAviso(''); setPestana(p); }} texto="Mis drops" icono="M4 6h16M4 12h16M4 18h10" />
+        {pestanas.includes('escanear') && <Tab id="escanear" actual={vista} setear={setPestana} texto="Escanear" icono="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M4 12h16" />
+        {pestanas.includes('resultados') && <Tab id="resultados" actual={vista} setear={setPestana} texto="Resultados" icono="M5 20V10M12 20V4M19 20v-7" />}
+      </nav>}
     </Marco>
   );
 }
 
-function Marco({ local, children, alAyuda }) {
+function Marco({ local, rol, children, alAyuda }) {
   return (
     <div className="app">
       <header className="barra">
         <div>
           <span className="marca"><img src="/logo.svg" alt="Caserito" style={{ height: 30, display: 'block' }} /><small style={{ color: 'var(--amarillo)', fontWeight: 800 }}>Local</small></span>
-          {local && <small>{local.nombre}</small>}
+          {local && <small>{local.nombre}{rol && rol !== 'Dueño' ? ` · ${rol}` : ''}</small>}
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
           {alAyuda && <button className="pildora" style={{ background: 'transparent', color: 'var(--amarillo)', borderColor: 'var(--amarillo)' }} onClick={alAyuda}>Ayuda</button>}

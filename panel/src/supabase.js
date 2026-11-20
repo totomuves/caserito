@@ -35,6 +35,23 @@ export function leerInvitacion() {
     return localStorage.getItem(CLAVE_INV);
   } catch { return null; }
 }
+// Link para sumarse al equipo de un local (?equipo=XXXX)
+const CLAVE_EQ = 'caserito_equipo';
+export function leerInvitacionEquipo() {
+  try {
+    const u = new URL(window.location.href);
+    const c = u.searchParams.get('equipo');
+    if (c) {
+      localStorage.setItem(CLAVE_EQ, c.trim().toUpperCase());
+      u.searchParams.delete('equipo');
+      window.history.replaceState({}, '', u.pathname + u.search + u.hash);
+    }
+    return localStorage.getItem(CLAVE_EQ);
+  } catch { return null; }
+}
+export function olvidarInvitacionEquipo() {
+  try { localStorage.removeItem(CLAVE_EQ); } catch { /* nada */ }
+}
 export function olvidarInvitacion() {
   try { localStorage.removeItem(CLAVE_INV); } catch { /* nada */ }
 }
