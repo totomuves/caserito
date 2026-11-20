@@ -149,7 +149,7 @@ function Marco({ local, children, alAyuda }) {
     <div className="app">
       <header className="barra">
         <div>
-          <span className="marca letrista">Caserito · Local</span>
+          <span className="marca"><img src="/logo.svg" alt="Caserito" style={{ height: 30, display: 'block' }} /><small style={{ color: 'var(--amarillo)', fontWeight: 800 }}>Local</small></span>
           {local && <small>{local.nombre}</small>}
         </div>
         <div style={{ display: 'flex', gap: 6 }}>

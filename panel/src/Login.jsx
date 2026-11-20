@@ -30,7 +30,7 @@ export default function Login() {
 
   return (
     <div className="app">
-      <header className="barra"><span className="marca letrista">Caserito · Local</span></header>
+      <header className="barra"><span className="marca"><img src="/logo.svg" alt="Caserito" style={{ height: 30, display: 'block' }} /><small style={{ color: 'var(--amarillo)', fontWeight: 800 }}>Local</small></span></header>
       <div className="toldo" />
       <form className="contenido" onSubmit={enviar}>
         <h1 className="letrista">{modo === 'entrar' ? 'ENTRA A TU LOCAL' : modo === 'crear' ? 'INSCRIBE TU LOCAL' : 'RECUPERA TU CLAVE'}</h1>

@@ -4,6 +4,7 @@ import { supabase } from './supabase';
 import { C, F, letrista, CATEGORIAS, textoCategoria, tieneCategoria, precio, cuadras } from './tema';
 import { Ola, Brillo, Pildora, EtiquetaPrecio, Boton } from './componentes';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR } from './idioma';
+import Logo from './Logo';
 
 function etiquetaPara(d, hora, t, cuad) {
   if (d.tipo === 'grupal') return t('¡ENTRE TODOS!', 'GROUP DROP · ¡ENTRE TODOS!');
@@ -60,7 +61,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
       <View style={{ backgroundColor: C.amarillo, paddingHorizontal: 18, paddingTop: 10, paddingBottom: 4 }}>
         <Brillo tam={20} style={{ position: 'absolute', left: 14, top: 18 }} />
         <Brillo tam={14} style={{ position: 'absolute', right: 40, top: 12 }} />
-        <Text style={{ ...letrista, fontSize: 40, color: C.rojo, textShadowColor: C.azul, textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 0, paddingLeft: 26 }}>CASERITO</Text>
+        <Logo ancho={190} style={{ marginLeft: 22, marginTop: 4, marginBottom: 2 }} />
         <Text style={{ fontFamily: F.negrita, fontSize: 13, paddingLeft: 26 }}>{t('Barrio Italia · tu barrio te tiene ofertas', 'Barrio Italia · local deals, like a local')}</Text>
         <Pressable onPress={() => setTur(!tur)} accessibilityRole="switch" accessibilityState={{ checked: tur }}
           style={{ position: 'absolute', right: 68, top: 14, height: 44, paddingHorizontal: 12, borderRadius: 22, borderWidth: 2.5, borderColor: C.negro, backgroundColor: tur ? C.negro : C.papel, justifyContent: 'center' }}>

@@ -12,7 +12,11 @@
       "permissions": [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION"
-      ]
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#FFD100"
+      }
     },
     "ios": {
       "bundleIdentifier": "cl.caserito.app",
@@ -48,7 +52,9 @@
       "themeColor": "#FFD100",
       "backgroundColor": "#F3E6CC",
       "lang": "es",
-      "description": "Caserito — tu barrio te tiene ofertas. Drops de Barrio Italia."
-    }
+      "description": "Caserito — tu barrio te tiene ofertas. Drops de Barrio Italia.",
+      "favicon": "./assets/favicon.png"
+    },
+    "icon": "./assets/icon.png"
   }
 }
