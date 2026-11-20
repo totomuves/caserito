@@ -80,7 +80,7 @@ export default function ConfigurarLocal({ usuario, local, alGuardar, alCancelar,
     };
     // Repetidas: solo si ya existe la columna (SQL 014) o si el local las configuró
     if ((local && 'repetidas_necesarias' in local) || repNecesarias) {
-      campos.repetidas_necesarias = repNecesarias && repPremio.trim() ? Number(repNecesarias) : null;
+      campos.repetidas_necesarias = repNecesarias && repPremio.trim() ? Math.min(20, Math.max(2, Number(repNecesarias))) : null;
       campos.repetidas_premio = repNecesarias && repPremio.trim() ? repPremio.trim() : null;
     }
     if (pos) campos.ubicacion = `SRID=4326;POINT(${pos.lng} ${pos.lat})`;
@@ -145,11 +145,9 @@ export default function ConfigurarLocal({ usuario, local, alGuardar, alCancelar,
       <div className="tarjeta">
         <b>Láminas repetidas</b>
         <p className="ayuda">Cada vez que un caserito vuelve a canjear en tu local, gana una lámina repetida. Elige qué le das cuando junta varias: es un buen motivo para que vuelva.</p>
-        <label className="campo">¿Cuántas repetidas?
-          <select value={repNecesarias} onChange={(e) => setRepNecesarias(e.target.value)}>
-            <option value="">No cambio repetidas</option>
-            {[3, 4, 5, 6, 8, 10].map((n) => <option key={n} value={n}>{n} repetidas</option>)}
-          </select>
+        <label className="campo">¿Cuántas repetidas pides para el cambio? (de 2 a 20; vacío = no cambio repetidas)
+          <input type="number" inputMode="numeric" min={2} max={20} value={repNecesarias} placeholder="Ej: 5"
+            onChange={(e) => setRepNecesarias(e.target.value.replace(/\D/g, '').slice(0, 2))} />
         </label>
         {repNecesarias && (
           <label className="campo">¿Qué das a cambio?

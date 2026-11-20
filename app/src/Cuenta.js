@@ -33,9 +33,11 @@ export default function Cuenta({ usuario, alAyuda }) {
       <View style={{ backgroundColor: C.amarillo, paddingHorizontal: 20, paddingTop: 16, paddingBottom: 4 }}>
         <Text style={{ ...letrista, fontSize: 30 }}>{apodoGuardado ? apodoGuardado.toUpperCase() : t('TÚ', "TÚ · YOU")}</Text>
         <Text style={{ fontFamily: F.negrita, fontSize: 14 }}>
-          {anonimo ? t('Caserito de prueba · sin cuenta', "Caserito de prueba · no account yet") : usuario.email}
-          {' · '}{laminas} {laminas === 1 ? t('lámina', "lámina") : t('láminas', "láminas")}
+          {anonimo
+            ? t('Conectado como invitado · todavía sin correo', 'Conectado como invitado · no email yet')
+            : t(`Conectado como ${usuario.email}`, `Conectado como ${usuario.email}`)}
         </Text>
+        <Text style={{ fontFamily: F.normal, fontSize: 13 }}>{laminas} {laminas === 1 ? t('lámina', "lámina") : t('láminas', "láminas")} {t('en tu álbum', 'en tu álbum')}</Text>
       </View>
       <Ola color={C.amarillo} />
 
