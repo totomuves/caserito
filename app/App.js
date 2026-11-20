@@ -29,6 +29,7 @@ function Caserito() {
   const [abierto, setAbierto] = useState(null);
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(true);
+  const [lejos, setLejos] = useState(false);
 
   // 1) Sesión: los caseritos entran sin registrarse (ingreso anónimo)
   useEffect(() => {
@@ -62,8 +63,17 @@ function Caserito() {
   // 3) Drops vigentes cerca
   const cargar = useCallback(async () => {
     if (!usuario || !pos) return;
-    const { data, error } = await supabase.rpc('drops_cerca', { lat: pos.lat, lng: pos.lng, radio_m: 3000 });
-    if (error) setError(explicar(error)); else { setError(''); setDrops(data || []); }
+    let { data, error } = await supabase.rpc('drops_cerca', { lat: pos.lat, lng: pos.lng, radio_m: 3000 });
+    // Lejos de Barrio Italia (o sin drops cerca): mostramos los del barrio, para que cualquiera pueda mirar
+    let lejos = false;
+    if (!error && (!data || data.length === 0) && !pos.aprox) {
+      const r = await supabase.rpc('drops_cerca', { lat: BARRIO_ITALIA.lat, lng: BARRIO_ITALIA.lng, radio_m: 3000 });
+      if (!r.error && r.data && r.data.length) {
+        lejos = true;
+        data = r.data.map((d) => ({ ...d, dentro_del_radio: false, cuadras: Math.max(d.cuadras, 99) }));
+      }
+    }
+    if (error) setError(explicar(error)); else { setError(''); setDrops(data || []); setLejos(lejos); }
     setCargando(false);
   }, [usuario, pos]);
 
@@ -92,9 +102,9 @@ function Caserito() {
           ) : pestana === 'ayuda' ? (
             <Ayuda alCerrar={() => setPestana('inicio')} />
           ) : pestana === 'inicio' ? (
-            <Inicio drops={drops} usuario={usuario} pos={pos} alAbrir={abrir} alRefrescar={cargar} alAyuda={() => setPestana('ayuda')} />
+            <Inicio drops={drops} usuario={usuario} pos={pos} lejos={lejos} alAbrir={abrir} alRefrescar={cargar} alAyuda={() => setPestana('ayuda')} />
           ) : pestana === 'mapa' ? (
-            <Mapa drops={drops} pos={pos} alAbrir={abrir} />
+            <Mapa drops={drops} pos={lejos ? { ...BARRIO_ITALIA } : pos} alAbrir={abrir} />
           ) : (
             <Album usuario={usuario} alIrAlMapa={() => setPestana('mapa')} />
           )}

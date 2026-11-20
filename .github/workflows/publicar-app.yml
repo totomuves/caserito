@@ -46,6 +46,10 @@ jobs:
         if: steps.token.outputs.hay == 'si'
         run: eas update:configure --platform all --non-interactive
 
+      - name: Canal fijo "main" (link que siempre abre la última versión)
+        if: steps.token.outputs.hay == 'si'
+        run: eas channel:create main --non-interactive || echo "El canal main ya existe"
+
       - name: Publicar
         if: steps.token.outputs.hay == 'si'
         env:

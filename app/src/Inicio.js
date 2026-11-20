@@ -14,7 +14,7 @@ function etiquetaPara(d, hora, t, cuad) {
   return cuad(d.cuadras).toUpperCase();
 }
 
-export default function Inicio({ drops, usuario, alAbrir, alRefrescar, alAyuda }) {
+export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda }) {
   const [filtro, setFiltro] = useState('todo');
   const [gustos, setGustos] = useState([]);
   const [i, setI] = useState(0);
@@ -72,6 +72,14 @@ export default function Inicio({ drops, usuario, alAbrir, alRefrescar, alAyuda }
         </Pressable>
       </View>
       <Ola color={C.amarillo} />
+
+      {lejos ? (
+        <View style={{ marginHorizontal: 16, marginBottom: 6, backgroundColor: C.papel, borderWidth: 2, borderColor: C.negro, borderRadius: 14, padding: 10 }}>
+          <Text style={{ fontFamily: F.media, fontSize: 13 }}>
+            {t('Estás lejos de Barrio Italia: te mostramos sus drops. Para canjear, tienes que estar a 1 cuadra del local.', 'You’re far from Barrio Italia: here are its drops. To redeem, you need to be 1 cuadra (block) from the shop.')}
+          </Text>
+        </View>
+      ) : null}
 
       <View style={{ marginHorizontal: 16, marginTop: 8, backgroundColor: C.negro, borderRadius: 18, padding: 16, gap: 10 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
