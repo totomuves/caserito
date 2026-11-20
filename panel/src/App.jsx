@@ -132,7 +132,8 @@ export default function App() {
     return (
       <Marco local={local}>
         <ConfigurarLocal usuario={sesion.user} local={local}
-          alGuardar={(l) => { setLocal(l); setEditandoLocal(false); }} alCancelar={() => setEditandoLocal(false)} />
+          alGuardar={(l) => { setLocal(l); setEditandoLocal(false); }} alCancelar={() => setEditandoLocal(false)}
+          esDueno={rol === 'Dueño'} alEliminar={() => window.location.reload()} />
       </Marco>
     );
   }

@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { supabase, explicar } from './supabase.js';
 import { COCINAS } from './frases.js';
 import { GRUPOS, CON_COCINA, MAX_CATEGORIAS } from './categorias.js';
+import EliminarLocal from './EliminarLocal.jsx';
 
 // Sirve para inscribir un local nuevo o editar el propio (si recibe "local")
-export default function ConfigurarLocal({ usuario, local, alGuardar, alCancelar }) {
+export default function ConfigurarLocal({ usuario, local, alGuardar, alCancelar, esDueno, alEliminar }) {
   const editando = !!local;
   const [nombre, setNombre] = useState(local ? local.nombre : '');
   const [categorias, setCategorias] = useState(local ? (local.categorias && local.categorias.length ? local.categorias : [local.categoria]) : []);
@@ -143,6 +144,12 @@ export default function ConfigurarLocal({ usuario, local, alGuardar, alCancelar 
       {error && <div className="error">{error}</div>}
       <button className="boton grande" disabled={guardando || subiendo}>{editando ? 'Guardar cambios' : 'Guardar local'}</button>
       {editando && <button type="button" className="pildora" onClick={alCancelar}>Cancelar</button>}
+      {editando && esDueno && (
+        <div style={{ marginTop: 24, paddingTop: 16, borderTop: '2px dashed #CDBF9F', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <b>Zona peligrosa</b>
+          <EliminarLocal local={local} texto="Eliminar mi local" alEliminar={alEliminar} />
+        </div>
+      )}
     </form>
   );
 }

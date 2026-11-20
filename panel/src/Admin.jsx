@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, explicar } from './supabase.js';
+import EliminarLocal from './EliminarLocal.jsx';
 import { formatoPrecio } from './frases.js';
 import { textoCategoria } from './categorias.js';
 import Qr, { URL_APP } from './Qr.jsx';
@@ -110,6 +111,7 @@ function Locales() {
               ? <button className="boton" style={{ flex: 1, minHeight: 44 }} onClick={() => cambiar(l, { aprobado: true })}>Aprobar</button>
               : <button className="pildora" style={{ flex: 1 }} onClick={() => cambiar(l, { activo: !l.activo })}>{l.activo ? 'Pausar' : 'Reactivar'}</button>}
           </div>
+          <EliminarLocal local={l} alEliminar={recargar} />
         </div>
       ))}
     </>
