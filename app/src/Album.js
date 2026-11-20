@@ -3,6 +3,7 @@ import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { supabase, explicar } from './supabase';
 import { C, F, letrista, textoCategoria } from './tema';
 import { Ola, Brillo, IconoCategoria, Boton } from './componentes';
+import { useIdioma } from './idioma';
 
 const MARCOS = [
   { fondo: C.amarillo, num: C.negro, texto: C.negro },
@@ -16,6 +17,7 @@ export default function Album({ usuario, alIrAlMapa }) {
   const [mias, setMias] = useState({});
   const [sel, setSel] = useState(null);
   const [error, setError] = useState('');
+  const { t } = useIdioma();
 
   useEffect(() => {
     (async () => {
@@ -41,30 +43,30 @@ export default function Album({ usuario, alIrAlMapa }) {
     <ScrollView contentContainerStyle={{ paddingBottom: 110 }}>
       <View style={{ backgroundColor: C.amarillo, paddingHorizontal: 18, paddingTop: 10, paddingBottom: 4 }}>
         <Brillo tam={22} style={{ position: 'absolute', right: 28, top: 16 }} />
-        <Text style={{ fontFamily: F.negrita, fontSize: 13 }}>Tu álbum de</Text>
+        <Text style={{ fontFamily: F.negrita, fontSize: 13 }}>{t('Tu álbum de', 'Your sticker album · Álbum de')}</Text>
         <Text style={{ ...letrista, fontSize: 34, color: C.rojo, textShadowColor: C.azul, textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 0 }}>BARRIO ITALIA</Text>
       </View>
       <Ola color={C.amarillo} />
 
       <View style={{ marginHorizontal: 16, marginTop: 6, backgroundColor: C.negro, borderRadius: 18, padding: 16, gap: 10 }}>
-        <Text style={{ ...letrista, fontSize: 30, color: C.amarillo }}>{tengo} DE {total}</Text>
+        <Text style={{ ...letrista, fontSize: 30, color: C.amarillo }}>{tengo} {t('DE', 'OF')} {total}</Text>
         <View style={{ height: 14, borderRadius: 7, backgroundColor: '#3A3A3A', overflow: 'hidden' }}>
           <View style={{ width: total ? `${(tengo / total) * 100}%` : '0%', height: '100%', backgroundColor: C.amarillo }} />
         </View>
         <Text style={{ fontFamily: F.media, fontSize: 13, color: C.papel }}>
-          {hitos.map((h) => `${h} láminas${tengo >= h ? ' ✓' : ''}`).join('  ·  ')}
+          {hitos.map((h) => `${h} ${t('láminas', 'stickers')}${tengo >= h ? ' ✓' : ''}`).join('  ·  ')}
         </Text>
-        <Text style={{ fontFamily: F.normal, fontSize: 12, color: C.papel }}>Ganas la lámina de un local con tu primer canje ahí.</Text>
+        <Text style={{ fontFamily: F.normal, fontSize: 12, color: C.papel }}>{t('Ganas la lámina de un local con tu primer canje ahí.', 'Get a shop’s sticker (lámina) with your first redeem there. Collect them all!')}</Text>
       </View>
 
-      <Text style={{ ...letrista, fontSize: 20, marginHorizontal: 16, marginTop: 18, marginBottom: 10 }}>LAS LÁMINAS</Text>
+      <Text style={{ ...letrista, fontSize: 20, marginHorizontal: 16, marginTop: 18, marginBottom: 10 }}>{t('LAS LÁMINAS', 'THE STICKERS · LÁMINAS')}</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12, gap: 9 }}>
         {locales.map((l, k) => {
           const ganada = !!mias[l.id];
           const m = MARCOS[k % 3];
           const activa = sel === k;
           return (
-            <Pressable key={l.id} onPress={() => setSel(k)} accessibilityLabel={`Lámina ${k + 1}, ${ganada ? l.nombre + ', ganada' : textoCategoria(l.categoria) + ', te falta'}`}
+            <Pressable key={l.id} onPress={() => setSel(k)} accessibilityLabel={`${t('Lámina', 'Sticker')} ${k + 1}, ${ganada ? l.nombre + t(', ganada', ', collected') : textoCategoria(l.categoria) + t(', te falta', ', missing')}`}
               style={{ width: '22.6%', height: 118, borderRadius: 12, borderWidth: activa ? 3 : 2.5, borderStyle: ganada || activa ? 'solid' : 'dashed', borderColor: activa ? C.rojo : ganada ? C.negro : '#8A7A66', backgroundColor: ganada ? m.fondo : 'transparent', transform: [{ rotate: ganada ? GIROS[k % 4] : '0deg' }], padding: 5, justifyContent: 'space-between' }}>
               <Text style={{ ...letrista, fontSize: 13, color: ganada ? m.num : '#8A7A66' }}>{k + 1}</Text>
               <View style={{ alignItems: 'center' }}>
@@ -89,15 +91,15 @@ export default function Album({ usuario, alIrAlMapa }) {
       {elegido && (
         <View style={{ margin: 16, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: 18, padding: 16, gap: 8 }}>
           <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.rojoTexto, textTransform: 'uppercase' }}>
-            Lámina {sel + 1} · {mias[elegido.id] ? 'ganada' : 'te falta'}
+            {t('Lámina', 'Sticker')} {sel + 1} · {mias[elegido.id] ? t('ganada', 'collected') : t('te falta', 'missing')}
           </Text>
           <Text style={{ ...letrista, fontSize: 22 }}>{mias[elegido.id] ? elegido.nombre.toUpperCase() : textoCategoria(elegido.categoria).toUpperCase()}</Text>
           <Text style={{ fontFamily: F.normal, fontSize: 14 }}>
             {mias[elegido.id]
-              ? `La ganaste el ${new Date(mias[elegido.id]).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' })}${elegido.producto_estrella ? ' · producto estrella: ' + elegido.producto_estrella : ''}.`
-              : 'Canjea cualquier drop de este local y la lámina es tuya. Búscalo en el mapa.'}
+              ? `${t('La ganaste el', 'Collected on')} ${new Date(mias[elegido.id]).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' })}${elegido.producto_estrella ? ' · ' + t('producto estrella', 'must-try') + ': ' + elegido.producto_estrella : ''}.`
+              : t('Canjea cualquier drop de este local y la lámina es tuya. Búscalo en el mapa.', 'Redeem any drop at this shop and the sticker is yours. Find it on the map.')}
           </Text>
-          {!mias[elegido.id] && <Boton texto="Ver en el mapa" onPress={alIrAlMapa} />}
+          {!mias[elegido.id] && <Boton texto={t("Ver en el mapa", "See on map")} onPress={alIrAlMapa} />}
         </View>
       )}
     </ScrollView>

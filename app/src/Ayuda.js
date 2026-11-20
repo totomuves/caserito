@@ -3,6 +3,7 @@ import { Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { C, F, letrista } from './tema';
 import { Ola } from './componentes';
+import { useIdioma } from './idioma';
 
 // Manual para caseritos: corto, en pasos, con lo que más se pregunta
 const PASOS = [
@@ -22,25 +23,45 @@ const DUDAS = [
   ['¿Cómo apago lo que Caserito aprendió?', 'En Inicio, abajo, en "Caserito aprendió que…": toca un gusto para apagarlo.'],
 ];
 
+const PASOS_TUR = [
+  ['Check the drops', 'A drop is a deal from a local shop in Barrio Italia: few units, ends soon. Find them on Home (the pizarra) and on the Map.'],
+  ['Join · Súmate', 'Tap a drop and "Join". You don’t need to be at the shop yet.'],
+  ['Walk there', 'When you’re 1 cuadra (block, ~100 m) away, your QR code shows up. Show it at the counter (la caja) and pay the drop price.'],
+  ['Collect láminas', 'Your first redeem at each shop gives you its sticker for the Barrio Italia album. Collect more, win prizes.'],
+  ['Leave a review', 'After redeeming you can rate the shop. Only buyers can review: real reviews, no fakes.'],
+];
+
+const DUDAS_TUR = [
+  ['What’s a “group drop”?', 'A deal that gets better the more people redeem it: e.g. 10% with 10 people, 20% with 25. Bring your friends!'],
+  ['What’s a “mystery drop”?', 'You find out what it is at the shop: a discount, a gift or the golden sticker.'],
+  ['What do the underlined words mean?', 'Shops write in their own slang (Chilean, Venezuelan, Peruvian…). Tap an underlined word to see its meaning. ¡Bacán!'],
+  ['How far is a cuadra?', 'About 100 m, around a 1–2 minute walk. We show meters and minutes next to it.'],
+  ['Do I need an account?', 'No. Caserito remembers you on this phone without email or password.'],
+  ['Prices?', 'All prices are in Chilean pesos (CLP). Pay at the shop as usual.'],
+];
+
 export default function Ayuda({ alCerrar }) {
   const web = Platform.OS === 'web';
+  const { tur, t } = useIdioma();
+  const pasos = tur ? PASOS_TUR : PASOS;
+  const dudas = tur ? DUDAS_TUR : DUDAS;
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 110 }}>
       <View style={{ backgroundColor: C.amarillo, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-        <Pressable onPress={alCerrar} accessibilityRole="button" accessibilityLabel="Volver"
+        <Pressable onPress={alCerrar} accessibilityRole="button" accessibilityLabel={t('Volver', 'Back')}
           style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 2.5, borderColor: C.negro, backgroundColor: C.papel, alignItems: 'center', justifyContent: 'center' }}>
           <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={C.negro} strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round"><Path d="M15 18l-6-6 6-6" /></Svg>
         </Pressable>
-        <Text style={{ ...letrista, fontSize: 26, color: C.rojo, textShadowColor: C.azul, textShadowOffset: { width: 2, height: 2 }, textShadowRadius: 0 }}>¿CÓMO FUNCIONA?</Text>
+        <Text style={{ ...letrista, fontSize: 26, color: C.rojo, textShadowColor: C.azul, textShadowOffset: { width: 2, height: 2 }, textShadowRadius: 0 }}>{t('¿CÓMO FUNCIONA?', 'HOW IT WORKS')}</Text>
       </View>
       <Ola color={C.amarillo} />
 
       <View style={{ paddingHorizontal: 16, gap: 12 }}>
-        {PASOS.map(([t, d], i) => (
-          <View key={t} style={{ flexDirection: 'row', gap: 12, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: 16, padding: 14 }}>
+        {pasos.map(([titulo, d], i) => (
+          <View key={titulo} style={{ flexDirection: 'row', gap: 12, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: 16, padding: 14 }}>
             <Text style={{ ...letrista, fontSize: 30, color: C.rojo, width: 26 }}>{i + 1}</Text>
             <View style={{ flex: 1, gap: 4 }}>
-              <Text style={{ fontFamily: F.negrita, fontSize: 16 }}>{t}</Text>
+              <Text style={{ fontFamily: F.negrita, fontSize: 16 }}>{titulo}</Text>
               <Text style={{ fontFamily: F.normal, fontSize: 15, lineHeight: 21 }}>{d}</Text>
             </View>
           </View>
@@ -48,15 +69,15 @@ export default function Ayuda({ alCerrar }) {
 
         {web && (
           <View style={{ backgroundColor: C.negro, borderRadius: 16, padding: 14, gap: 4 }}>
-            <Text style={{ fontFamily: F.negrita, fontSize: 15, color: C.amarillo }}>Tenla a mano</Text>
+            <Text style={{ fontFamily: F.negrita, fontSize: 15, color: C.amarillo }}>{t('Tenla a mano', 'Keep it handy')}</Text>
             <Text style={{ fontFamily: F.normal, fontSize: 14, lineHeight: 20, color: C.papel }}>
-              En iPhone: botón Compartir → "Agregar a pantalla de inicio". En Android: menú ⋮ → "Agregar a la pantalla principal". Queda como una app.
+              {t('En iPhone: botón Compartir → "Agregar a pantalla de inicio". En Android: menú ⋮ → "Agregar a la pantalla principal". Queda como una app.', 'iPhone: Share → "Add to Home Screen". Android: menu ⋮ → "Add to Home screen". It works like an app.')}
             </Text>
           </View>
         )}
 
-        <Text style={{ ...letrista, fontSize: 21, marginTop: 8 }}>PREGUNTAS FRECUENTES</Text>
-        {DUDAS.map(([p, r]) => (
+        <Text style={{ ...letrista, fontSize: 21, marginTop: 8 }}>{t('PREGUNTAS FRECUENTES', 'FAQ · PREGUNTAS')}</Text>
+        {dudas.map(([p, r]) => (
           <View key={p} style={{ borderTopWidth: 2, borderStyle: 'dashed', borderColor: '#CDBF9F', paddingTop: 10, gap: 4 }}>
             <Text style={{ fontFamily: F.negrita, fontSize: 15 }}>{p}</Text>
             <Text style={{ fontFamily: F.normal, fontSize: 15, lineHeight: 21 }}>{r}</Text>
