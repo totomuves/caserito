@@ -35,3 +35,5 @@ jobs:
         run: npx expo install --check
       - name: Empaquetar para Android
         run: npx expo export --platform android --output-dir dist
+      - name: Empaquetar versión web
+        run: npx expo export --platform web --output-dir dist-web

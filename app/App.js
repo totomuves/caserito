@@ -12,6 +12,7 @@ import Inicio from './src/Inicio';
 import Mapa from './src/Mapa';
 import Album from './src/Album';
 import Drop from './src/Drop';
+import Ayuda from './src/Ayuda';
 
 export default function App() {
   const [fuentes] = useFonts({ LuckiestGuy_400Regular, Archivo_400Regular, Archivo_600SemiBold, Archivo_800ExtraBold });
@@ -82,8 +83,10 @@ export default function App() {
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}><ActivityIndicator color={C.rojo} size="large" /></View>
           ) : dropAbierto ? (
             <Drop drop={dropAbierto} usuario={usuario} alCerrar={() => { setAbierto(null); cargar(); }} />
+          ) : pestana === 'ayuda' ? (
+            <Ayuda alCerrar={() => setPestana('inicio')} />
           ) : pestana === 'inicio' ? (
-            <Inicio drops={drops} usuario={usuario} pos={pos} alAbrir={abrir} alRefrescar={cargar} />
+            <Inicio drops={drops} usuario={usuario} pos={pos} alAbrir={abrir} alRefrescar={cargar} alAyuda={() => setPestana('ayuda')} />
           ) : pestana === 'mapa' ? (
             <Mapa drops={drops} pos={pos} alAbrir={abrir} />
           ) : (

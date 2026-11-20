@@ -6,7 +6,7 @@
 
 | Carpeta | Qué es | Tecnología |
 |---|---|---|
-| `app/` | App del cliente (Inicio con pizarra, Mapa, Drop con QR, Álbum) | Expo SDK 58 (React Native) |
+| `app/` | App del cliente (Inicio con pizarra, Mapa, Drop con QR, Álbum, Ayuda). Sale como app (Expo) y como web | Expo SDK 58 (React Native + web) |
 | `panel/` | Panel del local (crear drop con frases con modismos, escanear QR, resultados y reseñas) y admin general | React + Vite (web/PWA) |
 | `supabase/` | Base de datos (schema `caserito`) | Supabase / Postgres + PostGIS |
 
@@ -34,3 +34,7 @@ La llave del cliente es la *publishable* (pública por diseño). La `service_rol
 - **App:** `cd app && npm install && npx expo start`, y abrir con **Expo Go** en el celular.
 
 Cada push corre **Revisar build** (GitHub Actions): compila el panel y empaqueta la app para Android.
+
+## Publicar la web del cliente (Vercel)
+
+Proyecto aparte en Vercel con **Root Directory = `app`**. El archivo `app/vercel.json` ya define el build (`npx expo export --platform web`) y la carpeta `dist`.

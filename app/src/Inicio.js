@@ -13,7 +13,7 @@ function etiquetaPara(d, hora) {
   return cuadras(d.cuadras).toUpperCase();
 }
 
-export default function Inicio({ drops, usuario, alAbrir, alRefrescar }) {
+export default function Inicio({ drops, usuario, alAbrir, alRefrescar, alAyuda }) {
   const [filtro, setFiltro] = useState('todo');
   const [gustos, setGustos] = useState([]);
   const [i, setI] = useState(0);
@@ -60,6 +60,10 @@ export default function Inicio({ drops, usuario, alAbrir, alRefrescar }) {
         <Brillo tam={14} style={{ position: 'absolute', right: 40, top: 12 }} />
         <Text style={{ ...letrista, fontSize: 40, color: C.rojo, textShadowColor: C.azul, textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 0, paddingLeft: 26 }}>CASERITO</Text>
         <Text style={{ fontFamily: F.negrita, fontSize: 13, paddingLeft: 26 }}>Barrio Italia · tu barrio te tiene ofertas</Text>
+        <Pressable onPress={alAyuda} accessibilityRole="button" accessibilityLabel="¿Cómo funciona Caserito?"
+          style={{ position: 'absolute', right: 16, top: 14, minWidth: 44, height: 44, paddingHorizontal: 14, borderRadius: 22, borderWidth: 2.5, borderColor: C.negro, backgroundColor: C.papel, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ ...letrista, fontSize: 20 }}>?</Text>
+        </Pressable>
       </View>
       <Ola color={C.amarillo} />
 

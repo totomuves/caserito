@@ -7,6 +7,7 @@ import Escanear from './Escanear.jsx';
 import Resultados from './Resultados.jsx';
 import Admin from './Admin.jsx';
 import MisDrops from './MisDrops.jsx';
+import Ayuda from './Ayuda.jsx';
 
 export default function App() {
   const [sesion, setSesion] = useState(undefined);
@@ -20,6 +21,7 @@ export default function App() {
   const [base, setBase] = useState(null);
   const [aviso, setAviso] = useState('');
   const [avisoInv, setAvisoInv] = useState('');
+  const [ayuda, setAyuda] = useState(false);
 
   useEffect(() => { leerInvitacion(); }, []);
 
@@ -80,7 +82,8 @@ export default function App() {
       </Marco>
     );
   }
-  if (!local) return <Marco><ConfigurarLocal usuario={sesion.user} alGuardar={setLocal} /></Marco>;
+  if (ayuda) return <Marco local={local}><Ayuda alCerrar={() => setAyuda(false)} /></Marco>;
+  if (!local) return <Marco alAyuda={() => setAyuda(true)}><ConfigurarLocal usuario={sesion.user} alGuardar={setLocal} /></Marco>;
   if (editandoLocal) {
     return (
       <Marco local={local}>
@@ -91,7 +94,7 @@ export default function App() {
   }
 
   return (
-    <Marco local={local}>
+    <Marco local={local} alAyuda={() => setAyuda(true)}>
       {avisoInv && <div className="tarjeta" style={{ margin: '16px 16px 0', borderColor: 'var(--azul)' }}>{avisoInv}</div>}
       {!local.aprobado && (
         <div className="tarjeta" style={{ margin: '16px 16px 0', borderColor: 'var(--rojo)' }}>
@@ -124,7 +127,7 @@ export default function App() {
   );
 }
 
-function Marco({ local, children }) {
+function Marco({ local, children, alAyuda }) {
   return (
     <div className="app">
       <header className="barra">
@@ -132,8 +135,11 @@ function Marco({ local, children }) {
           <span className="marca letrista">Caserito · Local</span>
           {local && <small>{local.nombre}</small>}
         </div>
-        <button className="pildora" style={{ background: 'transparent', color: 'var(--papel)', borderColor: 'var(--papel)' }}
-          onClick={() => supabase.auth.signOut()}>Salir</button>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {alAyuda && <button className="pildora" style={{ background: 'transparent', color: 'var(--amarillo)', borderColor: 'var(--amarillo)' }} onClick={alAyuda}>Ayuda</button>}
+          <button className="pildora" style={{ background: 'transparent', color: 'var(--papel)', borderColor: 'var(--papel)' }}
+            onClick={() => supabase.auth.signOut()}>Salir</button>
+        </div>
       </header>
       <div className="toldo" />
       {children}

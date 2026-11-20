@@ -39,6 +39,16 @@
     },
     "updates": {
       "url": "https://u.expo.dev/ad8f9042-40e8-4c50-ad1f-c9075bf93abd"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "name": "Caserito",
+      "shortName": "Caserito",
+      "themeColor": "#FFD100",
+      "backgroundColor": "#F3E6CC",
+      "lang": "es",
+      "description": "Caserito — tu barrio te tiene ofertas. Drops de Barrio Italia."
     }
   }
 }
