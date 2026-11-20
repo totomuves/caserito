@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { supabase, explicar } from './supabase';
 import { C, F, letrista, textoCategoria } from './tema';
 import { Ola, Brillo, IconoCategoria, Boton } from './componentes';
@@ -19,7 +19,7 @@ export default function Album({ usuario, alIrAlMapa }) {
 
   useEffect(() => {
     (async () => {
-      const l = await supabase.from('locales').select('id, nombre, categoria, producto_estrella, creado_at').eq('activo', true).eq('aprobado', true).eq('barrio', 'Barrio Italia').order('creado_at');
+      const l = await supabase.from('locales').select('id, nombre, categoria, producto_estrella, logo_url, creado_at').eq('activo', true).eq('aprobado', true).eq('barrio', 'Barrio Italia').order('creado_at');
       if (l.error) { setError(explicar(l.error)); return; }
       const m = await supabase.from('laminas').select('local_id, ganada_at').eq('usuario_id', usuario.id);
       const mapa = {};
@@ -70,7 +70,9 @@ export default function Album({ usuario, alIrAlMapa }) {
               <View style={{ alignItems: 'center' }}>
                 {ganada ? (
                   <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: C.papel, borderWidth: 2, borderColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
-                    <IconoCategoria categoria={l.categoria} />
+                    {l.logo_url
+                      ? <Image source={{ uri: l.logo_url }} style={{ width: 42, height: 42, borderRadius: 21 }} accessibilityIgnoresInvertColors />
+                      : <IconoCategoria categoria={l.categoria} />}
                   </View>
                 ) : (
                   <Text style={{ ...letrista, fontSize: 30, color: '#8A7A66' }}>?</Text>

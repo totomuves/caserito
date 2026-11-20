@@ -79,3 +79,18 @@ begin
   if auth.uid() is not null and not caserito.es_admin() then new.aprobado := false; end if;
   return new;
 end $$;
+
+-- ---------- LOGOS DE LOCALES (Storage) ----------
+-- Carpeta pública "caserito-logos"; cada dueño sube solo dentro de su carpeta (su id).
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('caserito-logos', 'caserito-logos', true, 524288, array['image/webp','image/jpeg','image/png'])
+on conflict (id) do nothing;
+
+create policy "caserito logos: ver" on storage.objects for select
+  using (bucket_id = 'caserito-logos');
+create policy "caserito logos: subir propio" on storage.objects for insert to authenticated
+  with check (bucket_id = 'caserito-logos' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy "caserito logos: cambiar propio" on storage.objects for update to authenticated
+  using (bucket_id = 'caserito-logos' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy "caserito logos: borrar propio" on storage.objects for delete to authenticated
+  using (bucket_id = 'caserito-logos' and (storage.foldername(name))[1] = auth.uid()::text);

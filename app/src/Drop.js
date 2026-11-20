@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Linking, Platform, Pressable, ScrollView, Share, Text, TextInput, View } from 'react-native';
+import { Image, Linking, Platform, Pressable, ScrollView, Share, Text, TextInput, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import Svg, { Path } from 'react-native-svg';
 import { supabase, explicar, leerPunto } from './supabase';
@@ -23,8 +23,8 @@ export default function Drop({ drop, usuario, alCerrar }) {
       supabase.from('drop_niveles').select('umbral, beneficio').eq('drop_id', drop.drop_id).order('umbral')
         .then(({ data }) => setNiveles(data || []));
     }
-    supabase.from('locales').select('ubicacion, direccion').eq('id', drop.local_id).maybeSingle()
-      .then(({ data }) => data && setDestino({ ...leerPunto(data.ubicacion), direccion: data.direccion }));
+    supabase.from('locales').select('ubicacion, direccion, logo_url').eq('id', drop.local_id).maybeSingle()
+      .then(({ data }) => data && setDestino({ ...leerPunto(data.ubicacion), direccion: data.direccion, logo: data.logo_url }));
     supabase.from('calificaciones').select('promedio, cantidad').eq('local_id', drop.local_id).maybeSingle()
       .then(({ data }) => setNota(data || null));
     const leer = () => supabase.rpc('estado_drop', { p_drop: drop.drop_id })
@@ -61,6 +61,10 @@ export default function Drop({ drop, usuario, alCerrar }) {
           style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 2.5, borderColor: C.negro, backgroundColor: C.papel, alignItems: 'center', justifyContent: 'center' }}>
           <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={C.negro} strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round"><Path d="M15 18l-6-6 6-6" /></Svg>
         </Pressable>
+        {destino && destino.logo ? (
+          <Image source={{ uri: destino.logo }} accessibilityLabel={`Logo de ${drop.local_nombre}`}
+            style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 2.5, borderColor: C.negro, backgroundColor: C.papel }} />
+        ) : null}
         <View style={{ flex: 1 }}>
           <Text style={{ fontFamily: F.negrita, fontSize: 17 }} numberOfLines={1}>{drop.local_nombre}</Text>
           <Text style={{ fontFamily: F.media, fontSize: 13 }}>

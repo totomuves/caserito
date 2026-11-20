@@ -12,6 +12,8 @@ export default function ConfigurarLocal({ usuario, local, alGuardar, alCancelar 
   const [estrella, setEstrella] = useState((local && local.producto_estrella) || '');
   const [direccion, setDireccion] = useState((local && local.direccion) || '');
   const [pos, setPos] = useState(null);
+  const [logo, setLogo] = useState((local && local.logo_url) || '');
+  const [subiendo, setSubiendo] = useState(false);
   const [error, setError] = useState('');
   const [guardando, setGuardando] = useState(false);
 
@@ -32,6 +34,31 @@ export default function ConfigurarLocal({ usuario, local, alGuardar, alCancelar 
     );
   }
 
+  // Achica el logo a 400 px en WebP antes de subirlo (pesa ~20 KB)
+  async function subirLogo(e) {
+    const archivo = e.target.files && e.target.files[0];
+    if (!archivo) return;
+    setError(''); setSubiendo(true);
+    try {
+      const img = await createImageBitmap(archivo);
+      const lado = 400, escala = Math.min(1, lado / Math.max(img.width, img.height));
+      const lienzo = document.createElement('canvas');
+      lienzo.width = Math.round(img.width * escala);
+      lienzo.height = Math.round(img.height * escala);
+      lienzo.getContext('2d').drawImage(img, 0, 0, lienzo.width, lienzo.height);
+      const blob = await new Promise((r) => lienzo.toBlob(r, 'image/webp', 0.85));
+      const tipo = blob && blob.type === 'image/webp' ? 'image/webp' : 'image/jpeg';
+      const final = tipo === 'image/webp' ? blob : await new Promise((r) => lienzo.toBlob(r, 'image/jpeg', 0.85));
+      const ruta = `${usuario.id}/logo-${Date.now()}.${tipo === 'image/webp' ? 'webp' : 'jpg'}`;
+      const up = await supabase.storage.from('caserito-logos').upload(ruta, final, { contentType: tipo, upsert: true });
+      if (up.error) throw up.error;
+      setLogo(supabase.storage.from('caserito-logos').getPublicUrl(ruta).data.publicUrl);
+    } catch (err) {
+      setError(explicar(err));
+    }
+    setSubiendo(false);
+  }
+
   const usaCocina = categorias.some((c) => CON_COCINA.includes(c));
 
   async function guardar(e) {
@@ -46,6 +73,7 @@ export default function ConfigurarLocal({ usuario, local, alGuardar, alCancelar 
       cocina_pais: usaCocina ? cocina : null,
       producto_estrella: estrella.trim() || null,
       direccion: direccion.trim() || null,
+      logo_url: logo || null,
     };
     if (pos) campos.ubicacion = `SRID=4326;POINT(${pos.lng} ${pos.lat})`;
     const r = editando
@@ -91,6 +119,15 @@ export default function ConfigurarLocal({ usuario, local, alGuardar, alCancelar 
           </div>
         </div>
       )}
+      <div className="tarjeta" style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+        <div style={{ width: 72, height: 72, borderRadius: 36, border: '2.5px solid var(--negro)', background: 'var(--crema)', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {logo ? <img src={logo} alt="Logo del local" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span className="letrista" style={{ fontSize: 26 }}>{(nombre || '?').slice(0, 1).toUpperCase()}</span>}
+        </div>
+        <label className="pildora" style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
+          {subiendo ? 'Subiendo…' : logo ? 'Cambiar logo' : 'Subir logo (opcional)'}
+          <input type="file" accept="image/*" onChange={subirLogo} style={{ display: 'none' }} />
+        </label>
+      </div>
       <label className="campo">Tu producto estrella (para la lámina del álbum)
         <input value={estrella} onChange={(e) => setEstrella(e.target.value)} placeholder="Ej: arepa, cortado, vinilo, chaqueta vintage" />
       </label>
@@ -104,7 +141,7 @@ export default function ConfigurarLocal({ usuario, local, alGuardar, alCancelar 
         {pos && <p className="ayuda">Precisión: ±{pos.precision} m</p>}
       </div>
       {error && <div className="error">{error}</div>}
-      <button className="boton grande" disabled={guardando}>{editando ? 'Guardar cambios' : 'Guardar local'}</button>
+      <button className="boton grande" disabled={guardando || subiendo}>{editando ? 'Guardar cambios' : 'Guardar local'}</button>
       {editando && <button type="button" className="pildora" onClick={alCancelar}>Cancelar</button>}
     </form>
   );
