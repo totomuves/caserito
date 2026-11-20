@@ -9,6 +9,7 @@ const SECCIONES = [
   { id: 'locales', texto: 'Locales' },
   { id: 'drops', texto: 'Drops' },
   { id: 'resenas', texto: 'Reseñas' },
+  { id: 'comentarios', texto: 'Comentarios beta' },
   { id: 'invitar', texto: 'Invitar locales' },
   { id: 'qr', texto: 'QR' },
 ];
@@ -27,6 +28,7 @@ export default function Admin() {
       {seccion === 'locales' && <Locales />}
       {seccion === 'drops' && <Drops />}
       {seccion === 'resenas' && <Resenas />}
+      {seccion === 'comentarios' && <Comentarios />}
       {seccion === 'invitar' && <Invitar />}
       {seccion === 'qr' && (
         <Qr url={URL_APP} titulo="CASERITO" archivo="caserito-qr-app.png"
@@ -176,6 +178,38 @@ function Resenas() {
           {r.texto && <span>{r.texto}</span>}
           {r.respuesta && <span className="ayuda">Respuesta del local: {r.respuesta}</span>}
           <button className="pildora" onClick={() => alternar(r)}>{r.oculta ? 'Mostrar de nuevo' : 'Ocultar reseña'}</button>
+        </div>
+      ))}
+    </>
+  );
+}
+
+function Comentarios() {
+  const { datos, error, recargar } = useCarga(() => supabase.from('comentarios')
+    .select('id, origen, texto, plataforma, leido, creado_at, perfiles(nombre)')
+    .order('creado_at', { ascending: false }).limit(200));
+  const [msg, setMsg] = useState('');
+
+  async function marcar(c) {
+    const { error } = await supabase.from('comentarios').update({ leido: !c.leido }).eq('id', c.id);
+    if (error) setMsg(explicar(error)); else recargar();
+  }
+
+  if (error) return <div className="error">{error}</div>;
+  if (!datos) return <p className="ayuda">Cargando…</p>;
+  const nuevos = datos.filter((c) => !c.leido).length;
+  return (
+    <>
+      {msg && <div className="error">{msg}</div>}
+      <p className="ayuda">{datos.length === 0 ? 'Todavía no llegan comentarios.' : `${nuevos} sin leer de ${datos.length}.`}</p>
+      {datos.map((c) => (
+        <div className="tarjeta" key={c.id} style={{ opacity: c.leido ? 0.6 : 1 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+            <b>{c.origen === 'panel' ? 'Local' : 'Caserito'}{c.perfiles && c.perfiles.nombre ? ` · ${c.perfiles.nombre}` : ''}</b>
+            <span className="ayuda">{new Date(c.creado_at).toLocaleString('es-CL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}{c.plataforma ? ` · ${c.plataforma}` : ''}</span>
+          </div>
+          <span style={{ whiteSpace: 'pre-wrap' }}>{c.texto}</span>
+          <button className="pildora" onClick={() => marcar(c)}>{c.leido ? 'Marcar como no leído' : 'Marcar como leído'}</button>
         </div>
       ))}
     </>

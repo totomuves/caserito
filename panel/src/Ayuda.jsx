@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { supabase, explicar } from './supabase.js';
 
 // Manual para locales: pasos cortos y respuestas a lo que más se pregunta
 const PASOS = [
@@ -67,6 +68,34 @@ export default function Ayuda({ alCerrar }) {
           <span style={{ lineHeight: 1.45 }}>{r}</span>
         </div>
       ))}
+
+      <Comentarios />
     </div>
+  );
+}
+
+// Beta con locales amigos: ideas y errores le llegan al admin
+function Comentarios() {
+  const [texto, setTexto] = useState('');
+  const [estado, setEstado] = useState('');
+  async function enviar(e) {
+    e.preventDefault();
+    if (!texto.trim()) return;
+    setEstado('enviando');
+    const { error } = await supabase.from('comentarios').insert({ texto: texto.trim(), origen: 'panel', plataforma: 'web', version: 'beta' });
+    if (error) setEstado(explicar(error)); else { setTexto(''); setEstado('ok'); }
+  }
+  return (
+    <form className="pizarra" onSubmit={enviar}>
+      <span className="etiqueta">Estamos en prueba</span>
+      <span>Caserito lo están probando locales amigos de Barrio Italia. ¿Algo no funcionó o te falta algo? Cuéntanos.</span>
+      <label className="campo" style={{ color: 'inherit' }}>Tu comentario
+        <textarea value={texto} maxLength={1000} rows={3} onChange={(e) => { setTexto(e.target.value); setEstado(''); }}
+          placeholder="Ej: no pude escanear con la cámara del iPhone" />
+      </label>
+      <button className="boton" type="submit" disabled={!texto.trim() || estado === 'enviando'}>{estado === 'enviando' ? 'Enviando…' : 'Enviar'}</button>
+      {estado === 'ok' && <span role="status">¡Gracias! Lo leemos todo.</span>}
+      {estado && estado !== 'ok' && estado !== 'enviando' && <span role="alert">{estado}</span>}
+    </form>
   );
 }

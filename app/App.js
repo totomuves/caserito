@@ -14,6 +14,7 @@ import Mapa from './src/Mapa';
 import Album from './src/Album';
 import Drop from './src/Drop';
 import Ayuda from './src/Ayuda';
+import Cuenta from './src/Cuenta';
 import { estadoAvisos, activarAvisos, descartarAvisos, ubicarAviso, alTocarAviso, avisarPuerta } from './src/avisos';
 
 export default function App() {
@@ -47,6 +48,18 @@ function Caserito() {
       await supabase.rpc('mi_perfil');
       setUsuario(u);
     })();
+    // Cambios de cuenta: guardó su correo, entró a otra cuenta o cerró sesión
+    const { data: escucha } = supabase.auth.onAuthStateChange((evento, sesion) => {
+      if (evento === 'SIGNED_OUT') {
+        setTimeout(async () => { await supabase.auth.signInAnonymously(); await supabase.rpc('mi_perfil'); }, 0);
+        return;
+      }
+      const u = sesion && sesion.user;
+      if (!u) return;
+      setUsuario((antes) => (antes && antes.id === u.id && antes.email === u.email && antes.is_anonymous === u.is_anonymous ? antes : u));
+      if (evento === 'SIGNED_IN') setTimeout(() => supabase.rpc('mi_perfil'), 0);
+    });
+    return () => escucha.subscription.unsubscribe();
   }, []);
 
   // 2) Ubicación (si no la da, usamos el centro de Barrio Italia)
@@ -131,6 +144,8 @@ function Caserito() {
           ) : pestana === 'inicio' ? (
             <Inicio drops={drops} usuario={usuario} pos={pos} lejos={lejos} alAbrir={abrir} alRefrescar={cargar} alAyuda={() => setPestana('ayuda')}
               avisos={avisos} avisoMotivo={avisoMotivo} alPrenderAvisos={prenderAvisos} alCerrarAvisos={cerrarAvisos} />
+          ) : pestana === 'tu' ? (
+            <Cuenta key={usuario.id} usuario={usuario} alAyuda={() => setPestana('ayuda')} />
           ) : pestana === 'mapa' ? (
             <Mapa drops={drops} pos={lejos ? { ...BARRIO_ITALIA } : pos} alAbrir={abrir} />
           ) : (
@@ -142,6 +157,7 @@ function Caserito() {
               <Tab id="inicio" texto={t("Inicio", "Home")} actual={pestana} setear={setPestana} d="M3 10l9-6 9 6M5 10v10h14V10M10 20v-5h4v5" />
               <Tab id="mapa" texto={t("Mapa", "Map")} actual={pestana} setear={setPestana} d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14" />
               <Tab id="album" texto={t("Álbum", "Album")} actual={pestana} setear={setPestana} d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM4 12h16M12 3v18" />
+              <Tab id="tu" texto={t("Tú", "Me")} actual={pestana} setear={setPestana} d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0" />
             </View>
           )}
         </View>

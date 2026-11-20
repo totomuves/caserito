@@ -19,7 +19,7 @@ const DUDAS = [
   ['¿Qué es un drop sorpresa?', 'No sabes qué es hasta que llegas al local. Puede ser un descuento, un regalo o la lámina dorada.'],
   ['¿Por qué no me aparece el QR?', 'El QR aparece cuando estás en el local (a unos 50 m). Revisa que Caserito tenga permiso de ubicación precisa; si estás adentro y no aparece, sal a la puerta un momento para que el GPS te ubique.'],
   ['¿Me avisan cuando hay un drop?', 'Sí, si activas los avisos en Inicio. Te llega una notificación cuando un local a pocas cuadras de donde andas suelta un drop (máximo 3 al día y nunca entre las 22:00 y las 9:00), y otra cuando llegas a la puerta de un local con drop, con tu QR listo. Se apagan en Ajustes del teléfono → Caserito → Notificaciones.'],
-  ['¿Necesito cuenta?', 'No. Caserito te reconoce en este teléfono sin pedirte correo ni clave. Si borras la app o los datos del navegador, pierdes tus láminas.'],
+  ['¿Necesito cuenta?', 'No para empezar: Caserito te reconoce en este teléfono. Pero te conviene guardar tu cuenta en "Tú" con tu correo (sin clave, te llega un código): así no pierdes tus láminas si cambias de teléfono o borras la app.'],
   ['¿Qué datos guardan de mí?', 'Tus drops, láminas y gustos, para mostrarte primero lo que te tinca. Los locales no ven quién eres; solo cuántos canjearon.'],
   ['¿Cómo apago lo que Caserito aprendió?', 'En Inicio, abajo, en "Caserito aprendió que…": toca un gusto para apagarlo.'],
 ];
@@ -38,7 +38,7 @@ const DUDAS_TUR = [
   ['Do you send notifications?', 'Yes, if you turn on pings on Home. You get one when a shop a few blocks from you drops a deal (max 3 a day, never between 10 pm and 9 am), and another when you reach the door of a shop with a drop, with your QR ready.'],
   ['What do the underlined words mean?', 'Shops write in their own slang (Chilean, Venezuelan, Peruvian…). Tap an underlined word to see its meaning. ¡Bacán!'],
   ['How far is a cuadra?', 'About 100 m, around a 1–2 minute walk. We show meters and minutes next to it.'],
-  ['Do I need an account?', 'No. Caserito remembers you on this phone without email or password.'],
+  ['Do I need an account?', 'Not to start. But save your account in "Me" with your email (no password, we send a code) so you keep your stickers if you switch phones.'],
   ['Prices?', 'All prices are in Chilean pesos (CLP). Pay at the shop as usual.'],
 ];
 

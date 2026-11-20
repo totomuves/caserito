@@ -16,6 +16,12 @@ export function explicar(error) {
   const m = (error && (error.message || String(error))) || 'Error desconocido';
   if (/schema must be one of|Invalid schema/i.test(m)) return 'Falta exponer el schema "caserito" en Supabase (Settings → API → Exposed schemas).';
   if (/Anonymous sign-ins are disabled/i.test(m)) return 'Falta activar el ingreso anónimo en Supabase (Authentication → Sign In / Providers → Allow anonymous sign-ins).';
+  if (/rate limit|over_email_send_rate_limit|you can only request this/i.test(m)) return 'Mandamos varios correos seguidos. Espera unos minutos e inténtalo de nuevo.';
+  if (/Token has expired or is invalid|otp_expired|invalid.*otp/i.test(m)) return 'El código no es válido o ya venció. Pide uno nuevo.';
+  if (/already been registered|email_exists|already registered/i.test(m)) return 'Ese correo ya tiene cuenta. Usa "¿Ya tienes cuenta? Entra aquí".';
+  if (/Signups not allowed for otp|otp_disabled|User not found/i.test(m)) return 'No hay una cuenta con ese correo. Usa "Guardar mi cuenta".';
+  if (/Email address .* is invalid|invalid email/i.test(m)) return 'Ese correo no parece válido.';
+  if (/Error sending|sending (confirmation|magic link|email change)/i.test(m)) return 'No pudimos mandar el correo. Inténtalo en un rato.';
   if (/Network request failed/i.test(m)) return 'Sin conexión. Revisa internet e inténtalo de nuevo.';
   return m;
 }
