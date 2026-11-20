@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
 import { supabase, explicar } from './supabase';
 import { C, F, letrista, textoCategoria } from './tema';
 import { Ola, Brillo, IconoCategoria, Boton } from './componentes';
@@ -17,7 +18,27 @@ export default function Album({ usuario, alIrAlMapa }) {
   const [mias, setMias] = useState({});
   const [sel, setSel] = useState(null);
   const [error, setError] = useState('');
+  const [rep, setRep] = useState({});
+  const [pidiendo, setPidiendo] = useState(false);
+  const [msgRep, setMsgRep] = useState('');
   const { t } = useIdioma();
+
+  // Repetidas por local (si el SQL 014 no está, simplemente no se muestran)
+  async function cargarRepetidas() {
+    const r = await supabase.rpc('mis_repetidas');
+    if (r.error) return;
+    const mapa = {};
+    (r.data || []).forEach((x) => { mapa[x.local_id] = x; });
+    setRep(mapa);
+  }
+  useEffect(() => { cargarRepetidas(); }, [usuario.id]);
+
+  async function pedirCambio(localId) {
+    setPidiendo(true); setMsgRep('');
+    const { error } = await supabase.rpc('pedir_cambio_repetidas', { p_local: localId });
+    setPidiendo(false);
+    if (error) setMsgRep(explicar(error)); else cargarRepetidas();
+  }
 
   useEffect(() => {
     (async () => {
@@ -66,9 +87,16 @@ export default function Album({ usuario, alIrAlMapa }) {
           const m = MARCOS[k % 3];
           const activa = sel === k;
           return (
-            <Pressable key={l.id} onPress={() => setSel(k)} accessibilityLabel={`${t('Lámina', "Lámina")} ${k + 1}, ${ganada ? l.nombre + t(', ganada', ", ¡la tienes!") : textoCategoria(l.categoria) + t(', te falta', ", te falta")}`}
+            <Pressable key={l.id} onPress={() => setSel(k)} accessibilityLabel={`${t('Lámina', "Lámina")} ${k + 1}, ${ganada ? l.nombre + t(', ganada', ", ¡la tienes!") + (rep[l.id] && rep[l.id].repetidas ? `, ${rep[l.id].repetidas} ${t('repetidas', 'repetidas')}` : '') : textoCategoria(l.categoria) + t(', te falta', ", te falta")}`}
               style={{ width: '22.6%', height: 118, borderRadius: 12, borderWidth: activa ? 3 : 2.5, borderStyle: ganada || activa ? 'solid' : 'dashed', borderColor: activa ? C.rojo : ganada ? C.negro : '#8A7A66', backgroundColor: ganada ? m.fondo : 'transparent', transform: [{ rotate: ganada ? GIROS[k % 4] : '0deg' }], padding: 5, justifyContent: 'space-between' }}>
-              <Text style={{ ...letrista, fontSize: 13, color: ganada ? m.num : '#8A7A66' }}>{k + 1}</Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={{ ...letrista, fontSize: 13, color: ganada ? m.num : '#8A7A66' }}>{k + 1}</Text>
+                {ganada && rep[l.id] && rep[l.id].repetidas > 0 ? (
+                  <View style={{ backgroundColor: C.negro, borderRadius: 8, paddingHorizontal: 5, paddingVertical: 1 }}>
+                    <Text style={{ fontFamily: F.negrita, fontSize: 10, color: C.amarillo }}>×{rep[l.id].repetidas}</Text>
+                  </View>
+                ) : null}
+              </View>
               <View style={{ alignItems: 'center' }}>
                 {ganada ? (
                   <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: C.papel, borderWidth: 2, borderColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
@@ -100,8 +128,45 @@ export default function Album({ usuario, alIrAlMapa }) {
               : t('Canjea cualquier drop de este local y la lámina es tuya. Búscalo en el mapa.', "Canjea any drop en este local y la lámina es tuya. Find it en el mapa.")}
           </Text>
           {!mias[elegido.id] && <Boton texto={t("Ver en el mapa", "Ver en el mapa")} onPress={alIrAlMapa} />}
+          {mias[elegido.id] && rep[elegido.id] ? <Repetidas r={rep[elegido.id]} t={t} pidiendo={pidiendo} msg={msgRep} alPedir={() => pedirCambio(elegido.id)} /> : null}
         </View>
       )}
     </ScrollView>
+  );
+}
+
+// Repetidas de un local: cuántas tienes, qué te dan y el QR del cambio
+function Repetidas({ r, t, pidiendo, msg, alPedir }) {
+  const premio = r.necesarias && r.premio;
+  return (
+    <View style={{ borderTopWidth: 2, borderStyle: 'dashed', borderColor: '#CDBF9F', paddingTop: 10, gap: 8 }}>
+      <Text style={{ fontFamily: F.negrita, fontSize: 15 }}>
+        {r.repetidas === 1 ? t('Tienes 1 repetida', 'Tienes 1 repetida (duplicate)') : t(`Tienes ${r.repetidas} repetidas`, `Tienes ${r.repetidas} repetidas (duplicates)`)}
+      </Text>
+      {!premio ? (
+        <Text style={{ fontFamily: F.normal, fontSize: 13, color: C.gris }}>{t('Cada canje extra en este local es una repetida. Este local todavía no las cambia por nada.', 'Cada canje extra here es una repetida. Este local no las cambia yet.')}</Text>
+      ) : r.codigo ? (
+        <View style={{ alignItems: 'center', gap: 8, backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 2, borderColor: C.negro, padding: 14 }}>
+          <Text style={{ ...letrista, fontSize: 18, textAlign: 'center' }}>{t('CAMBIO LISTO', 'CAMBIO LISTO · READY')}</Text>
+          <Text style={{ fontFamily: F.negrita, fontSize: 15, textAlign: 'center' }}>{r.premio}</Text>
+          <QRCode value={r.codigo} size={170} />
+          <Text style={{ fontFamily: F.negrita, fontSize: 20, letterSpacing: 3 }}>{r.codigo}</Text>
+          <Text style={{ fontFamily: F.normal, fontSize: 13, textAlign: 'center' }}>
+            {t('Muéstralo en la caja. Vale hasta el', 'Muéstralo en la caja. Vale hasta el')} {new Date(r.expira_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' })}.
+          </Text>
+        </View>
+      ) : (
+        <>
+          <Text style={{ fontFamily: F.normal, fontSize: 14 }}>{t(`Con ${r.necesarias} repetidas te dan: `, `Con ${r.necesarias} repetidas you get: `)}<Text style={{ fontFamily: F.negrita }}>{r.premio}</Text></Text>
+          <View style={{ height: 12, borderRadius: 6, backgroundColor: '#E7DCC4', borderWidth: 2, borderColor: C.negro, overflow: 'hidden' }}>
+            <View style={{ width: `${Math.min(100, (r.repetidas / r.necesarias) * 100)}%`, height: '100%', backgroundColor: C.amarillo }} />
+          </View>
+          {r.repetidas >= r.necesarias
+            ? <Boton texto={pidiendo ? t('Pidiendo…', 'Pidiendo…') : t('Cambiar mis repetidas', 'Cambiar mis repetidas · Trade in')} fondo={C.rojo} onPress={alPedir} deshabilitado={pidiendo} />
+            : <Text style={{ fontFamily: F.normal, fontSize: 13, color: C.gris }}>{r.necesarias - r.repetidas === 1 ? t('Te falta 1. Vuelve a canjear acá.', 'Te falta 1. Vuelve a canjear acá.') : t(`Te faltan ${r.necesarias - r.repetidas}. Vuelve a canjear acá.`, `Te faltan ${r.necesarias - r.repetidas}. Vuelve a canjear acá.`)}</Text>}
+          {msg ? <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.rojoTexto }}>{msg}</Text> : null}
+        </>
+      )}
+    </View>
   );
 }

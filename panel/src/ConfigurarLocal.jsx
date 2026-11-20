@@ -11,6 +11,8 @@ export default function ConfigurarLocal({ usuario, local, alGuardar, alCancelar,
   const [categorias, setCategorias] = useState(local ? (local.categorias && local.categorias.length ? local.categorias : [local.categoria]) : []);
   const [cocina, setCocina] = useState((local && local.cocina_pais) || 'Chilena');
   const [estrella, setEstrella] = useState((local && local.producto_estrella) || '');
+  const [repNecesarias, setRepNecesarias] = useState((local && local.repetidas_necesarias) || '');
+  const [repPremio, setRepPremio] = useState((local && local.repetidas_premio) || '');
   const [direccion, setDireccion] = useState((local && local.direccion) || '');
   const [pos, setPos] = useState(null);
   const [logo, setLogo] = useState((local && local.logo_url) || '');
@@ -76,6 +78,11 @@ export default function ConfigurarLocal({ usuario, local, alGuardar, alCancelar,
       direccion: direccion.trim() || null,
       logo_url: logo || null,
     };
+    // Repetidas: solo si ya existe la columna (SQL 014) o si el local las configuró
+    if ((local && 'repetidas_necesarias' in local) || repNecesarias) {
+      campos.repetidas_necesarias = repNecesarias && repPremio.trim() ? Number(repNecesarias) : null;
+      campos.repetidas_premio = repNecesarias && repPremio.trim() ? repPremio.trim() : null;
+    }
     if (pos) campos.ubicacion = `SRID=4326;POINT(${pos.lng} ${pos.lat})`;
     const r = editando
       ? await supabase.from('locales').update(campos).eq('id', local.id).select().single()
@@ -135,6 +142,21 @@ export default function ConfigurarLocal({ usuario, local, alGuardar, alCancelar,
       <label className="campo">Dirección
         <input value={direccion} onChange={(e) => setDireccion(e.target.value)} placeholder="Ej: Av. Italia 1234" />
       </label>
+      <div className="tarjeta">
+        <b>Láminas repetidas</b>
+        <p className="ayuda">Cada vez que un caserito vuelve a canjear en tu local, gana una lámina repetida. Elige qué le das cuando junta varias: es un buen motivo para que vuelva.</p>
+        <label className="campo">¿Cuántas repetidas?
+          <select value={repNecesarias} onChange={(e) => setRepNecesarias(e.target.value)}>
+            <option value="">No cambio repetidas</option>
+            {[3, 4, 5, 6, 8, 10].map((n) => <option key={n} value={n}>{n} repetidas</option>)}
+          </select>
+        </label>
+        {repNecesarias && (
+          <label className="campo">¿Qué das a cambio?
+            <input value={repPremio} maxLength={80} required onChange={(e) => setRepPremio(e.target.value)} placeholder="Ej: un cortado gratis, 20% en tu compra, un sticker" />
+          </label>
+        )}
+      </div>
       <div className="tarjeta">
         <b>Ubicación del local</b>
         <p className="ayuda">{editando ? 'Solo si cambió: aprieta el botón estando dentro del local.' : 'Aprieta el botón estando dentro del local. Así los caseritos te encuentran a la cuadra exacta.'}</p>

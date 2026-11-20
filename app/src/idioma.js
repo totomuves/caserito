@@ -74,7 +74,7 @@ const GLOSARIO = [
   ['reseña', 'review'], ['apodo', 'nickname'], ['avísame', 'let me know'], ['pa’llá', 'over there (casual)'],
   ['listo', 'ready / done'], ['llegaste', 'you made it'], ['cerca', 'nearby'], ['lejos', 'far'], ['ahora', 'now'],
   ['ofertas', 'deals'], ['barrio', 'neighborhood'], ['gustos', 'likes, tastes'], ['vuelve más rato', 'come back in a bit'],
-  ['estás dentro', 'you’re in'], ['¿qué tal?', 'how was it?'], ['gracias', 'thanks'], ['siguiente', 'next'],
+  ['repetidas', 'duplicate stickers'], ['repetida', 'a duplicate sticker'], ['estás dentro', 'you’re in'], ['¿qué tal?', 'how was it?'], ['gracias', 'thanks'], ['siguiente', 'next'],
 ];
 const LETRAS = 'A-Za-zÁÉÍÓÚÜÑáéíóúüñ';
 const escapar = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

@@ -18,6 +18,7 @@ const TIPOS = [
 ];
 
 const DUDAS = [
+  ['¿Qué son las láminas repetidas?', 'La primera vez que un caserito canjea en tu local gana tu lámina; cada canje siguiente es una repetida. En "Editar mi local" eliges cuántas repetidas pides (ej. 5) y qué das a cambio (ej. un cortado gratis). El caserito pide el cambio en su álbum, le sale un QR y tú lo escaneas como siempre: la pantalla te dice qué entregarle, sin cobro.'],
   ['¿Puedo sumar a mi equipo?', 'Sí. En "Mi equipo" creas roles (por ejemplo Administrador o Cajero), marcas qué puede hacer cada uno y mandas un link de invitación. Cada persona entra con su propio correo: un cajero solo ve Escanear; un administrador puede soltar drops y ver resultados. Solo tú, como dueño, editas el equipo.'],
   ['¿Cuándo conviene soltar un drop?', 'En tu hora más tranquila (mírala en Resultados). Un drop de 10 unidades por 2 horas funciona mejor que uno de 100 todo el día.'],
   ['¿A qué distancia lo ven?', 'Lo ven en el mapa quienes están cerca, y el código para canjear aparece cuando llegan a tu local (a unos 50 m, media cuadra). Además, cuando sueltas un drop, a los caseritos que andan cerca (hasta unas 15 cuadras) les llega una notificación al celular, máximo 3 al día por persona y nunca de noche.'],
