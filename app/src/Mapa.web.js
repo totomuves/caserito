@@ -8,7 +8,7 @@ const L = require('leaflet');
 // Llave pública de mapas de CARTO (va en la app, como la publishable de Supabase)
 const LLAVE_CARTO = process.env.EXPO_PUBLIC_CARTO_KEY || '';
 
-// Estilo "mapa de barrio": base clara de CARTO con un tono cálido de papel
+// Skin "papel de feria": plano claro y simple, teñido crema, para que resalten los pines amarillos
 function prepararEstilos() {
   if (document.getElementById('caserito-leaflet')) return;
   const css = document.createElement('link');
@@ -18,7 +18,8 @@ function prepararEstilos() {
   document.head.appendChild(css);
   const st = document.createElement('style');
   st.textContent = `
-    .caserito-mapa .leaflet-tile-pane { filter: sepia(.35) saturate(1.15) brightness(1.02); }
+    .caserito-mapa .leaflet-tile-pane { filter: sepia(.6) saturate(1.7) hue-rotate(-6deg) brightness(1.02) contrast(.96); }
+    .caserito-mapa { background: #F3E6CC; }
     .caserito-pin { background: none; border: none; }
     .caserito-pin .tag { display:inline-block; background:${C.amarillo}; color:${C.negro}; border:2px solid ${C.negro}; border-radius:6px;
       padding:3px 6px 0; font-family:LuckiestGuy_400Regular, sans-serif; font-style:italic; font-size:14px; white-space:nowrap; transform:rotate(-4deg); }
@@ -49,7 +50,7 @@ export default function Mapa({ drops, pos, alAbrir }) {
     const m = L.map(nodo, { zoomControl: false, attributionControl: true }).setView([pos.lat, pos.lng], 16);
     // CARTO ahora pide una llave gratis (carto.com/basemaps/apikey). Sin llave, usamos OpenStreetMap.
     if (LLAVE_CARTO) {
-      L.tileLayer(`https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${LLAVE_CARTO}`, {
+      L.tileLayer(`https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png?key=${LLAVE_CARTO}`, {
         maxZoom: 19,
         attribution: '&copy; OpenStreetMap &copy; CARTO',
       }).addTo(m);
