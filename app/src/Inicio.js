@@ -5,6 +5,7 @@ import { C, F, letrista, CATEGORIAS, textoCategoria, tieneCategoria, precio, cua
 import { Ola, Brillo, Pildora, EtiquetaPrecio, Boton } from './componentes';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR } from './idioma';
 import Logo from './Logo';
+import Svg, { Path } from 'react-native-svg';
 
 function etiquetaPara(d, hora, t, cuad) {
   if (d.tipo === 'grupal') return t('¡ENTRE TODOS!', 'GROUP DROP · ¡ENTRE TODOS!');
@@ -15,7 +16,7 @@ function etiquetaPara(d, hora, t, cuad) {
   return cuad(d.cuadras).toUpperCase();
 }
 
-export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda }) {
+export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda, avisos, avisoMotivo, alPrenderAvisos, alCerrarAvisos }) {
   const [filtro, setFiltro] = useState('todo');
   const [gustos, setGustos] = useState([]);
   const [i, setI] = useState(0);
@@ -97,6 +98,31 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
           </Pressable>
         )}
       </View>
+
+      {(avisos === 'pendiente' || avisos === 'bloqueado') && (
+        <View style={{ marginHorizontal: 16, marginTop: 12, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: 18, padding: 14, gap: 8 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <Svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke={C.rojo} strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" accessibilityElementsHidden importantForAccessibility="no">
+              <Path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+            </Svg>
+            <Text style={{ ...letrista, fontSize: 17, flex: 1 }}>{t('¿TE AVISAMOS CUANDO SUELTEN UN DROP CERCA?', 'WANT A PING WHEN A DROP GOES LIVE NEARBY?')}</Text>
+          </View>
+          <Text style={{ fontFamily: F.normal, fontSize: 14 }}>
+            {avisos === 'bloqueado'
+              ? t('Tienes las notificaciones apagadas para Caserito. Actívalas en Ajustes del teléfono → Caserito → Notificaciones.', 'Notifications are off for Caserito. Turn them on in your phone Settings → Caserito → Notifications.')
+              : t('Solo de locales a pocas cuadras de donde andas, máximo 3 al día y nunca de noche.', 'Only shops a few blocks from you, max 3 a day, never at night.')}
+          </Text>
+          {avisoMotivo === 'no_soportado' ? (
+            <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.rojoTexto }}>{t('Este teléfono no puede recibir avisos en la versión de prueba. Funcionarán en la app de la tienda.', 'This phone can’t get pings in the test version. They’ll work in the store app.')}</Text>
+          ) : avisoMotivo === 'error' ? (
+            <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.rojoTexto }}>{t('No pudimos activarlos. Prueba de nuevo en un rato.', 'Couldn’t turn them on. Try again in a bit.')}</Text>
+          ) : null}
+          <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+            {avisos === 'pendiente' && <Boton texto={t('Avísame', 'Ping me')} fondo={C.rojo} onPress={alPrenderAvisos} />}
+            <Boton texto={t('Ahora no', 'Not now')} fondo={C.papel} color={C.negro} onPress={alCerrarAvisos} />
+          </View>
+        </View>
+      )}
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingTop: 18 }}>
         {CATEGORIAS.map((c) => <Pildora key={c.id} texto={tur ? CATEGORIA_TUR[c.id] || c.texto : c.texto} activa={filtro === c.id} onPress={() => setFiltro(c.id)} />)}

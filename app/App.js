@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -14,13 +14,14 @@ import Mapa from './src/Mapa';
 import Album from './src/Album';
 import Drop from './src/Drop';
 import Ayuda from './src/Ayuda';
+import { estadoAvisos, activarAvisos, descartarAvisos, ubicarAviso, alTocarAviso } from './src/avisos';
 
 export default function App() {
   return <IdiomaProvider><Caserito /></IdiomaProvider>;
 }
 
 function Caserito() {
-  const { t } = useIdioma();
+  const { t, tur } = useIdioma();
   const [fuentes] = useFonts({ LuckiestGuy_400Regular, Archivo_400Regular, Archivo_600SemiBold, Archivo_800ExtraBold });
   const [usuario, setUsuario] = useState(null);
   const [pos, setPos] = useState(null);
@@ -30,6 +31,8 @@ function Caserito() {
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(true);
   const [lejos, setLejos] = useState(false);
+  const [avisos, setAvisos] = useState(null);
+  const [avisoMotivo, setAvisoMotivo] = useState('');
 
   // 1) Sesión: los caseritos entran sin registrarse (ingreso anónimo)
   useEffect(() => {
@@ -79,6 +82,28 @@ function Caserito() {
 
   useEffect(() => { cargar(); const t = setInterval(cargar, 30000); return () => clearInterval(t); }, [cargar]);
 
+  // 4) Avisos push: si ya dio permiso, renovamos el token y el idioma al abrir
+  const idioma = tur ? 'sp' : 'es';
+  const hayPos = !!pos;
+  useEffect(() => {
+    if (!usuario || !hayPos) return;
+    estadoAvisos().then((e) => {
+      setAvisos(e);
+      if (e === 'activo') activarAvisos({ idioma, pos, preguntar: false }).catch(() => {});
+    });
+  }, [usuario, hayPos, idioma]);
+  useEffect(() => { if (avisos === 'activo' && usuario) ubicarAviso(pos); }, [pos, avisos, usuario]);
+  const cargarRef = useRef(cargar);
+  cargarRef.current = cargar;
+  useEffect(() => alTocarAviso((id) => { setAbierto(id); setPestana('inicio'); cargarRef.current(); }), []);
+
+  async function prenderAvisos() {
+    const r = await activarAvisos({ idioma, pos, preguntar: true }).catch(() => ({ ok: false, motivo: 'error' }));
+    if (r.ok) { setAvisos('activo'); setAvisoMotivo(''); }
+    else { setAvisoMotivo(r.motivo); if (r.motivo === 'bloqueado') setAvisos('bloqueado'); }
+  }
+  function cerrarAvisos() { descartarAvisos(); setAvisos('descartado'); }
+
   if (!fuentes) return <View style={{ flex: 1, backgroundColor: C.crema }} />;
 
   const abrir = (d) => setAbierto(d.drop_id);
@@ -102,7 +127,8 @@ function Caserito() {
           ) : pestana === 'ayuda' ? (
             <Ayuda alCerrar={() => setPestana('inicio')} />
           ) : pestana === 'inicio' ? (
-            <Inicio drops={drops} usuario={usuario} pos={pos} lejos={lejos} alAbrir={abrir} alRefrescar={cargar} alAyuda={() => setPestana('ayuda')} />
+            <Inicio drops={drops} usuario={usuario} pos={pos} lejos={lejos} alAbrir={abrir} alRefrescar={cargar} alAyuda={() => setPestana('ayuda')}
+              avisos={avisos} avisoMotivo={avisoMotivo} alPrenderAvisos={prenderAvisos} alCerrarAvisos={cerrarAvisos} />
           ) : pestana === 'mapa' ? (
             <Mapa drops={drops} pos={lejos ? { ...BARRIO_ITALIA } : pos} alAbrir={abrir} />
           ) : (
