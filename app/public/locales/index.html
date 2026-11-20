@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Caserito para locales · Cómo funciona</title>
+<meta name="description" content="Caserito reemplaza el flyer: sueltas una oferta corta y los vecinos que andan cerca la ven en el mapa y van a buscarla.">
+<meta name="theme-color" content="#FFD100">
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;800&family=Luckiest+Guy&display=swap" rel="stylesheet">
+<style>
+  :root { --amarillo:#FFD100; --rojo:#E30A2F; --rojo-texto:#C4082A; --negro:#111111; --azul:#1E5AA8; --crema:#F3E6CC; --papel:#FFF6E5; --gris:#4A4A4A; }
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; background:var(--crema); color:var(--negro); font-family:Archivo, system-ui, sans-serif; font-size:17px; line-height:1.5; }
+  a { color:inherit; }
+  .letrista { font-family:"Luckiest Guy", Archivo, sans-serif; font-style:italic; font-weight:400; letter-spacing:.5px; line-height:1.05; }
+  .envoltorio { max-width:720px; margin:0 auto; padding:0 20px; }
+  header { background:var(--amarillo); padding:26px 0 6px; position:relative; }
+  header .fila { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  .logo { width:min(230px, 60vw); height:auto; display:block; }
+  .chip { font-size:13px; font-weight:800; background:var(--negro); color:var(--amarillo); padding:7px 12px; border-radius:20px; white-space:nowrap; }
+  .ola { display:block; width:100%; height:22px; }
+  .hero { padding:18px 0 8px; }
+  .hero h1 { font-size:clamp(38px, 10vw, 58px); margin:0 0 12px; }
+  .hero h1 span { color:var(--rojo); text-shadow:3px 3px 0 var(--azul); }
+  .hero p { font-size:19px; margin:0 0 18px; max-width:34em; }
+  .botones { display:flex; flex-wrap:wrap; gap:10px; }
+  .boton { display:inline-flex; align-items:center; justify-content:center; min-height:50px; padding:12px 20px; border-radius:16px; border:2.5px solid var(--negro); font-weight:800; font-size:17px; text-decoration:none; }
+  .boton.principal { background:var(--rojo); color:#FFF6E5; box-shadow:4px 4px 0 var(--negro); }
+  .boton.secundario { background:var(--papel); color:var(--negro); }
+  .boton:focus-visible { outline:3px solid var(--azul); outline-offset:3px; }
+  section { padding:30px 0 6px; }
+  h2 { font-size:clamp(28px, 7vw, 38px); margin:0 0 14px; }
+  h3 { font-size:19px; margin:0 0 4px; font-weight:800; }
+  .pasos { list-style:none; margin:0; padding:0; display:grid; gap:12px; }
+  .paso { background:var(--papel); border:2.5px solid var(--negro); border-radius:20px; padding:16px 18px; display:grid; grid-template-columns:52px 1fr; gap:12px; align-items:start; }
+  .paso .num { font-size:40px; color:var(--rojo); text-align:center; }
+  .paso p, .tarjeta p { margin:0; }
+  .grilla { display:grid; gap:12px; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); }
+  .tarjeta { background:var(--papel); border:2.5px solid var(--negro); border-radius:20px; padding:16px 18px; }
+  .tarjeta .etiqueta { display:inline-block; font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:1px; padding:3px 9px; border-radius:10px; margin-bottom:8px; }
+  .ej { color:var(--gris); font-size:15px; margin-top:6px !important; }
+  .negra { background:var(--negro); color:var(--papel); border-radius:24px; padding:22px 20px; }
+  .negra h2 { color:var(--amarillo); }
+  .lista { margin:0; padding:0; list-style:none; display:grid; gap:10px; }
+  .lista li { padding-left:30px; position:relative; }
+  .lista li::before { content:""; position:absolute; left:4px; top:.45em; width:14px; height:14px; background:var(--amarillo); border:2px solid var(--negro); border-radius:4px; transform:rotate(45deg); }
+  .negra .lista li::before { border-color:var(--amarillo); }
+  .precio { display:grid; gap:12px; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); }
+  .precio .grande { font-size:36px; color:var(--rojo); }
+  details { background:var(--papel); border:2.5px solid var(--negro); border-radius:16px; padding:0 16px; margin-bottom:10px; }
+  summary { cursor:pointer; font-weight:800; padding:14px 0; list-style-position:outside; }
+  details p { margin:0 0 14px; }
+  .cierre { text-align:center; padding:34px 0 46px; }
+  .cierre h2 { margin-bottom:8px; }
+  .cierre p { margin:0 auto 18px; max-width:30em; }
+  .cierre .botones { justify-content:center; }
+  footer { background:var(--negro); color:var(--papel); text-align:center; font-size:14px; padding:18px 20px 26px; }
+  footer .letrista { color:var(--amarillo); font-size:18px; display:block; margin-bottom:4px; }
+  @media print { header, .negra { -webkit-print-color-adjust:exact; print-color-adjust:exact; } .botones { display:none; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="envoltorio fila">
+    <svg role="img" aria-label="Caserito" xmlns="http://www.w3.org/2000/svg" class="logo" viewBox="108.3 245.2 47.8 12.8">
+<path fill="#215BA8" d="M110.5,256.3c-0.8,0-1.4-0.4-1.7-1.3c-0.2-0.5-0.3-1.1-0.3-1.6c0-0.4,0-0.9,0.2-1.4c0.2-1,0.7-1.9,1.3-2.8 c0.8-1,1.6-1.5,2.5-1.5c0.8,0,1.4,0.4,1.8,1.3l-1.3,1.4c-0.2-0.2-0.4-0.3-0.6-0.3c-0.4,0-0.8,0.3-1.2,1c-0.3,0.6-0.6,1.1-0.7,1.6 c0,0.2-0.1,0.4-0.1,0.6c0,0.5,0.2,0.8,0.5,1c0.1,0.1,0.3,0.1,0.4,0.1c0.4,0,0.8-0.3,1.2-0.9l0.4,1.4 C112.1,255.8,111.3,256.3,110.5,256.3z"/>
+<path fill="#215BA8" d="M114.2,249l-1.3,1.4c-0.2-0.2-0.4-0.3-0.6-0.3c-0.4,0-0.8,0.3-1.2,1c-0.3,0.6-0.6,1.1-0.7,1.6 c0,0.2-0.1,0.4-0.1,0.6c0,0.5,0.2,0.9,0.6,1c0.1,0.1,0.3,0.1,0.4,0.1c0.4,0,0.8-0.3,1.2-0.9l0.4,1.4c-0.8,0.8-1.5,1.2-2.3,1.2 c-0.8,0-1.4-0.4-1.7-1.2c-0.2-0.5-0.3-1-0.3-1.6c0-0.4,0-0.9,0.2-1.4c0.2-1,0.7-1.9,1.3-2.8c0.8-1,1.6-1.5,2.5-1.5 C113.2,247.7,113.8,248.1,114.2,249z"/>
+<path fill="#215BA8" d="M112.3,256.4c1.1-2.8,2-5.6,2.7-8.2l3.5-0.6c-0.4,2.3-0.5,5-0.5,8.2l-2.5,0.6l0.1-1.5l-0.7,0.2l-0.2,1 L112.3,256.4L112.3,256.4z M115.3,253.5l0.5-0.1l0.4-3.9L115.3,253.5z"/>
+<path fill="#215BA8" d="M112.3,256.4c1.1-2.8,2-5.6,2.7-8.2l3.5-0.6c-0.4,2.3-0.6,5-0.5,8.2l-2.4,0.6l0.2-1.4l-0.7,0.1l-0.3,1 L112.3,256.4z M115.9,253.4l0.5-4.3h0l-1.1,4.4L115.9,253.4z"/>
+<path fill="#215BA8" d="M119.5,256.5c-0.4,0-0.8-0.1-1.2-0.3l0.2-0.4c0.2-0.4,0.4-1,0.8-1.6c0.3,0.1,0.5,0.2,0.8,0.2 c0.1,0,0.3,0,0.4,0c0.2-0.1,0.4-0.1,0.7-0.3c0.3-0.2,0.4-0.3,0.4-0.5c0-0.1,0-0.1,0-0.2c-0.1-0.1-0.2-0.1-0.4-0.1 c-0.2,0-0.5,0-0.9,0.1c-0.4,0.1-0.7,0.1-0.9,0.1c-0.3,0-0.5-0.1-0.7-0.2c-0.3-0.2-0.4-0.5-0.4-1c0.1-0.8,0.6-1.8,1.6-2.9 c1-1.1,1.9-1.7,2.6-1.8c0,0,0,0,0,0c0.7,0,1.1,0.5,1.1,1.6c0,0.3,0,0.6-0.1,0.9l-0.9,0.4l-0.9,0.3c0-0.4-0.1-0.5-0.3-0.5 c-0.3,0-0.5,0.2-0.8,0.5c-0.2,0.2-0.3,0.5-0.3,0.7c0,0.1,0.2,0.2,0.4,0.2c0.1,0,0.3,0,0.6-0.1c0.3-0.1,0.6-0.1,0.9-0.1 c0.7,0,1,0.2,1.1,0.7c0,0.2,0.1,0.3,0.1,0.4c0,0.5-0.2,1-0.6,1.6c-0.5,0.7-1.1,1.4-2,1.9C120.4,256.4,120,256.5,119.5,256.5z"/>
+<path fill="#215BA8" d="M122.6,250.6l-0.9,0.3c0-0.3-0.1-0.5-0.3-0.5c-0.3,0-0.6,0.2-0.8,0.5c-0.2,0.2-0.3,0.5-0.3,0.7 c0,0.1,0.2,0.2,0.4,0.2c0.1,0,0.3,0,0.6-0.1c0.3-0.1,0.6-0.1,0.9-0.1c0.6,0,1,0.2,1.1,0.7c0,0.1,0.1,0.3,0.1,0.4 c0,0.5-0.2,1-0.6,1.6c-0.5,0.7-1.1,1.4-2,1.9c-0.4,0.3-0.9,0.4-1.3,0.4c-0.4,0-0.8-0.1-1.2-0.3c0.2-0.4,0.5-1.1,0.9-2 c0.2,0.2,0.5,0.2,0.8,0.2c0.1,0,0.3,0,0.4,0c0.2-0.1,0.5-0.2,0.7-0.3c0.3-0.2,0.5-0.3,0.4-0.5c0-0.2-0.1-0.3-0.5-0.3 c-0.2,0-0.5,0-0.9,0.1s-0.7,0.1-0.9,0.1c-0.3,0-0.5,0-0.6-0.2c-0.3-0.2-0.4-0.5-0.4-0.9c0.1-0.8,0.6-1.8,1.6-2.9 c1-1.1,1.9-1.7,2.6-1.8c0.7,0,1.1,0.5,1.1,1.6c0,0.3,0,0.6-0.1,0.9L122.6,250.6z"/>
+<path fill="#215BA8" d="M124.5,248.1l3.8-0.6l-0.1,2.1c-0.8,0.1-1.4,0.2-2.1,0.3c0,0.2-0.1,0.4-0.1,0.6l-0.1,0.6l1.8-0.4l-0.1,1.6 c-0.9,0.2-1.6,0.3-2.1,0.4c0,0.1,0,0.3-0.1,0.4l-0.1,0.4l2.1-0.3l-0.1,2.1c-1.1,0.1-2.5,0.4-4.2,0.8l0,0L124.5,248.1z"/>
+<path fill="#215BA8" d="M126,250.6l-0.1,0.6l1.8-0.4l-0.1,1.6c-0.9,0.1-1.5,0.3-2,0.4c0,0.2-0.1,0.3-0.1,0.5l-0.1,0.4l2.1-0.3 l-0.1,2.1c-1.1,0.1-2.5,0.4-4.1,0.8l1.4-8.2l3.8-0.6l-0.1,2.1c-0.7,0.1-1.4,0.1-2,0.3C126.1,250.2,126,250.4,126,250.6z"/>
+<path fill="#215BA8" d="M127.7,256.3c0-0.2,0.1-0.6,0.2-1.5l1.1-6.5c1.2-0.4,2.2-0.6,2.9-0.6c0.6,0,1,0.1,1.3,0.4 c0.2,0.2,0.3,0.4,0.3,0.7c0,1-0.7,2.1-1.9,3.1c0.1,0.2,0.5,1.1,1.3,2.7l-1.8,1.6l-1.3-3.1c-0.1,1-0.3,1.9-0.4,2.7L127.7,256.3 L127.7,256.3z M131.3,249.9c-0.2,0-0.4,0.1-0.7,0.2c-0.1,0.2-0.1,0.5-0.2,0.8l-0.1,0.8c0.2-0.2,0.5-0.3,0.7-0.6 c0.3-0.3,0.5-0.5,0.6-0.7c0-0.1,0-0.1,0.1-0.2C131.6,250,131.5,249.9,131.3,249.9z"/>
+<path fill="#215BA8" d="M129.1,248.2c1.2-0.3,2.2-0.5,2.9-0.5c1,0,1.5,0.4,1.5,1.1c0,1-0.6,2.1-1.9,3.1c0.1,0.3,0.6,1.2,1.3,2.7 l-1.8,1.6l-1.2-3.1c-0.2,1-0.3,1.9-0.4,2.7l-1.8,0.5c0-0.2,0.1-0.7,0.2-1.5L129.1,248.2z M130.3,250.8l-0.1,0.8 c0.3-0.1,0.5-0.3,0.8-0.5c0.3-0.3,0.5-0.5,0.6-0.7c0-0.1,0-0.1,0.1-0.2c0-0.2-0.1-0.3-0.3-0.3c-0.2,0-0.4,0.1-0.8,0.2 C130.5,250.3,130.4,250.5,130.3,250.8z"/>
+<path fill="#215BA8" d="M134.2,248.2l2-0.4c-0.7,3.1-1.3,5.7-1.5,7.9l-1.9,0.5L134.2,248.2z"/>
+<path fill="#215BA8" d="M134.3,248.2l2-0.4c-0.8,3-1.3,5.7-1.5,7.9l-1.8,0.5L134.3,248.2z"/>
+<path fill="#215BA8" d="M137.6,250.2l-0.6,0.1l-0.6,0.1l-0.2-2.2l4.8-0.6l0,2.2l-1.5,0.1c-0.5,2.1-0.8,4-1,5.8l-2,0.5L137.6,250.2z"/>
+<path fill="#215BA8" d="M141,247.8l-0.1,2.1l-1.5,0.1c-0.5,2.1-0.8,4-1,5.8l-1.9,0.5l1-6.1l-0.6,0.1l-0.6,0.1l-0.1-2.1L141,247.8z"/>
+<path fill="#215BA8" d="M142,256.6c-0.8,0-1.4-0.5-1.8-1.4c-0.2-0.4-0.2-0.9-0.3-1.5c0-0.6,0.1-1.2,0.3-1.8c0.3-1.1,0.7-2,1.4-2.9 c0.8-1.1,1.8-1.7,2.7-1.7c0.8,0,1.4,0.4,1.7,1.4c0.2,0.5,0.3,1,0.3,1.5c0,0.5-0.1,1.1-0.3,1.7c-0.3,1.1-0.8,2-1.5,2.9 C143.8,256,142.9,256.6,142,256.6z M144,250.2c-0.4,0-0.8,0.3-1.2,1c-0.4,0.6-0.6,1.1-0.7,1.6c-0.1,0.3-0.1,0.5-0.1,0.7 c0,0.3,0.1,0.6,0.2,0.8c0.2,0.2,0.4,0.3,0.7,0.3c0.4,0,0.8-0.2,1.1-0.7c0.3-0.4,0.5-0.8,0.6-1.2c0.1-0.6,0.2-1.1,0.1-1.7 C144.5,250.5,144.3,250.2,144,250.2z"/>
+<path fill="#215BA8" d="M146.1,248.7c0.2,0.5,0.3,1,0.3,1.5c0,0.5-0.1,1.1-0.3,1.7c-0.3,1.1-0.8,2-1.5,2.9c-0.8,1.1-1.7,1.6-2.7,1.6 c-0.8,0-1.4-0.4-1.7-1.3c-0.2-0.4-0.2-0.9-0.3-1.5c0-0.5,0.1-1.1,0.3-1.8c0.3-1.1,0.8-2,1.4-2.9c0.8-1.1,1.7-1.7,2.7-1.7 C145.2,247.4,145.7,247.8,146.1,248.7z M142.7,251.2c-0.3,0.5-0.6,1.1-0.7,1.6c-0.1,0.3-0.1,0.5-0.1,0.7c0,0.3,0.1,0.6,0.2,0.8 c0.2,0.2,0.4,0.3,0.7,0.3c0.4,0,0.8-0.2,1.1-0.7c0.3-0.3,0.5-0.8,0.6-1.3c0.1-0.6,0.2-1.1,0.1-1.7c-0.1-0.6-0.3-0.8-0.7-0.8 C143.5,250.2,143.1,250.5,142.7,251.2z"/>
+<path fill="#215BA8" d="M146,256.5c-0.2,0-0.3,0-0.5-0.1c-0.2-0.1-0.4-0.3-0.4-0.6c0-0.4,0.2-0.7,0.5-1c0.3-0.2,0.6-0.4,1-0.4 c0.1,0,0.1,0,0.2,0c0.2,0,0.4,0,0.5,0.1c0.3,0.1,0.4,0.3,0.4,0.6c0,0.4-0.2,0.7-0.6,1c-0.3,0.2-0.6,0.4-1,0.4 C146.1,256.5,146.1,256.5,146,256.5z M146.3,253.2l1.6-5.9l2.4,0.4c-0.7,1.3-1.1,2.2-1.4,2.7c-0.4,0.9-0.8,1.8-1.1,2.8l0,0 L146.3,253.2z"/>
+<path fill="#215BA8" d="M147.4,254.5c0.3,0.1,0.4,0.3,0.4,0.6c0,0.3-0.2,0.7-0.6,1c-0.3,0.2-0.6,0.4-1,0.4c-0.3,0-0.5,0-0.7-0.1 c-0.2-0.1-0.3-0.3-0.3-0.6c0-0.3,0.2-0.7,0.5-1c0.3-0.2,0.6-0.4,0.9-0.4C146.9,254.4,147.2,254.4,147.4,254.5z M147.9,247.3 l2.4,0.4c-0.6,1.1-1.1,2-1.4,2.7c-0.4,0.9-0.8,1.8-1.1,2.8l-1.6-0.1L147.9,247.3z"/>
+<path fill="#215BA8" d="M149.7,256.5c-0.2,0-0.3,0-0.5-0.1c-0.2-0.1-0.4-0.3-0.4-0.6c0-0.4,0.2-0.7,0.5-1c0.3-0.2,0.6-0.4,1-0.4 c0.1,0,0.1,0,0.2,0c0.2,0,0.4,0,0.5,0.1c0.3,0.1,0.4,0.3,0.4,0.6c0,0.4-0.2,0.7-0.6,1c-0.3,0.2-0.6,0.4-1,0.4 C149.9,256.5,149.8,256.5,149.7,256.5z M150,253.2l1.6-5.9l2.4,0.4c-0.7,1.3-1.1,2.2-1.4,2.7c-0.4,0.9-0.8,1.9-1.1,2.8l0,0 L150,253.2z"/>
+<path fill="#215BA8" d="M151.1,254.5c0.3,0.1,0.4,0.3,0.4,0.6c0,0.3-0.2,0.7-0.6,1c-0.3,0.2-0.6,0.4-1,0.4c-0.3,0-0.5,0-0.7-0.1 c-0.2-0.1-0.3-0.3-0.3-0.6c0-0.3,0.2-0.7,0.5-1c0.3-0.2,0.6-0.4,0.9-0.4C150.6,254.4,150.9,254.4,151.1,254.5z M151.7,247.3 l2.4,0.4c-0.6,1.1-1.1,2-1.4,2.7c-0.4,0.9-0.8,1.8-1.1,2.8l-1.6-0.1L151.7,247.3z"/>
+<path fill="#E31E31" stroke="#215BA8" stroke-width="0.25" stroke-miterlimit="10" d="M114.8,248.2l-1.3,1.4c-0.2-0.2-0.4-0.3-0.6-0.3c-0.4,0-0.8,0.3-1.2,1c-0.3,0.6-0.6,1.1-0.7,1.6 c0,0.2-0.1,0.4-0.1,0.6c0,0.5,0.2,0.9,0.6,1c0.1,0.1,0.3,0.1,0.4,0.1c0.4,0,0.8-0.3,1.2-0.9l0.4,1.4c-0.8,0.8-1.5,1.2-2.3,1.2 c-0.8,0-1.4-0.4-1.7-1.2c-0.2-0.5-0.3-1-0.3-1.6c0-0.4,0-0.9,0.2-1.4c0.2-1,0.7-1.9,1.3-2.8c0.8-1,1.6-1.5,2.5-1.5 C113.8,246.9,114.4,247.4,114.8,248.2z"/>
+<path fill="#E31E31" stroke="#215BA8" stroke-width="0.25" stroke-miterlimit="10" d="M113,255.7c1.1-2.8,2-5.6,2.7-8.2l3.5-0.6c-0.4,2.3-0.6,5-0.5,8.2l-2.4,0.6l0.2-1.4l-0.7,0.1l-0.3,1L113,255.7 z M116.5,252.6l0.5-4.3h0l-1.1,4.4L116.5,252.6z"/>
+<path fill="#E31E31" stroke="#215BA8" stroke-width="0.25" stroke-miterlimit="10" d="M123.2,249.8l-0.9,0.3c0-0.3-0.1-0.5-0.3-0.5c-0.3,0-0.6,0.2-0.8,0.5c-0.2,0.2-0.3,0.5-0.3,0.7 c0,0.1,0.2,0.2,0.4,0.2c0.1,0,0.3,0,0.6-0.1c0.3-0.1,0.6-0.1,0.9-0.1c0.6,0,1,0.2,1.1,0.7c0,0.1,0.1,0.3,0.1,0.4 c0,0.5-0.2,1-0.6,1.6c-0.5,0.7-1.1,1.4-2,1.9c-0.4,0.3-0.9,0.4-1.3,0.4c-0.4,0-0.8-0.1-1.2-0.3c0.2-0.4,0.5-1.1,0.9-2 c0.2,0.2,0.5,0.2,0.8,0.2c0.1,0,0.3,0,0.4,0c0.2-0.1,0.5-0.2,0.7-0.3c0.3-0.2,0.5-0.3,0.4-0.5c0-0.2-0.1-0.3-0.5-0.3 c-0.2,0-0.5,0-0.9,0.1s-0.7,0.1-0.9,0.1c-0.3,0-0.5,0-0.6-0.2c-0.3-0.2-0.4-0.5-0.4-0.9c0.1-0.8,0.6-1.8,1.6-2.9 c1-1.1,1.9-1.7,2.6-1.8c0.7,0,1.1,0.5,1.1,1.6c0,0.3,0,0.6-0.1,0.9L123.2,249.8z"/>
+<path fill="#E31E31" stroke="#215BA8" stroke-width="0.25" stroke-miterlimit="10" d="M126.6,249.8l-0.1,0.6l1.8-0.4l-0.1,1.6c-0.9,0.1-1.5,0.3-2,0.4c0,0.2-0.1,0.3-0.1,0.5l-0.1,0.4l2.1-0.3 l-0.1,2.1c-1.1,0.1-2.5,0.4-4.1,0.8l1.4-8.2l3.8-0.6l-0.1,2.1c-0.7,0.1-1.4,0.1-2,0.3C126.7,249.4,126.7,249.6,126.6,249.8z"/>
+<path fill="#E31E31" stroke="#215BA8" stroke-width="0.25" stroke-miterlimit="10" d="M129.7,247.5c1.2-0.3,2.2-0.5,2.9-0.5c1,0,1.5,0.4,1.5,1.1c0,1-0.6,2.1-1.9,3.1c0.1,0.3,0.6,1.2,1.3,2.7 l-1.8,1.6l-1.2-3.1c-0.2,1-0.3,1.9-0.4,2.7l-1.8,0.5c0-0.2,0.1-0.7,0.2-1.5L129.7,247.5z M131,250l-0.1,0.8 c0.3-0.1,0.5-0.3,0.8-0.5c0.3-0.3,0.5-0.5,0.6-0.7c0-0.1,0-0.1,0.1-0.2c0-0.2-0.1-0.3-0.3-0.3c-0.2,0-0.4,0.1-0.8,0.2 C131.1,249.5,131,249.8,131,250z"/>
+<path fill="#E31E31" stroke="#215BA8" stroke-width="0.25" stroke-miterlimit="10" d="M134.9,247.5l2-0.4c-0.8,3-1.3,5.7-1.5,7.9l-1.8,0.5L134.9,247.5z"/>
+<path fill="#E31E31" stroke="#215BA8" stroke-width="0.25" stroke-miterlimit="10" d="M141.7,247l-0.1,2.1l-1.5,0.1c-0.5,2.1-0.8,4-1,5.8l-1.9,0.5l1-6.1l-0.6,0.1l-0.6,0.1l-0.1-2.1L141.7,247z"/>
+<path fill="#E31E31" stroke="#215BA8" stroke-width="0.25" stroke-miterlimit="10" d="M146.7,248c0.2,0.5,0.3,1,0.3,1.5c0,0.5-0.1,1.1-0.3,1.7c-0.3,1.1-0.8,2-1.5,2.9c-0.8,1.1-1.7,1.6-2.7,1.6 c-0.8,0-1.4-0.4-1.7-1.3c-0.2-0.4-0.2-0.9-0.3-1.5c0-0.5,0.1-1.1,0.3-1.8c0.3-1.1,0.8-2,1.4-2.9c0.8-1.1,1.7-1.7,2.7-1.7 C145.8,246.6,146.4,247.1,146.7,248z M143.3,250.5c-0.3,0.5-0.6,1.1-0.7,1.6c-0.1,0.3-0.1,0.5-0.1,0.7c0,0.3,0.1,0.6,0.2,0.8 c0.2,0.2,0.4,0.3,0.7,0.3c0.4,0,0.8-0.2,1.1-0.7c0.3-0.3,0.5-0.8,0.6-1.3c0.1-0.6,0.2-1.1,0.1-1.7c-0.1-0.6-0.3-0.8-0.7-0.8 C144.2,249.4,143.8,249.8,143.3,250.5z"/>
+<path fill="#E31E31" stroke="#215BA8" stroke-width="0.25" stroke-miterlimit="10" d="M148,253.8c0.3,0.1,0.4,0.3,0.4,0.6c0,0.3-0.2,0.7-0.6,1c-0.3,0.2-0.6,0.4-1,0.4c-0.3,0-0.5,0-0.7-0.1 c-0.2-0.1-0.3-0.3-0.3-0.6c0-0.3,0.2-0.7,0.5-1c0.3-0.2,0.6-0.4,0.9-0.4C147.6,253.6,147.8,253.7,148,253.8z M148.6,246.6l2.4,0.4 c-0.6,1.1-1.1,2-1.4,2.7c-0.4,0.9-0.8,1.8-1.1,2.8l-1.6-0.1L148.6,246.6z"/>
+<path fill="#E31E31" stroke="#215BA8" stroke-width="0.25" stroke-miterlimit="10" d="M151.7,253.8c0.3,0.1,0.4,0.3,0.4,0.6c0,0.3-0.2,0.7-0.6,1c-0.3,0.2-0.6,0.4-1,0.4c-0.3,0-0.5,0-0.7-0.1 c-0.2-0.1-0.3-0.3-0.3-0.6c0-0.3,0.2-0.7,0.5-1c0.3-0.2,0.6-0.4,0.9-0.4C151.3,253.6,151.5,253.7,151.7,253.8z M152.3,246.6 l2.4,0.4c-0.6,1.1-1.1,2-1.4,2.7c-0.4,0.9-0.8,1.8-1.1,2.8l-1.6-0.1L152.3,246.6z"/>
+</svg>
+    <span class="chip">Para locales</span>
+  </div>
+</header>
+<svg class="ola" aria-hidden="true" viewBox="0 0 390 22" preserveAspectRatio="none"><path d="M0 0H390V8Q341 22 292 12T195 12T97 12T0 8Z" fill="#FFD100"/></svg>
+
+<main class="envoltorio">
+  <div class="hero">
+    <h1 class="letrista">LLENA TU HORA <span>MÁS TRANQUILA</span></h1>
+    <p>Caserito reemplaza el flyer. Sueltas una oferta corta, un <strong>drop</strong>, y los vecinos que andan cerca la ven en el mapa y van a buscarla. Tú solo escaneas su código en la caja.</p>
+    <div class="botones">
+      <a class="boton principal" href="https://caserito-app-flax.vercel.app">Prueba la app</a>
+      <a class="boton secundario" href="#sumarme">Quiero sumarme</a>
+    </div>
+  </div>
+
+  <section aria-labelledby="como">
+    <h2 id="como" class="letrista">CÓMO FUNCIONA</h2>
+    <ol class="pasos">
+      <li class="paso"><span class="num letrista" aria-hidden="true">1</span><div><h3>Sueltas un drop</h3><p>Desde tu celular, en 2 minutos: qué ofreces, a qué precio, cuántos hay y hasta qué hora. Ejemplo: "10 cortados a $1.000 hasta las 17:00".</p></div></li>
+      <li class="paso"><span class="num letrista" aria-hidden="true">2</span><div><h3>Los caseritos lo ven en el mapa</h3><p>La gente del barrio ve tu drop, a cuántas cuadras está y cuántos quedan. El "quedan 3" hace que se apuren.</p></div></li>
+      <li class="paso"><span class="num letrista" aria-hidden="true">3</span><div><h3>Llegan y canjean</h3><p>Cuando el caserito llega a tu local (a unos 50 m), le aparece un código QR. Tú lo escaneas con la cámara de tu celular y listo: queda contado.</p></div></li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="tipos">
+    <h2 id="tipos" class="letrista">TIPOS DE DROP</h2>
+    <div class="grilla">
+      <div class="tarjeta"><span class="etiqueta" style="background:#E30A2F;color:#FFF6E5">Normal</span><h3>Oferta con cupo</h3><p>Un producto, un precio y una cantidad. Cuando se acaba, se acaba.</p><p class="ej">"8 empanadas de pino a $1.500"</p></div>
+      <div class="tarjeta"><span class="etiqueta" style="background:#1E5AA8;color:#FFF6E5">Grupal</span><h3>Mientras más vienen, mejor</h3><p>El descuento sube según cuántos canjean: por ejemplo 10 personas = 10%, 25 = 20%, 50 = 2x1. Siempre se aplica el nivel más alto que se alcance.</p><p class="ej">Ideal para que te traigan amigos.</p></div>
+      <div class="tarjeta"><span class="etiqueta" style="background:#B45309;color:#FFF6E5">Sorpresa</span><h3>Caja misteriosa</h3><p>Muestras solo el precio. Qué es se descubre en el local.</p><p class="ej">"Caja sorpresa del día a $3.000"</p></div>
+      <div class="tarjeta"><span class="etiqueta" style="background:#111111;color:#FFD100">Recién llegado</span><h3>Aviso sin descuento</h3><p>Para tiendas: avisa cuando entra mercadería nueva, aunque no haya rebaja.</p><p class="ej">"Llegaron 40 vinilos de jazz"</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="panel">
+    <h2 id="panel" class="letrista">TU PANEL</h2>
+    <p style="margin-top:0">Se abre en el navegador del celular: no hay nada que instalar. Puedes agregarlo a tu pantalla de inicio como una app.</p>
+    <div class="grilla">
+      <div class="tarjeta"><h3>Crear</h3><p>Armas el drop. La app te sugiere frases con el estilo de tu cocina y tú apruebas la que te guste.</p></div>
+      <div class="tarjeta"><h3>Mis drops</h3><p>Ves los activos y los pasados. Puedes editarlos, pausarlos o duplicar uno que funcionó bien.</p></div>
+      <div class="tarjeta"><h3>Escanear</h3><p>La cámara lee el QR del caserito y te dice al tiro si es válido.</p></div>
+      <div class="tarjeta"><h3>Resultados</h3><p>Cuántos lo vieron, cuántos se anotaron y cuántos canjearon. También las reseñas de tus clientes, que puedes responder.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="ganas">
+    <div class="negra">
+      <h2 id="ganas" class="letrista">LO QUE GANAS</h2>
+      <ul class="lista">
+        <li><strong>Movimiento en tus horas muertas.</strong> Sueltas el drop justo cuando el local está tranquilo.</li>
+        <li><strong>Clientes nuevos que pasan por el barrio,</strong> no solo seguidores en redes.</li>
+        <li><strong>Resultados que se miden:</strong> sabes exactamente cuántos llegaron por cada drop.</li>
+        <li><strong>Reseñas verificadas:</strong> solo puede opinar quien canjeó en tu local. Nada de reseñas falsas.</li>
+        <li><strong>Tu lámina en el Álbum del barrio:</strong> los caseritos la ganan con su primer canje en tu local y vuelven por más.</li>
+        <li><strong>Turistas también:</strong> la app tiene modo en inglés (Spanglish) para quienes visitan Barrio Italia.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section aria-labelledby="costo">
+    <h2 id="costo" class="letrista">CUÁNTO CUESTA</h2>
+    <div class="precio">
+      <div class="tarjeta"><span class="etiqueta" style="background:#FFD100">Locales fundadores</span><p class="grande letrista">GRATIS 3 MESES</p><p>Para los primeros 20 locales de Barrio Italia.</p></div>
+      <div class="tarjeta"><span class="etiqueta" style="background:#F3E6CC;border:2px solid #111">Después</span><p class="grande letrista" style="color:#111">SUSCRIPCIÓN MENSUAL</p><p>Te contamos el valor antes de que terminen los 3 meses. Sin comisión por canje y sin contrato: si no te sirve, lo dejas.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="lanzamiento">
+    <h2 id="lanzamiento" class="letrista">EL DÍA DEL CASERITO</h2>
+    <div class="tarjeta">
+      <p>Lanzamos un sábado con <strong>todos los locales fundadores soltando drops el mismo día</strong>, en horarios distintos: cafés en la mañana, almuerzos al mediodía, tiendas y bares en la tarde. Así el mapa se llena y la gente recorre el barrio de local en local. Tú solo preparas un drop para ese día.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="preguntas">
+    <h2 id="preguntas" class="letrista">PREGUNTAS</h2>
+    <details><summary>¿Necesito algo especial?</summary><p>Solo un celular con cámara e internet. El panel funciona en iPhone y Android.</p></details>
+    <details><summary>¿Tengo que dar descuentos grandes?</summary><p>No. Puede ser una yapa, un precio especial chico o un aviso de "recién llegado" sin descuento. Tú decides qué y cuántos.</p></details>
+    <details><summary>¿Y si alguien quiere canjear sin estar en el local?</summary><p>No puede. El código aparece solo cuando la persona está en tu local, y además tú lo escaneas en la caja. Cada código sirve una vez.</p></details>
+    <details><summary>¿Qué pasa cuando se acaba el cupo?</summary><p>El drop se cierra solo y desaparece del mapa. Nadie llega a reclamar algo que ya no hay.</p></details>
+    <details><summary>¿Puedo pausar o cambiar un drop?</summary><p>Sí, cuando quieras desde "Mis drops". Si ya hay gente anotada, el precio y el tipo quedan fijos para no engañar a nadie.</p></details>
+    <details><summary>¿Qué datos de mi local se muestran?</summary><p>Nombre, logo, categoría y ubicación en el mapa. Los clientes no ven tus datos de contacto ni tus ventas.</p></details>
+  </section>
+
+  <section class="cierre" id="sumarme" aria-labelledby="sumate">
+    <h2 id="sumate" class="letrista">¿TE SUMAS?</h2>
+    <p>Te inscribimos en 10 minutos, en tu mismo local: creamos tu cuenta, subimos tu logo y dejamos listo tu primer drop.</p>
+    <div class="botones">
+      <a class="boton principal" id="whatsapp" href="#" hidden>Escríbenos por WhatsApp</a>
+      <a class="boton secundario" href="https://caserito-app-flax.vercel.app">Prueba la app</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span class="letrista">¿YA ERES CASERITO DE BARRIO ITALIA?</span>
+  Caserito · Tu barrio te tiene ofertas
+</footer>
+
+<script>
+  // Número de WhatsApp de contacto (solo dígitos, con 56). Si está vacío, el botón no se muestra.
+  var WHATSAPP = '';
+  if (WHATSAPP) {
+    var b = document.getElementById('whatsapp');
+    b.href = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent('Hola, quiero sumar mi local a Caserito');
+    b.hidden = false;
+  }
+</script>
+</body>
+</html>
