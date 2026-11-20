@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import * as Location from 'expo-location';
@@ -95,6 +95,18 @@ function Caserito() {
 
   useEffect(() => { cargar(); const t = setInterval(cargar, 30000); return () => clearInterval(t); }, [cargar]);
 
+  // 5) Llegó desde el QR o el NFC de un local (?local=ID): abrimos su drop en vivo, sin pasos extra
+  const localQr = useRef(Platform.OS === 'web' ? leerLocalQr() : null);
+  const [avisoQr, setAvisoQr] = useState('');
+  useEffect(() => {
+    if (!localQr.current || cargando) return;
+    const id = localQr.current;
+    localQr.current = null;
+    const suyos = drops.filter((d) => d.local_id === id);
+    if (suyos.length) { setAbierto(suyos[0].drop_id); setPestana('inicio'); }
+    else setAvisoQr('sin_drops');
+  }, [cargando, drops]);
+
   // 4) Avisos push: si ya dio permiso, renovamos el token y el idioma al abrir
   const idioma = tur ? 'sp' : 'es';
   const hayPos = !!pos;
@@ -143,6 +155,7 @@ function Caserito() {
             <Ayuda alCerrar={() => setPestana('inicio')} />
           ) : pestana === 'inicio' ? (
             <Inicio drops={drops} usuario={usuario} pos={pos} lejos={lejos} alAbrir={abrir} alRefrescar={cargar} alAyuda={() => setPestana('ayuda')}
+              avisoQr={avisoQr} alCerrarAvisoQr={() => setAvisoQr('')}
               avisos={avisos} avisoMotivo={avisoMotivo} alPrenderAvisos={prenderAvisos} alCerrarAvisos={cerrarAvisos} />
           ) : pestana === 'tu' ? (
             <Cuenta key={usuario.id} usuario={usuario} alAyuda={() => setPestana('ayuda')} />
@@ -176,4 +189,16 @@ function Tab({ id, texto, actual, setear, d }) {
       <Text style={{ color, fontFamily: activa ? F.negrita : F.media, fontSize: 11 }}>{texto}</Text>
     </Pressable>
   );
+}
+
+// Lee ?local=ID de la dirección (QR o NFC del local) y lo saca para que no se repita al recargar
+function leerLocalQr() {
+  try {
+    const u = new URL(window.location.href);
+    const id = u.searchParams.get('local');
+    if (!id) return null;
+    u.searchParams.delete('local');
+    window.history.replaceState({}, '', u.pathname + u.search + u.hash);
+    return /^[0-9a-f-]{36}$/i.test(id) ? id : null;
+  } catch { return null; }
 }

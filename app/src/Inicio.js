@@ -16,7 +16,7 @@ function etiquetaPara(d, hora, t, cuad) {
   return cuad(d.cuadras).toUpperCase();
 }
 
-export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda, avisos, avisoMotivo, alPrenderAvisos, alCerrarAvisos }) {
+export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda, avisos, avisoMotivo, alPrenderAvisos, alCerrarAvisos, avisoQr, alCerrarAvisoQr }) {
   const [filtro, setFiltro] = useState('todo');
   const [gustos, setGustos] = useState([]);
   const [i, setI] = useState(0);
@@ -98,6 +98,17 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
           </Pressable>
         )}
       </View>
+
+      {avisoQr === 'sin_drops' && (
+        <View style={{ marginHorizontal: 16, marginTop: 12, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.azul, borderRadius: 18, padding: 14, gap: 8 }}>
+          <Text style={{ ...letrista, fontSize: 17 }}>{t('¡BIENVENIDO A CASERITO!', '¡BIENVENIDO! WELCOME TO CASERITO')}</Text>
+          <Text style={{ fontFamily: F.normal, fontSize: 14 }}>
+            {t('Este local no tiene un drop en vivo justo ahora. Mira abajo lo que hay en el barrio, y vuelve más rato: los locales sueltan ofertas durante el día.',
+               'Este local no tiene drop right now. Mira lo que hay en el barrio abajo y vuelve más rato: los locales sueltan ofertas all day.')}
+          </Text>
+          <Boton texto={t('Entendido', 'Ok, ¡bacán!')} fondo={C.papel} color={C.negro} onPress={alCerrarAvisoQr} />
+        </View>
+      )}
 
       {(avisos === 'pendiente' || avisos === 'bloqueado') && (
         <View style={{ marginHorizontal: 16, marginTop: 12, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: 18, padding: 14, gap: 8 }}>

@@ -9,6 +9,9 @@ export const supabase = createClient(url, key, { db: { schema: 'caserito' } });
 
 export function explicar(error) {
   const m = (error && (error.message || String(error))) || 'Error desconocido';
+  if (/Could not find the function|function .* does not exist|PGRST202/i.test(m)) {
+    return 'Falta actualizar la base de datos: corre en Supabase los SQL pendientes (SQL Editor → Run).';
+  }
   if (/schema must be one of|Invalid schema/i.test(m)) {
     return 'Falta exponer el schema "caserito": Supabase → Settings → API → Exposed schemas → agregar caserito.';
   }
