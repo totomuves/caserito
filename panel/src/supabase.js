@@ -20,3 +20,21 @@ export function explicar(error) {
   if (/rate limit/i.test(m)) return 'Muchos intentos seguidos. Espera unos minutos y vuelve a probar.';
   return m;
 }
+
+// Código de invitación que viene en el link (?invitacion=XXXX); se guarda hasta que el local se inscribe
+const CLAVE_INV = 'caserito_invitacion';
+export function leerInvitacion() {
+  try {
+    const u = new URL(window.location.href);
+    const c = u.searchParams.get('invitacion');
+    if (c) {
+      localStorage.setItem(CLAVE_INV, c.trim().toUpperCase());
+      u.searchParams.delete('invitacion');
+      window.history.replaceState({}, '', u.pathname + u.search + u.hash);
+    }
+    return localStorage.getItem(CLAVE_INV);
+  } catch { return null; }
+}
+export function olvidarInvitacion() {
+  try { localStorage.removeItem(CLAVE_INV); } catch { /* nada */ }
+}

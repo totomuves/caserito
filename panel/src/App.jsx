@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase, explicar } from './supabase.js';
+import { supabase, explicar, leerInvitacion, olvidarInvitacion } from './supabase.js';
 import Login from './Login.jsx';
 import ConfigurarLocal from './ConfigurarLocal.jsx';
 import Crear from './Crear.jsx';
@@ -19,6 +19,24 @@ export default function App() {
   const [editandoLocal, setEditandoLocal] = useState(false);
   const [base, setBase] = useState(null);
   const [aviso, setAviso] = useState('');
+  const [avisoInv, setAvisoInv] = useState('');
+
+  useEffect(() => { leerInvitacion(); }, []);
+
+  // Si llegó con link de invitación, al tener local se aprueba solo
+  useEffect(() => {
+    if (!local || local.aprobado) return;
+    const codigo = leerInvitacion();
+    if (!codigo) return;
+    supabase.rpc('usar_invitacion', { p_codigo: codigo }).then(async ({ error }) => {
+      if (error && /Primero inscribe/.test(error.message)) return;
+      olvidarInvitacion();
+      if (error) { setAvisoInv(explicar(error)); return; }
+      const r = await supabase.from('locales').select('*').eq('id', local.id).single();
+      if (r.data) setLocal(r.data);
+      setAvisoInv('¡Bienvenido a Caserito! Tu local quedó aprobado y tus drops ya se ven en el mapa.');
+    });
+  }, [local]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSesion(data.session));
@@ -74,6 +92,7 @@ export default function App() {
 
   return (
     <Marco local={local}>
+      {avisoInv && <div className="tarjeta" style={{ margin: '16px 16px 0', borderColor: 'var(--azul)' }}>{avisoInv}</div>}
       {!local.aprobado && (
         <div className="tarjeta" style={{ margin: '16px 16px 0', borderColor: 'var(--rojo)' }}>
           <b>Tu local está en revisión</b>

@@ -22,6 +22,7 @@ Proyecto: `https://mkmcfeezspgjdygustpd.supabase.co` (compartido con otra app; t
    `insert into caserito.admins (user_id) select id from auth.users where email = 'TU_CORREO';`
 
 6. SQL Editor → pegar `supabase/004_categorias_multiples.sql` → Run (hasta 3 categorías por local y categorías nuevas).
+7. SQL Editor → pegar `supabase/005_invitaciones.sql` → Run (links de invitación desde el admin).
 
 Los locales nuevos quedan **en revisión** hasta que el admin los aprueba desde el panel.
 

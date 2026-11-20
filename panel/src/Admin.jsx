@@ -8,6 +8,7 @@ const SECCIONES = [
   { id: 'locales', texto: 'Locales' },
   { id: 'drops', texto: 'Drops' },
   { id: 'resenas', texto: 'Reseñas' },
+  { id: 'invitar', texto: 'Invitar locales' },
 ];
 
 export default function Admin() {
@@ -24,6 +25,7 @@ export default function Admin() {
       {seccion === 'locales' && <Locales />}
       {seccion === 'drops' && <Drops />}
       {seccion === 'resenas' && <Resenas />}
+      {seccion === 'invitar' && <Invitar />}
     </div>
   );
 }
@@ -179,5 +181,64 @@ export function Estrellas({ n }) {
     <span aria-label={`${n} de 5 estrellas`} style={{ color: 'var(--rojo)', fontWeight: 800, letterSpacing: 1, whiteSpace: 'nowrap' }}>
       {'★'.repeat(n)}<span style={{ color: '#CDBF9F' }}>{'★'.repeat(5 - n)}</span>
     </span>
+  );
+}
+
+function Invitar() {
+  const { datos, error, recargar } = useCarga(() => supabase.from('invitaciones')
+    .select('codigo, nombre_local, creada_at, usada_at').order('creada_at', { ascending: false }).limit(50));
+  const [nombre, setNombre] = useState('');
+  const [msg, setMsg] = useState('');
+  const [nueva, setNueva] = useState(null);
+
+  const link = (c) => `${window.location.origin}/?invitacion=${c}`;
+  const textoWsp = (n, c) => `¡Hola${n ? ' ' + n : ''}! Te invito a Caserito, la app de drops de Barrio Italia. Inscribe tu local aquí y queda aprobado al tiro: ${link(c)}`;
+
+  async function crear(e) {
+    e.preventDefault();
+    setMsg('');
+    const { data: u } = await supabase.auth.getUser();
+    const { data, error } = await supabase.from('invitaciones')
+      .insert({ nombre_local: nombre.trim() || null, creada_por: u.user.id }).select().single();
+    if (error) { setMsg(explicar(error)); return; }
+    setNueva(data); setNombre(''); recargar();
+  }
+
+  async function copiar(c) {
+    try { await navigator.clipboard.writeText(link(c)); setMsg('Link copiado.'); } catch { setMsg(link(c)); }
+  }
+
+  if (error) return <div className="error">{error}</div>;
+  return (
+    <>
+      <form className="tarjeta" onSubmit={crear}>
+        <b>Nuevo link de invitación</b>
+        <p className="ayuda">El local que se inscribe con este link queda aprobado al tiro. Cada link sirve para un local.</p>
+        <label className="campo">Nombre del local (opcional, para que lo reconozcas)
+          <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej: Arepera La Chamita" />
+        </label>
+        <button className="boton">Crear link</button>
+      </form>
+      {msg && <div className="tarjeta">{msg}</div>}
+      {nueva && (
+        <div className="exito">
+          <b>Link listo{nueva.nombre_local ? ' para ' + nueva.nombre_local : ''}</b>
+          <span style={{ wordBreak: 'break-all', fontSize: 13 }}>{link(nueva.codigo)}</span>
+          <div className="pildoras">
+            <a className="pildora" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+              href={`https://wa.me/?text=${encodeURIComponent(textoWsp(nueva.nombre_local, nueva.codigo))}`} target="_blank" rel="noreferrer">Mandar por WhatsApp</a>
+            <button className="pildora" onClick={() => copiar(nueva.codigo)}>Copiar link</button>
+          </div>
+        </div>
+      )}
+      {datos && datos.map((i) => (
+        <div className="tarjeta" key={i.codigo} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+          <span><b>{i.nombre_local || 'Sin nombre'}</b><br /><span className="ayuda">{i.codigo} · {new Date(i.creada_at).toLocaleDateString('es-CL')}</span></span>
+          {i.usada_at
+            ? <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--azul)' }}>USADA</span>
+            : <button className="pildora" onClick={() => copiar(i.codigo)}>Copiar</button>}
+        </div>
+      ))}
+    </>
   );
 }
