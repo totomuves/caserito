@@ -184,12 +184,18 @@ export default function App() {
 }
 
 function Marco({ local, rol, children, alAyuda }) {
+  // El correo con que está conectado, para que no haya dudas de qué cuenta es
+  const [correo, setCorreo] = useState('');
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setCorreo((data.session && data.session.user.email) || ''));
+  }, []);
   return (
     <div className="app">
       <header className="barra">
         <div>
           <span className="marca"><img src="/logo.svg" alt="Caserito" style={{ height: 30, display: 'block' }} /><small style={{ color: 'var(--amarillo)', fontWeight: 800 }}>Local</small></span>
           {local && <small>{local.nombre}{rol && rol !== 'Dueño' ? ` · ${rol}` : ''}</small>}
+          {correo && <small className="correo-sesion" title={correo}>Conectado como {correo}</small>}
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
           {alAyuda && <button className="pildora" style={{ background: 'transparent', color: 'var(--amarillo)', borderColor: 'var(--amarillo)' }} onClick={alAyuda}>Ayuda</button>}

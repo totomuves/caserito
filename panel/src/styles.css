@@ -15,6 +15,8 @@ button, input, select, textarea { font-family: inherit; font-size: 16px; color: 
 .barra { background: var(--negro); color: var(--papel); padding: 16px 18px 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .barra .marca { font-size: 20px; color: var(--amarillo); }
 .barra small { display: block; font-size: 13px; font-weight: 600; margin-top: 2px; }
+.barra .correo-sesion { color: #D9CFBC; font-weight: 500; font-size: 12px; max-width: 52vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.barra > div:first-child { min-width: 0; }
 .toldo { height: 14px; background: repeating-linear-gradient(90deg, var(--rojo) 0 26px, var(--papel) 26px 52px); }
 .contenido { flex: 1; padding: 18px 16px 110px; display: flex; flex-direction: column; gap: 16px; }
 h1 { font-size: 26px; margin: 0; }
