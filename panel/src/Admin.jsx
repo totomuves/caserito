@@ -62,12 +62,15 @@ function Resumen() {
       </div>
       <div className="stats">
         <div className="stat"><b>{d.caseritos}</b><span>caseritos</span></div>
+        <div className="stat"><b>{d.con_cuenta ?? 0}</b><span>con cuenta</span></div>
+        <div className="stat"><b>{d.visitas ?? '–'}</b><span>visitas ({d.visitas_semana ?? 0} esta semana)</span></div>
         <div className="stat"><b>{d.locales_aprobados}</b><span>locales activos</span></div>
         <div className="stat" style={{ background: d.locales_pendientes ? 'var(--amarillo)' : undefined }}><b>{d.locales_pendientes}</b><span style={{ color: 'var(--negro)' }}>por aprobar</span></div>
         <div className="stat"><b>{d.drops_activos}</b><span>drops ahora</span></div>
         <div className="stat"><b>{d.drops_semana}</b><span>drops semana</span></div>
         <div className="stat"><b>{d.resenas}</b><span>reseñas</span></div>
       </div>
+      <p className="ayuda">Caseritos: se sumaron a al menos un drop. Visitas: teléfonos o navegadores que abrieron la app (cada uno cuenta aparte, también tus pruebas). No se cuentan locales ni admins.</p>
     </>
   );
 }
