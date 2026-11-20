@@ -169,9 +169,9 @@ export default function App() {
       {vista === 'escanear' && <Escanear />}
       {vista === 'resultados' && <Resultados local={local} />}
       {pestanas.length > 1 && <nav className="nav" aria-label="Secciones">
-        {pestanas.includes('crear') && <Tab id="crear" actual={vista} setear={(p) => { setBase(null); setPestana(p); }} texto="Crear" icono="M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM12 8v8M8 12h8" />
-        {pestanas.includes('drops') && <Tab id="drops" actual={vista} setear={(p) => { setAviso(''); setPestana(p); }} texto="Mis drops" icono="M4 6h16M4 12h16M4 18h10" />
-        {pestanas.includes('escanear') && <Tab id="escanear" actual={vista} setear={setPestana} texto="Escanear" icono="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M4 12h16" />
+        {pestanas.includes('crear') && <Tab id="crear" actual={vista} setear={(p) => { setBase(null); setPestana(p); }} texto="Crear" icono="M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM12 8v8M8 12h8" />}
+        {pestanas.includes('drops') && <Tab id="drops" actual={vista} setear={(p) => { setAviso(''); setPestana(p); }} texto="Mis drops" icono="M4 6h16M4 12h16M4 18h10" />}
+        {pestanas.includes('escanear') && <Tab id="escanear" actual={vista} setear={setPestana} texto="Escanear" icono="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M4 12h16" />}
         {pestanas.includes('resultados') && <Tab id="resultados" actual={vista} setear={setPestana} texto="Resultados" icono="M5 20V10M12 20V4M19 20v-7" />}
       </nav>}
     </Marco>
