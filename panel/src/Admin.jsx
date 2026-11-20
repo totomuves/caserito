@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, explicar } from './supabase.js';
 import { formatoPrecio } from './frases.js';
-import { CATEGORIAS } from './ConfigurarLocal.jsx';
+import { textoCategoria } from './categorias.js';
 
 const SECCIONES = [
   { id: 'resumen', texto: 'Resumen' },
@@ -64,7 +64,7 @@ function Resumen() {
 
 function Locales() {
   const { datos, error, recargar } = useCarga(() => supabase.from('locales')
-    .select('id, nombre, categoria, cocina_pais, direccion, aprobado, activo, creado_at')
+    .select('id, nombre, categoria, categorias, cocina_pais, direccion, aprobado, activo, creado_at')
     .order('aprobado').order('creado_at', { ascending: false }));
   const [msg, setMsg] = useState('');
 
@@ -89,7 +89,7 @@ function Locales() {
             </span>
           </div>
           <span className="ayuda">
-            {(CATEGORIAS.find((c) => c.id === l.categoria) || {}).texto}{l.cocina_pais ? ' · ' + l.cocina_pais : ''}{l.direccion ? ' · ' + l.direccion : ''}
+            {(l.categorias && l.categorias.length ? l.categorias : [l.categoria]).map(textoCategoria).join(', ')}{l.cocina_pais ? ' · ' + l.cocina_pais : ''}{l.direccion ? ' · ' + l.direccion : ''}
             {' · inscrito ' + new Date(l.creado_at).toLocaleDateString('es-CL')}
           </span>
           <div style={{ display: 'flex', gap: 8 }}>

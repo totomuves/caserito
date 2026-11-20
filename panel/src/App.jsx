@@ -15,6 +15,7 @@ export default function App() {
   const [admin, setAdmin] = useState(false);
   const [soloAdmin, setSoloAdmin] = useState(false);
   const [recuperando, setRecuperando] = useState(false);
+  const [editandoLocal, setEditandoLocal] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSesion(data.session));
@@ -59,6 +60,14 @@ export default function App() {
     );
   }
   if (!local) return <Marco><ConfigurarLocal usuario={sesion.user} alGuardar={setLocal} /></Marco>;
+  if (editandoLocal) {
+    return (
+      <Marco local={local}>
+        <ConfigurarLocal usuario={sesion.user} local={local}
+          alGuardar={(l) => { setLocal(l); setEditandoLocal(false); }} alCancelar={() => setEditandoLocal(false)} />
+      </Marco>
+    );
+  }
 
   return (
     <Marco local={local}>
@@ -68,7 +77,10 @@ export default function App() {
           <span className="ayuda">Puedes preparar drops, pero los caseritos los verán cuando aprobemos tu local. Normalmente es el mismo día.</span>
         </div>
       )}
-      {admin && <div style={{ margin: '12px 16px 0' }}><button className="pildora activa" onClick={() => setSoloAdmin(true)}>Ir al admin</button></div>}
+      <div style={{ margin: '12px 16px 0', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <button className="pildora" onClick={() => setEditandoLocal(true)}>Editar mi local</button>
+        {admin && <button className="pildora activa" onClick={() => setSoloAdmin(true)}>Ir al admin</button>}
+      </div>
       {pestana === 'crear' && <Crear local={local} />}
       {pestana === 'escanear' && <Escanear />}
       {pestana === 'resultados' && <Resultados local={local} />}

@@ -20,15 +20,32 @@ export const F = {
 // Estilo de los títulos/precios: mayúsculas de cartel, inclinadas
 export const letrista = { fontFamily: F.letrista, fontStyle: 'italic', letterSpacing: 0.5 };
 
+// Debe coincidir con caserito.categorias_validas() (supabase/004)
 export const CATEGORIAS = [
   { id: 'todo', texto: 'Todo' },
   { id: 'comer', texto: 'Comer' },
+  { id: 'tomar', texto: 'Tomar' },
   { id: 'cafe', texto: 'Café' },
-  { id: 'musica', texto: 'Música' },
-  { id: 'ropa', texto: 'Ropa' },
+  { id: 'dulce', texto: 'Dulce' },
+  { id: 'almacen', texto: 'Almacén' },
   { id: 'diseno', texto: 'Diseño' },
+  { id: 'deco', texto: 'Deco y muebles' },
+  { id: 'antiguedades', texto: 'Antigüedades' },
+  { id: 'ropa', texto: 'Ropa y vintage' },
+  { id: 'accesorios', texto: 'Accesorios' },
+  { id: 'libros', texto: 'Libros' },
+  { id: 'musica', texto: 'Música' },
+  { id: 'arte', texto: 'Arte' },
+  { id: 'plantas', texto: 'Plantas' },
+  { id: 'belleza', texto: 'Belleza' },
+  { id: 'bienestar', texto: 'Bienestar' },
+  { id: 'mascotas', texto: 'Mascotas' },
   { id: 'otros', texto: 'Otros' },
 ];
+
+export function tieneCategoria(d, id) {
+  return (d.categorias && d.categorias.length ? d.categorias : [d.categoria]).includes(id);
+}
 
 export function textoCategoria(id) {
   const c = CATEGORIAS.find((x) => x.id === id);

@@ -21,6 +21,8 @@ Proyecto: `https://mkmcfeezspgjdygustpd.supabase.co` (compartido con otra app; t
 5. Crear tu cuenta en el panel del local y hacerte admin:
    `insert into caserito.admins (user_id) select id from auth.users where email = 'TU_CORREO';`
 
+6. SQL Editor → pegar `supabase/004_categorias_multiples.sql` → Run (hasta 3 categorías por local y categorías nuevas).
+
 Los locales nuevos quedan **en revisión** hasta que el admin los aprueba desde el panel.
 
 La llave del cliente es la *publishable* (pública por diseño). La `service_role`/`secret` nunca va en el repo.

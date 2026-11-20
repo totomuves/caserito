@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { supabase } from './supabase';
-import { C, F, letrista, CATEGORIAS, textoCategoria, precio, cuadras } from './tema';
+import { C, F, letrista, CATEGORIAS, textoCategoria, tieneCategoria, precio, cuadras } from './tema';
 import { Ola, Brillo, Pildora, EtiquetaPrecio, Boton } from './componentes';
 
 function etiquetaPara(d, hora) {
@@ -29,7 +29,8 @@ export default function Inicio({ drops, usuario, alAbrir, alRefrescar }) {
 
   // La pizarra: primero lo que calza con tus gustos
   const frases = useMemo(() => {
-    const orden = [...drops].sort((a, b) => (activos.includes(b.categoria) ? 1 : 0) - (activos.includes(a.categoria) ? 1 : 0));
+    const calza = (d) => (activos.some((c) => tieneCategoria(d, c)) ? 1 : 0);
+    const orden = [...drops].sort((a, b) => calza(b) - calza(a));
     const lista = orden.map((d) => ({
       tag: etiquetaPara(d, hora),
       texto: (d.frase || `${d.titulo} ${precio(d.precio)} en ${d.local_nombre}, ${cuadras(d.cuadras)}.`).toUpperCase(),
@@ -44,7 +45,7 @@ export default function Inicio({ drops, usuario, alAbrir, alRefrescar }) {
   }, []);
   const f = frases[i % frases.length];
 
-  const visibles = filtro === 'todo' ? drops : drops.filter((d) => d.categoria === filtro);
+  const visibles = filtro === 'todo' ? drops : drops.filter((d) => tieneCategoria(d, filtro));
 
   async function alternar(g) {
     setGustos(gustos.map((x) => (x.id === g.id ? { ...x, activo: !x.activo } : x)));

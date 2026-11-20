@@ -1,25 +1,26 @@
 import React, { useState } from 'react';
 import { supabase, explicar } from './supabase.js';
 import { COCINAS } from './frases.js';
+import { GRUPOS, CON_COCINA, MAX_CATEGORIAS } from './categorias.js';
 
-export const CATEGORIAS = [
-  { id: 'comer', texto: 'Comer' },
-  { id: 'cafe', texto: 'Café' },
-  { id: 'musica', texto: 'Música' },
-  { id: 'ropa', texto: 'Ropa' },
-  { id: 'diseno', texto: 'Diseño y hogar' },
-  { id: 'otros', texto: 'Otros' },
-];
-
-export default function ConfigurarLocal({ usuario, alGuardar }) {
-  const [nombre, setNombre] = useState('');
-  const [categoria, setCategoria] = useState('comer');
-  const [cocina, setCocina] = useState('Chilena');
-  const [estrella, setEstrella] = useState('');
-  const [direccion, setDireccion] = useState('');
+// Sirve para inscribir un local nuevo o editar el propio (si recibe "local")
+export default function ConfigurarLocal({ usuario, local, alGuardar, alCancelar }) {
+  const editando = !!local;
+  const [nombre, setNombre] = useState(local ? local.nombre : '');
+  const [categorias, setCategorias] = useState(local ? (local.categorias && local.categorias.length ? local.categorias : [local.categoria]) : []);
+  const [cocina, setCocina] = useState((local && local.cocina_pais) || 'Chilena');
+  const [estrella, setEstrella] = useState((local && local.producto_estrella) || '');
+  const [direccion, setDireccion] = useState((local && local.direccion) || '');
   const [pos, setPos] = useState(null);
   const [error, setError] = useState('');
   const [guardando, setGuardando] = useState(false);
+
+  function alternar(id) {
+    setError('');
+    if (categorias.includes(id)) setCategorias(categorias.filter((c) => c !== id));
+    else if (categorias.length >= MAX_CATEGORIAS) setError(`Elige hasta ${MAX_CATEGORIAS}. La primera que marques es la principal.`);
+    else setCategorias([...categorias, id]);
+  }
 
   function ubicar() {
     setError('');
@@ -31,39 +32,57 @@ export default function ConfigurarLocal({ usuario, alGuardar }) {
     );
   }
 
+  const usaCocina = categorias.some((c) => CON_COCINA.includes(c));
+
   async function guardar(e) {
     e.preventDefault();
-    if (!pos) { setError('Marca la ubicación estando dentro del local.'); return; }
+    if (!categorias.length) { setError('Elige al menos una categoría.'); return; }
+    if (!editando && !pos) { setError('Marca la ubicación estando dentro del local.'); return; }
     setGuardando(true); setError('');
-    const { data, error } = await supabase.from('locales').insert({
-      dueno_id: usuario.id,
+    const campos = {
       nombre: nombre.trim(),
-      categoria,
-      cocina_pais: categoria === 'comer' || categoria === 'cafe' ? cocina : null,
+      categorias,
+      categoria: categorias[0],
+      cocina_pais: usaCocina ? cocina : null,
       producto_estrella: estrella.trim() || null,
       direccion: direccion.trim() || null,
-      ubicacion: `SRID=4326;POINT(${pos.lng} ${pos.lat})`,
-    }).select().single();
-    if (!error) await supabase.from('perfiles').update({ rol: 'local' }).eq('id', usuario.id);
+    };
+    if (pos) campos.ubicacion = `SRID=4326;POINT(${pos.lng} ${pos.lat})`;
+    const r = editando
+      ? await supabase.from('locales').update(campos).eq('id', local.id).select().single()
+      : await supabase.from('locales').insert({ ...campos, dueno_id: usuario.id }).select().single();
+    if (!r.error && !editando) await supabase.from('perfiles').update({ rol: 'local' }).eq('id', usuario.id);
     setGuardando(false);
-    if (error) { setError(explicar(error)); return; }
-    alGuardar(data);
+    if (r.error) { setError(explicar(r.error)); return; }
+    alGuardar(r.data);
   }
 
   return (
     <form className="contenido" onSubmit={guardar}>
-      <h1 className="letrista">TU LOCAL</h1>
+      <h1 className="letrista">{editando ? 'EDITAR MI LOCAL' : 'TU LOCAL'}</h1>
       <label className="campo">Nombre del local
         <input required value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej: Arepera La Chamita" />
       </label>
-      <div className="campo">¿Qué es?
-        <div className="pildoras">
-          {CATEGORIAS.map((c) => (
-            <button type="button" key={c.id} className={'pildora' + (categoria === c.id ? ' activa' : '')} onClick={() => setCategoria(c.id)}>{c.texto}</button>
-          ))}
-        </div>
+
+      <div className="campo">¿Qué es? Elige hasta {MAX_CATEGORIAS} (la primera es la principal)
+        {GRUPOS.map((g) => (
+          <div key={g.titulo} style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
+            <span style={{ fontSize: 12, color: 'var(--gris)', textTransform: 'uppercase', letterSpacing: 0.6 }}>{g.titulo}</span>
+            <div className="pildoras">
+              {g.items.map((c) => {
+                const i = categorias.indexOf(c.id);
+                return (
+                  <button type="button" key={c.id} className={'pildora' + (i >= 0 ? ' activa' : '')} aria-pressed={i >= 0} onClick={() => alternar(c.id)}>
+                    {i >= 0 ? `${i + 1}. ` : ''}{c.texto}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
-      {(categoria === 'comer' || categoria === 'cafe') && (
+
+      {usaCocina && (
         <div className="campo">Habla como en tu tierra (cocina)
           <div className="pildoras">
             {COCINAS.map((c) => (
@@ -80,12 +99,13 @@ export default function ConfigurarLocal({ usuario, alGuardar }) {
       </label>
       <div className="tarjeta">
         <b>Ubicación del local</b>
-        <p className="ayuda">Aprieta el botón estando dentro del local. Así los caseritos te encuentran a la cuadra exacta.</p>
+        <p className="ayuda">{editando ? 'Solo si cambió: aprieta el botón estando dentro del local.' : 'Aprieta el botón estando dentro del local. Así los caseritos te encuentran a la cuadra exacta.'}</p>
         <button type="button" className="boton negro" onClick={ubicar}>{pos ? 'Ubicación marcada ✓' : 'Estoy en mi local'}</button>
         {pos && <p className="ayuda">Precisión: ±{pos.precision} m</p>}
       </div>
       {error && <div className="error">{error}</div>}
-      <button className="boton grande" disabled={guardando}>Guardar local</button>
+      <button className="boton grande" disabled={guardando}>{editando ? 'Guardar cambios' : 'Guardar local'}</button>
+      {editando && <button type="button" className="pildora" onClick={alCancelar}>Cancelar</button>}
     </form>
   );
 }
