@@ -5,6 +5,9 @@ import { COLOR_TIPO, etiquetaPin, useCoordenadas, HojaMapa } from './MapaComun';
 
 const L = require('leaflet');
 
+// Llave pública de mapas de CARTO (va en la app, como la publishable de Supabase)
+const LLAVE_CARTO = process.env.EXPO_PUBLIC_CARTO_KEY || '';
+
 // Estilo "mapa de barrio": base clara de CARTO con un tono cálido de papel
 function prepararEstilos() {
   if (document.getElementById('caserito-leaflet')) return;
@@ -44,11 +47,18 @@ export default function Mapa({ drops, pos, alAbrir }) {
     if (!nodo || mapa.current) return;
     nodo.classList.add('caserito-mapa');
     const m = L.map(nodo, { zoomControl: false, attributionControl: true }).setView([pos.lat, pos.lng], 16);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      maxZoom: 19,
-      subdomains: 'abcd',
-      attribution: '&copy; OpenStreetMap &copy; CARTO',
-    }).addTo(m);
+    // CARTO ahora pide una llave gratis (carto.com/basemaps/apikey). Sin llave, usamos OpenStreetMap.
+    if (LLAVE_CARTO) {
+      L.tileLayer(`https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${LLAVE_CARTO}`, {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap &copy; CARTO',
+      }).addTo(m);
+    } else {
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      }).addTo(m);
+    }
     if (!pos.aprox) {
       L.marker([pos.lat, pos.lng], { icon: L.divIcon({ className: '', html: '<div class="caserito-yo"></div>', iconSize: [18, 18] }), interactive: false }).addTo(m);
     }
