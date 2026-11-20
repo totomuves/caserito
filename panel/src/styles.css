@@ -63,6 +63,9 @@ h2 { font-size: 20px; margin: 0; }
 .stat b { overflow-wrap: anywhere; }
 .progreso { height: 14px; border: 2px solid var(--negro); border-radius: 8px; background: var(--crema); overflow: hidden; }
 .progreso div { height: 100%; background: var(--amarillo); border-right: 2px solid var(--negro); }
+.stat .cambio { display: block; margin-top: 4px; font-size: 12px; font-weight: 800; color: var(--gris); }
+.stat .cambio.sube { color: #17663A; }
+.stat .cambio.baja { color: #A50622; }
 .feed { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .feed li { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 2px dashed #CDBF9F; }
 .feed li:last-child { border-bottom: 0; }

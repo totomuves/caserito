@@ -3,10 +3,20 @@ import { supabase, explicar } from './supabase.js';
 import { formatoPrecio } from './frases.js';
 
 // Tablero del local: todo en una pantalla (pensado para el computador, funciona en el celular).
+// Métricas por período (hoy, 7 días, 30 días, este mes, 3 meses) comparadas con el período anterior.
 // Se actualiza solo cada 20 segundos.
-const DIAS = 14;
+const PERIODOS = [
+  { id: 'hoy', texto: 'Hoy', antes: 'ayer a esta hora' },
+  { id: '7', texto: '7 días', antes: 'los 7 días anteriores' },
+  { id: '30', texto: '30 días', antes: 'los 30 días anteriores' },
+  { id: 'mes', texto: 'Este mes', antes: 'el mes pasado a esta fecha' },
+  { id: '90', texto: '3 meses', antes: 'los 3 meses anteriores' },
+];
 const TIPO = { normal: 'Normal', grupal: 'Grupal', sorpresa: 'Sorpresa', recien_llegado: 'Recién llegado' };
+const CLAVE = 'caserito_periodo';
+const DIA = 24 * 3600 * 1000;
 
+function inicioDia(f) { const x = new Date(f); x.setHours(0, 0, 0, 0); return x; }
 function mismoDia(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
 function hora(f) { return new Date(f).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }); }
 function faltan(f) {
@@ -16,19 +26,47 @@ function faltan(f) {
   return h < 24 ? `${h} h ${m % 60} min` : `${Math.floor(h / 24)} días`;
 }
 
+// [desde, hasta] del período y del anterior (mismo largo, para comparar)
+function rangos(periodo, ahora) {
+  if (periodo === 'hoy') {
+    const d = inicioDia(ahora);
+    return { desde: d, hasta: ahora, pDesde: new Date(d - DIA), pHasta: new Date(ahora - DIA) };
+  }
+  if (periodo === 'mes') {
+    const d = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+    const pDesde = new Date(ahora.getFullYear(), ahora.getMonth() - 1, 1);
+    const pHasta = new Date(pDesde.getTime() + (ahora - d));
+    return { desde: d, hasta: ahora, pDesde, pHasta };
+  }
+  const n = Number(periodo);
+  const d = inicioDia(new Date(ahora - (n - 1) * DIA));
+  return { desde: d, hasta: ahora, pDesde: new Date(d - n * DIA), pHasta: d };
+}
+
+function Cambio({ ahora, antes }) {
+  if (!antes && !ahora) return null;
+  if (!antes) return <small className="cambio sube">nuevo</small>;
+  const pct = Math.round(((ahora - antes) / antes) * 100);
+  if (pct === 0) return <small className="cambio">= igual</small>;
+  return <small className={'cambio ' + (pct > 0 ? 'sube' : 'baja')}>{pct > 0 ? '▲' : '▼'} {Math.abs(pct)}%</small>;
+}
+
 export default function Resumen({ local, alCrear }) {
+  const [periodo, setPeriodo] = useState(() => { try { return localStorage.getItem(CLAVE) || '7'; } catch { return '7'; } });
   const [drops, setDrops] = useState(null);
   const [nota, setNota] = useState(null);
   const [error, setError] = useState('');
   const [cuando, setCuando] = useState(null);
   const [, setTic] = useState(0);
 
+  function elegir(p) { setPeriodo(p); try { localStorage.setItem(CLAVE, p); } catch { /* nada */ } }
+
   async function cargar() {
-    const desde = new Date(Date.now() - DIAS * 24 * 3600 * 1000).toISOString();
+    const { pDesde } = rangos(periodo, new Date());
     const [d, c] = await Promise.all([
       supabase.from('drops')
         .select('id, titulo, tipo, precio, cupo, inicia_at, termina_at, participaciones(anotado_at, canjeado_at)')
-        .eq('local_id', local.id).gte('termina_at', desde).order('inicia_at', { ascending: false }),
+        .eq('local_id', local.id).gte('termina_at', pDesde.toISOString()).order('inicia_at', { ascending: false }),
       supabase.from('calificaciones').select('promedio, cantidad').eq('local_id', local.id).maybeSingle(),
     ]);
     if (d.error) { setError(explicar(d.error)); return; }
@@ -39,59 +77,106 @@ export default function Resumen({ local, alCrear }) {
     const a = setInterval(cargar, 20000);
     const b = setInterval(() => setTic((x) => x + 1), 5000);
     return () => { clearInterval(a); clearInterval(b); };
-  }, [local.id]);
+  }, [local.id, periodo]);
 
-  if (error && !drops) return <div className="contenido"><div className="error">{error}</div></div>;
-  if (!drops) return <div className="contenido"><p className="ayuda">Cargando…</p></div>;
+  const per = PERIODOS.find((p) => p.id === periodo) || PERIODOS[1];
+  const encabezado = (
+    <div className="tablero-titulo">
+      <h1 className="letrista">{local.nombre.toUpperCase()}</h1>
+      <div className="pildoras" role="group" aria-label="Período">
+        {PERIODOS.map((p) => (
+          <button key={p.id} className={'pildora' + (p.id === periodo ? ' activa' : '')} aria-pressed={p.id === periodo} onClick={() => elegir(p.id)}>{p.texto}</button>
+        ))}
+      </div>
+    </div>
+  );
+
+  if (error && !drops) return <div className="contenido">{encabezado}<div className="error">{error}</div></div>;
+  if (!drops) return <div className="contenido">{encabezado}<p className="ayuda">Cargando…</p></div>;
 
   const ahora = new Date();
-  const hace7 = Date.now() - 7 * 24 * 3600 * 1000;
-  let ventasHoy = 0, canjesHoy = 0, anotadosHoy = 0, ventas7 = 0, canjes7 = 0, porLlegar = 0;
-  const canjes = [];
-  const porDia = Array.from({ length: DIAS }, (_, i) => { const f = new Date(); f.setHours(0, 0, 0, 0); f.setDate(f.getDate() - (DIAS - 1 - i)); return { f, n: 0 }; });
+  const { desde, hasta, pDesde, pHasta } = rangos(periodo, ahora);
+  const dentro = (f, a, b) => f >= a && f <= b;
+  const m = { ventas: 0, canjes: 0, anotados: 0, drops: 0 };
+  const p = { ventas: 0, canjes: 0, anotados: 0, drops: 0 };
+  let porLlegar = 0;
+  const canjes = [], enVivo = [], proximos = [];
 
-  const enVivo = [], proximos = [];
+  // Gráfico: por hora si es hoy; por día hasta 31 días; por semana si es más largo
+  const modo = periodo === 'hoy' ? 'hora' : (hasta - desde) / DIA > 31 ? 'semana' : 'dia';
+  const barras = [];
+  if (modo === 'hora') for (let h = 8; h <= 23; h++) barras.push({ clave: h, etiqueta: String(h), titulo: `${h}:00`, n: 0 });
+  else {
+    const paso = modo === 'semana' ? 7 : 1;
+    for (let f = inicioDia(desde); f <= hasta; f = new Date(f.getTime() + paso * DIA)) {
+      barras.push({ clave: f.getTime(), desde: f, hasta: new Date(f.getTime() + paso * DIA), etiqueta: String(f.getDate()),
+        titulo: modo === 'semana' ? `semana del ${f.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}` : f.toLocaleDateString('es-CL', { weekday: 'short', day: 'numeric', month: 'short' }), n: 0 });
+    }
+  }
+
   drops.forEach((d) => {
     const ps = d.participaciones || [];
-    const c = ps.filter((p) => p.canjeado_at);
-    const vivo = new Date(d.inicia_at) <= ahora && new Date(d.termina_at) > ahora;
-    if (vivo) { enVivo.push({ ...d, anotados: ps.length, canjes: c.length }); porLlegar += ps.length - c.length; }
-    else if (new Date(d.inicia_at) > ahora) proximos.push(d);
-    ps.forEach((p) => { if (mismoDia(new Date(p.anotado_at), ahora)) anotadosHoy += 1; });
-    c.forEach((p) => {
-      const f = new Date(p.canjeado_at);
+    const inicio = new Date(d.inicia_at);
+    const vivo = inicio <= ahora && new Date(d.termina_at) > ahora;
+    if (vivo) {
+      const c = ps.filter((x) => x.canjeado_at).length;
+      enVivo.push({ ...d, anotados: ps.length, canjes: c });
+      porLlegar += ps.length - c;
+    } else if (inicio > ahora) proximos.push(d);
+    if (dentro(inicio, desde, hasta)) m.drops += 1;
+    if (dentro(inicio, pDesde, pHasta)) p.drops += 1;
+    ps.forEach((x) => {
+      const a = new Date(x.anotado_at);
+      if (dentro(a, desde, hasta)) m.anotados += 1;
+      if (dentro(a, pDesde, pHasta)) p.anotados += 1;
+      if (!x.canjeado_at) return;
+      const f = new Date(x.canjeado_at);
       canjes.push({ f, titulo: d.titulo, precio: d.precio });
-      if (mismoDia(f, ahora)) { canjesHoy += 1; ventasHoy += d.precio || 0; }
-      if (f.getTime() > hace7) { canjes7 += 1; ventas7 += d.precio || 0; }
-      const dia = porDia.find((x) => mismoDia(x.f, f));
-      if (dia) dia.n += 1;
+      if (dentro(f, desde, hasta)) {
+        m.canjes += 1; m.ventas += d.precio || 0;
+        const b = modo === 'hora' ? barras.find((y) => y.clave === f.getHours()) : barras.find((y) => f >= y.desde && f < y.hasta);
+        if (b) b.n += 1;
+      }
+      if (dentro(f, pDesde, pHasta)) { p.canjes += 1; p.ventas += d.precio || 0; }
     });
   });
   canjes.sort((a, b) => b.f - a.f);
   proximos.sort((a, b) => new Date(a.inicia_at) - new Date(b.inicia_at));
-  const maxDia = Math.max(1, ...porDia.map((x) => x.n));
+  const tasa = m.anotados ? Math.round((m.canjes / m.anotados) * 100) : null;
+  const maxBarra = Math.max(1, ...barras.map((x) => x.n));
+  const mejor = barras.reduce((a, b) => (b.n > (a ? a.n : 0) ? b : a), null);
   const segundos = cuando ? Math.round((Date.now() - cuando.getTime()) / 1000) : 0;
 
   return (
     <div className="contenido tablero">
-      <div className="tablero-titulo">
-        <h1 className="letrista">HOY EN {local.nombre.toUpperCase()}</h1>
-        <span className="ayuda" aria-live="polite"><span className="en-vivo" aria-hidden="true" /> Se actualiza solo · hace {segundos < 10 ? 'un momento' : `${segundos} s`}</span>
-      </div>
+      {encabezado}
+      <span className="ayuda" aria-live="polite"><span className="en-vivo" aria-hidden="true" /> Se actualiza solo · hace {segundos < 10 ? 'un momento' : `${segundos} s`} · comparado con {per.antes}</span>
       {error && <div className="error">{error}</div>}
 
       <div className="stats tablero-stats">
-        <div className="stat" style={{ background: 'var(--amarillo)' }}><b>{formatoPrecio(ventasHoy) || '$0'}</b><span style={{ color: 'var(--negro)' }}>ventas hoy</span></div>
-        <div className="stat"><b>{canjesHoy}</b><span>canjes hoy</span></div>
-        <div className="stat"><b>{porLlegar}</b><span>anotados por llegar</span></div>
-        <div className="stat"><b>{formatoPrecio(ventas7) || '$0'}</b><span>ventas 7 días</span></div>
-        <div className="stat"><b>{canjes7}</b><span>canjes 7 días</span></div>
+        <div className="stat" style={{ background: 'var(--amarillo)' }}><b>{formatoPrecio(m.ventas) || '$0'}</b><span style={{ color: 'var(--negro)' }}>ventas</span><Cambio ahora={m.ventas} antes={p.ventas} /></div>
+        <div className="stat"><b>{m.canjes}</b><span>canjes</span><Cambio ahora={m.canjes} antes={p.canjes} /></div>
+        <div className="stat"><b>{m.anotados}</b><span>se anotaron</span><Cambio ahora={m.anotados} antes={p.anotados} /></div>
+        <div className="stat"><b>{tasa === null ? '–' : `${tasa}%`}</b><span>de los anotados canjeó</span></div>
+        <div className="stat"><b>{m.drops}</b><span>drops soltados</span><Cambio ahora={m.drops} antes={p.drops} /></div>
         <div className="stat"><b>{nota && nota.cantidad ? Number(nota.promedio).toFixed(1) : '–'}</b><span>{nota && nota.cantidad ? `nota · ${nota.cantidad} reseñas` : 'sin reseñas aún'}</span></div>
       </div>
 
       <div className="tablero-cols">
-        <section className="tablero-col" aria-labelledby="t-vivo">
-          <h2 id="t-vivo" className="letrista">DROPS EN VIVO</h2>
+        <section className="tablero-col" aria-labelledby="t-grafico">
+          <h2 id="t-grafico" className="letrista">CANJES {modo === 'hora' ? 'POR HORA' : modo === 'semana' ? 'POR SEMANA' : 'POR DÍA'}</h2>
+          <div className="tarjeta">
+            <div className="barras" aria-hidden="true">
+              {barras.map((x) => <div key={x.clave} title={`${x.titulo} · ${x.n}`} style={{ height: Math.max(4, (x.n / maxBarra) * 100) + '%', background: mejor === x && x.n > 0 ? 'var(--rojo)' : undefined }} />)}
+            </div>
+            <div className="etiquetas-horas" aria-hidden="true">{barras.map((x, i) => <span key={x.clave}>{barras.length > 16 && i % 2 ? '' : x.etiqueta}</span>)}</div>
+            <p className="ayuda">
+              {m.canjes} canjes en {per.texto.toLowerCase()}.
+              {mejor && mejor.n > 0 ? ` El mejor ${modo === 'hora' ? 'horario' : modo === 'semana' ? 'semana' : 'día'} (en rojo): ${mejor.titulo}, con ${mejor.n}.` : ''}
+            </p>
+          </div>
+
+          <h2 className="letrista">DROPS EN VIVO{porLlegar ? ` · ${porLlegar} POR LLEGAR` : ''}</h2>
           {enVivo.length === 0 && (
             <div className="tarjeta">
               <span>No tienes drops en vivo ahora.</span>
@@ -125,18 +210,6 @@ export default function Resumen({ local, alCrear }) {
               ))}
             </>
           )}
-
-          <h2 className="letrista">CANJES · ÚLTIMOS {DIAS} DÍAS</h2>
-          <div className="tarjeta">
-            <div className="barras" aria-hidden="true">
-              {porDia.map((x) => (
-                <div key={x.f.toISOString()} title={`${x.f.toLocaleDateString('es-CL', { weekday: 'short', day: 'numeric' })} · ${x.n}`}
-                  style={{ height: Math.max(6, (x.n / maxDia) * 100) + '%', background: mismoDia(x.f, ahora) ? 'var(--rojo)' : undefined }} />
-              ))}
-            </div>
-            <div className="etiquetas-horas" aria-hidden="true">{porDia.map((x) => <span key={x.f.toISOString()}>{x.f.getDate()}</span>)}</div>
-            <p className="ayuda">{porDia.reduce((s, x) => s + x.n, 0)} canjes en {DIAS} días · hoy en rojo.</p>
-          </div>
         </section>
 
         <section className="tablero-col" aria-labelledby="t-ultimos">
