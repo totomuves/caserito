@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Share, Text, TextInput, View } from 'react-native';
+import { Linking, Platform, Pressable, ScrollView, Share, Text, TextInput, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import Svg, { Path } from 'react-native-svg';
-import { supabase, explicar } from './supabase';
+import { supabase, explicar, leerPunto } from './supabase';
 import { C, F, letrista, precio, cuadras, textoCategoria } from './tema';
 import { Ola, Boton, EtiquetaPrecio, Brillo } from './componentes';
 
@@ -13,6 +13,7 @@ export default function Drop({ drop, usuario, alCerrar }) {
   const [error, setError] = useState('');
   const [ahora, setAhora] = useState(Date.now());
   const [nota, setNota] = useState(null);
+  const [destino, setDestino] = useState(null);
 
   useEffect(() => {
     supabase.from('participaciones').select('codigo, canjeado_at')
@@ -22,6 +23,8 @@ export default function Drop({ drop, usuario, alCerrar }) {
       supabase.from('drop_niveles').select('umbral, beneficio').eq('drop_id', drop.drop_id).order('umbral')
         .then(({ data }) => setNiveles(data || []));
     }
+    supabase.from('locales').select('ubicacion, direccion').eq('id', drop.local_id).maybeSingle()
+      .then(({ data }) => data && setDestino({ ...leerPunto(data.ubicacion), direccion: data.direccion }));
     supabase.from('calificaciones').select('promedio, cantidad').eq('local_id', drop.local_id).maybeSingle()
       .then(({ data }) => setNota(data || null));
     const leer = () => supabase.rpc('estado_drop', { p_drop: drop.drop_id })
@@ -114,6 +117,13 @@ export default function Drop({ drop, usuario, alCerrar }) {
         {error ? <Text style={{ fontFamily: F.negrita, color: C.rojoTexto }}>{error}</Text> : null}
       </View>
 
+      {destino && destino.lat && !drop.dentro_del_radio ? (
+        <View style={{ marginHorizontal: 16, marginTop: 14 }}>
+          <Boton texto={`Cómo llegar caminando · ${cuadras(drop.cuadras)}`} fondo={C.amarillo} color={C.negro} onPress={() => caminar(destino)} />
+          {destino.direccion ? <Text style={{ fontFamily: F.media, fontSize: 13, color: C.gris, textAlign: 'center', marginTop: 6 }}>{destino.direccion}</Text> : null}
+        </View>
+      ) : null}
+
       <View style={{ marginHorizontal: 16, marginTop: 14, flexDirection: 'row', gap: 10 }}>
         <View style={{ flex: 1, backgroundColor: C.negro, borderRadius: 16, padding: 12 }}>
           <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.amarillo }}>Termina en</Text>
@@ -165,4 +175,11 @@ function Resena({ localId, usuario }) {
       {error ? <Text style={{ fontFamily: F.negrita, color: C.rojoTexto }}>{error}</Text> : null}
     </View>
   );
+}
+
+// Abre el mapa del teléfono con la ruta a pie (Apple Maps en iPhone, Google Maps en Android)
+export function caminar({ lat, lng }) {
+  const web = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`;
+  const nativo = Platform.OS === 'ios' ? `http://maps.apple.com/?daddr=${lat},${lng}&dirflg=w` : web;
+  Linking.openURL(nativo).catch(() => Linking.openURL(web));
 }
