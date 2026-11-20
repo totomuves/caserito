@@ -52,3 +52,53 @@ h2 { font-size: 20px; margin: 0; }
 .barras { height: 120px; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; align-items: end; }
 .barras div { background: var(--amarillo); border: 2px solid var(--negro); border-radius: 6px 6px 2px 2px; min-height: 6px; }
 .etiquetas-horas { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; font-size: 11px; font-weight: 700; color: var(--gris); text-align: center; }
+
+/* ---------- Tablero (Resumen) ---------- */
+.tablero-titulo { display: flex; flex-direction: column; gap: 4px; }
+.en-vivo { display: inline-block; width: 10px; height: 10px; border-radius: 5px; background: #1F9D55; margin-right: 4px; vertical-align: middle; }
+@media (prefers-reduced-motion: no-preference) { .en-vivo { animation: latido 2s ease-in-out infinite; } }
+@keyframes latido { 50% { opacity: .35; } }
+.tablero-cols { display: flex; flex-direction: column; gap: 16px; }
+.tablero-col { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.stat b { overflow-wrap: anywhere; }
+.progreso { height: 14px; border: 2px solid var(--negro); border-radius: 8px; background: var(--crema); overflow: hidden; }
+.progreso div { height: 100%; background: var(--amarillo); border-right: 2px solid var(--negro); }
+.feed { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.feed li { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 2px dashed #CDBF9F; }
+.feed li:last-child { border-bottom: 0; }
+.feed-hora { font-weight: 800; font-size: 14px; }
+.feed-texto { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.feed-precio { font-weight: 800; color: var(--rojo); }
+
+/* ---------- Escritorio: menú al costado y contenido ancho ---------- */
+@media (min-width: 960px) {
+  .app { max-width: none; }
+  .app:has(> .nav) { padding-left: 232px; }
+  .barra { padding: 18px 32px; }
+  .barra .marca img { height: 36px !important; }
+  .nav { left: 0; top: 0; bottom: 0; transform: none; width: 232px; max-width: none; height: auto; border-radius: 0;
+         grid-auto-flow: row; grid-auto-rows: 56px; grid-auto-columns: auto; align-content: start; gap: 4px; padding: 104px 12px 24px; z-index: 5; }
+  .nav button { flex-direction: row; justify-content: flex-start; gap: 12px; padding: 0 16px; font-size: 16px; border-radius: 14px; }
+  .nav button:hover { background: #222; }
+  .nav button.activa { background: #2A2A2A; }
+  .nav button:focus-visible { outline: 3px solid var(--amarillo); outline-offset: -3px; }
+  .contenido { width: 100%; max-width: 1120px; margin: 0 auto; padding: 28px 32px 56px; }
+  .app > .tarjeta, .app > div[style*="margin: 12px 16px"] { width: calc(100% - 64px); max-width: 1056px; margin-left: auto !important; margin-right: auto !important; }
+  h1 { font-size: 32px; }
+
+  /* Mis drops: tarjetas en columnas */
+  .contenido.lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); align-items: start; }
+  .contenido.lista > :not(.tarjeta) { grid-column: 1 / -1; }
+
+  /* Crear: formulario a la izquierda, la frase (como la ve el caserito) fija a la derecha */
+  .contenido.crear { display: grid; grid-template-columns: minmax(0, 1fr) 400px; column-gap: 32px; row-gap: 0; align-items: start; }
+  .contenido.crear > * { grid-column: 1; margin-bottom: 16px; }
+  .contenido.crear > .pizarra { grid-column: 2; grid-row: 1 / span 40; position: sticky; top: 24px; }
+
+  .stats { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .tablero-titulo { flex-direction: row; justify-content: space-between; align-items: baseline; gap: 16px; }
+  .tablero-cols { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 24px; align-items: start; }
+  .tablero-col:last-child { position: sticky; top: 24px; }
+  .barras { height: 180px; }
+  .camara { max-width: 640px; height: 420px; }
+}

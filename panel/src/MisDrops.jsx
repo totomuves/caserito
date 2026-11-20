@@ -42,7 +42,7 @@ export default function MisDrops({ local, alEditar, alDuplicar, aviso }) {
   const ahora = Date.now();
 
   return (
-    <div className="contenido">
+    <div className="contenido lista">
       <h1 className="letrista">MIS DROPS</h1>
       {msg && <div className="tarjeta" style={{ borderColor: 'var(--azul)' }}>{msg}</div>}
       {error && <div className="error">{error}</div>}

@@ -105,7 +105,7 @@ export default function Crear({ local, base, alTerminar }) {
   const tipoActual = TIPOS.find((t) => t.id === tipo);
 
   return (
-    <div className="contenido">
+    <div className="contenido crear">
       <h1 className="letrista">{editarId ? 'EDITAR DROP' : base ? 'DUPLICAR DROP' : 'SOLTAR UN DROP'}</h1>
       {base && (
         <div className="tarjeta" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>

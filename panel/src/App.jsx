@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, explicar, leerInvitacion, olvidarInvitacion, leerInvitacionEquipo, olvidarInvitacionEquipo } from './supabase.js';
 import Equipo from './Equipo.jsx';
+import Resumen from './Resumen.jsx';
 
 const TODOS = ['drops', 'escanear', 'resultados', 'resenas', 'local', 'equipo'];
 import Login from './Login.jsx';
@@ -16,7 +17,8 @@ import Qr, { URL_APP } from './Qr.jsx';
 export default function App() {
   const [sesion, setSesion] = useState(undefined);
   const [local, setLocal] = useState(undefined);
-  const [pestana, setPestana] = useState('crear');
+  // En el computador parte en el tablero; en el celular, en Crear
+  const [pestana, setPestana] = useState(() => (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(min-width: 960px)').matches ? 'resumen' : 'crear'));
   const [error, setError] = useState('');
   const [admin, setAdmin] = useState(false);
   const [soloAdmin, setSoloAdmin] = useState(false);
@@ -136,7 +138,7 @@ export default function App() {
   }
 
   const pestanas = [
-    puede('drops') && 'crear', puede('drops') && 'drops', puede('escanear') && 'escanear',
+    puede('resultados') && 'resumen', puede('drops') && 'crear', puede('drops') && 'drops', puede('escanear') && 'escanear',
     (puede('resultados') || puede('resenas')) && 'resultados',
   ].filter(Boolean);
   const vista = pestanas.includes(pestana) ? pestana : pestanas[0];
@@ -157,6 +159,7 @@ export default function App() {
         {admin && <button className="pildora activa" onClick={() => setSoloAdmin(true)}>Ir al admin</button>}
       </div>
       {pestanas.length === 0 && <div className="contenido"><div className="tarjeta">Tu rol todavía no tiene permisos para drops ni para escanear. Pídele al dueño del local que te los dé.</div></div>}
+      {vista === 'resumen' && <Resumen local={local} alCrear={puede('drops') ? () => { setBase(null); setPestana('crear'); } : null} />}
       {vista === 'crear' && (
         <Crear key={base ? base.id + (base.editarId ? '-e' : '-d') : 'nuevo'} local={local} base={base}
           alTerminar={(m) => { setBase(null); setAviso(m || ''); setPestana('drops'); }} />
@@ -169,6 +172,7 @@ export default function App() {
       {vista === 'escanear' && <Escanear />}
       {vista === 'resultados' && <Resultados local={local} />}
       {pestanas.length > 1 && <nav className="nav" aria-label="Secciones">
+        {pestanas.includes('resumen') && <Tab id="resumen" actual={vista} setear={setPestana} texto="Resumen" icono="M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z" />}
         {pestanas.includes('crear') && <Tab id="crear" actual={vista} setear={(p) => { setBase(null); setPestana(p); }} texto="Crear" icono="M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM12 8v8M8 12h8" />}
         {pestanas.includes('drops') && <Tab id="drops" actual={vista} setear={(p) => { setAviso(''); setPestana(p); }} texto="Mis drops" icono="M4 6h16M4 12h16M4 18h10" />}
         {pestanas.includes('escanear') && <Tab id="escanear" actual={vista} setear={setPestana} texto="Escanear" icono="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M4 12h16" />}
