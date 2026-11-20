@@ -13,5 +13,10 @@ export function explicar(error) {
     return 'Falta exponer el schema "caserito": Supabase → Settings → API → Exposed schemas → agregar caserito.';
   }
   if (/Failed to fetch|NetworkError/i.test(m)) return 'Sin conexión. Revisa internet e inténtalo de nuevo.';
+  if (/Invalid login credentials/i.test(m)) return 'Correo o contraseña no coinciden. Si es tu primera vez, toca "¿Primera vez? Inscribe tu local" para crear la cuenta.';
+  if (/Email not confirmed/i.test(m)) return 'Falta confirmar tu correo: abre el mail de confirmación que te llegó y vuelve a entrar.';
+  if (/User already registered/i.test(m)) return 'Ese correo ya tiene cuenta. Toca "Ya tengo cuenta" y entra.';
+  if (/Password should be/i.test(m)) return 'La contraseña debe tener al menos 6 caracteres.';
+  if (/rate limit/i.test(m)) return 'Muchos intentos seguidos. Espera unos minutos y vuelve a probar.';
   return m;
 }
