@@ -1,0 +1,11 @@
+{
+  "name": "Caserito · Local",
+  "short_name": "Caserito",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F3E6CC",
+  "theme_color": "#111111",
+  "icons": [
+    { "src": "/icono.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

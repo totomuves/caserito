@@ -1,0 +1,123 @@
+import React, { useEffect, useState } from 'react';
+import { Pressable, ScrollView, Share, Text, View } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
+import Svg, { Path } from 'react-native-svg';
+import { supabase, explicar } from './supabase';
+import { C, F, letrista, precio, cuadras, textoCategoria } from './tema';
+import { Ola, Boton, EtiquetaPrecio, Brillo } from './componentes';
+
+export default function Drop({ drop, usuario, alCerrar }) {
+  const [mio, setMio] = useState(undefined);
+  const [estado, setEstado] = useState(null);
+  const [niveles, setNiveles] = useState([]);
+  const [error, setError] = useState('');
+  const [ahora, setAhora] = useState(Date.now());
+
+  useEffect(() => {
+    supabase.from('participaciones').select('codigo, canjeado_at')
+      .eq('drop_id', drop.drop_id).eq('usuario_id', usuario.id).maybeSingle()
+      .then(({ data }) => setMio(data || null));
+    if (drop.tipo === 'grupal') {
+      supabase.from('drop_niveles').select('umbral, beneficio').eq('drop_id', drop.drop_id).order('umbral')
+        .then(({ data }) => setNiveles(data || []));
+    }
+    const leer = () => supabase.rpc('estado_drop', { p_drop: drop.drop_id })
+      .then(({ data }) => data && setEstado(Array.isArray(data) ? data[0] : data));
+    leer();
+    const t1 = setInterval(leer, 10000);
+    const t2 = setInterval(() => setAhora(Date.now()), 1000);
+    return () => { clearInterval(t1); clearInterval(t2); };
+  }, [drop.drop_id]);
+
+  async function sumarme() {
+    setError('');
+    const { data, error } = await supabase.rpc('sumarme', { p_drop: drop.drop_id });
+    if (error) { setError(explicar(error)); return; }
+    setMio({ codigo: data, canjeado_at: null });
+    // Caserito aprende: te tinca esta categoría
+    await supabase.from('gustos').upsert(
+      { usuario_id: usuario.id, etiqueta: 'Te tinca: ' + textoCategoria(drop.categoria).toLowerCase(), categoria: drop.categoria, origen: 'aprendido' },
+      { onConflict: 'usuario_id,etiqueta', ignoreDuplicates: true }
+    );
+  }
+
+  const quedan = estado ? estado.quedan : drop.quedan;
+  const canjeados = estado ? Number(estado.canjeados) : 0;
+  const nivel = estado ? estado.nivel_actual : drop.nivel_actual;
+  const resta = Math.max(0, new Date(drop.termina_at).getTime() - ahora);
+  const reloj = `${Math.floor(resta / 3600000)}:${String(Math.floor((resta % 3600000) / 60000)).padStart(2, '0')}:${String(Math.floor((resta % 60000) / 1000)).padStart(2, '0')}`;
+  const maxNivel = niveles.length ? niveles[niveles.length - 1].umbral : 1;
+
+  return (
+    <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+      <View style={{ backgroundColor: C.amarillo, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <Pressable onPress={alCerrar} accessibilityRole="button" accessibilityLabel="Volver"
+          style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 2.5, borderColor: C.negro, backgroundColor: C.papel, alignItems: 'center', justifyContent: 'center' }}>
+          <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={C.negro} strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round"><Path d="M15 18l-6-6 6-6" /></Svg>
+        </Pressable>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontFamily: F.negrita, fontSize: 17 }} numberOfLines={1}>{drop.local_nombre}</Text>
+          <Text style={{ fontFamily: F.media, fontSize: 13 }}>{textoCategoria(drop.categoria)} · {cuadras(drop.cuadras)}</Text>
+        </View>
+      </View>
+      <Ola color={C.amarillo} />
+
+      <View style={{ marginHorizontal: 16, marginTop: 14, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: 22, padding: 18, gap: 10 }}>
+        <EtiquetaPrecio valor={drop.tipo === 'sorpresa' && !mio ? '¿?' : precio(drop.precio)} />
+        <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.rojoTexto, textTransform: 'uppercase' }}>
+          {drop.tipo === 'recien_llegado' ? 'Recién llegado' : drop.tipo === 'grupal' ? 'Drop grupal' : drop.tipo === 'sorpresa' ? 'Drop sorpresa' : 'Drop'} · quedan {quedan}
+        </Text>
+        <Text style={{ ...letrista, fontSize: 24, lineHeight: 28 }}>{drop.tipo === 'sorpresa' && !drop.dentro_del_radio ? 'SE REVELA EN EL LOCAL' : drop.titulo.toUpperCase()}</Text>
+        {drop.frase ? <Text style={{ ...letrista, fontSize: 17, lineHeight: 22, color: C.rojo }}>“{drop.frase.toUpperCase()}”</Text> : null}
+
+        {drop.tipo === 'grupal' && (
+          <View style={{ gap: 6, marginTop: 4 }}>
+            <View style={{ height: 16, borderRadius: 8, borderWidth: 2.5, borderColor: C.negro, backgroundColor: C.amarilloSuave, overflow: 'hidden' }}>
+              <View style={{ width: `${Math.min(100, (canjeados / maxNivel) * 100)}%`, height: '100%', backgroundColor: C.rojo }} />
+            </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              {niveles.map((n) => <Text key={n.umbral} style={{ fontFamily: F.negrita, fontSize: 12, color: C.gris }}>{n.umbral} · {n.beneficio}</Text>)}
+            </View>
+            <Text style={{ fontFamily: F.media, fontSize: 14 }}>
+              <Text style={{ fontFamily: F.negrita }}>{canjeados} canjeados.</Text> {nivel ? `Ahora: ${nivel}.` : 'Todavía sin descuento.'}{estado && estado.siguiente_umbral ? ` Faltan ${estado.siguiente_umbral - canjeados} para el siguiente nivel.` : ''}
+            </Text>
+          </View>
+        )}
+
+        {mio === undefined ? null : !mio ? (
+          <Boton texto="Me sumo" grande fondo={C.amarillo} color={C.negro} onPress={sumarme} style={{ marginTop: 6 }} />
+        ) : mio.canjeado_at ? (
+          <View style={{ backgroundColor: C.azul, borderRadius: 14, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <Brillo tam={22} color={C.amarillo} />
+            <Text style={{ fontFamily: F.negrita, color: '#FFFFFF', fontSize: 15, flex: 1 }}>¡Canjeado! Ganaste la lámina de este local.</Text>
+          </View>
+        ) : drop.dentro_del_radio ? (
+          <View style={{ alignItems: 'center', gap: 8, marginTop: 6 }}>
+            <View style={{ backgroundColor: '#FFFFFF', padding: 12, borderRadius: 14, borderWidth: 2, borderColor: C.negro }}>
+              <QRCode value={mio.codigo} size={200} />
+            </View>
+            <Text style={{ fontFamily: F.media, fontSize: 13, color: C.gris }}>o dicta este código en caja</Text>
+            <Text style={{ ...letrista, fontSize: 28, letterSpacing: 4 }}>{mio.codigo.slice(0, 4)} {mio.codigo.slice(4)}</Text>
+          </View>
+        ) : (
+          <View style={{ backgroundColor: C.negro, borderRadius: 14, padding: 14, gap: 4 }}>
+            <Text style={{ fontFamily: F.negrita, color: C.amarillo, fontSize: 15 }}>¡Estás dentro!</Text>
+            <Text style={{ fontFamily: F.normal, color: '#FFFFFF', fontSize: 14 }}>Tu código para canjear aparece cuando llegues al local. Estás {cuadras(drop.cuadras)}.</Text>
+          </View>
+        )}
+        {error ? <Text style={{ fontFamily: F.negrita, color: C.rojoTexto }}>{error}</Text> : null}
+      </View>
+
+      <View style={{ marginHorizontal: 16, marginTop: 14, flexDirection: 'row', gap: 10 }}>
+        <View style={{ flex: 1, backgroundColor: C.negro, borderRadius: 16, padding: 12 }}>
+          <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.amarillo }}>Termina en</Text>
+          <Text style={{ ...letrista, fontSize: 24, color: C.papel }}>{reloj}</Text>
+        </View>
+        <Pressable onPress={() => Share.share({ message: `¡Caserito! ${drop.local_nombre} soltó un drop: ${drop.frase || drop.titulo}. Bájate Caserito y súmate.` })}
+          style={{ flex: 1, backgroundColor: C.azul, borderRadius: 16, borderWidth: 2.5, borderColor: C.negro, padding: 12, justifyContent: 'center' }}>
+          <Text style={{ fontFamily: F.negrita, fontSize: 15, color: '#FFFFFF' }}>Pasarle el dato a un amigo</Text>
+        </Pressable>
+      </View>
+    </ScrollView>
+  );
+}

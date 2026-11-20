@@ -1,0 +1,37 @@
+name: Revisar build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  panel:
+    name: Panel del local (Vite)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: panel
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npm run build
+
+  app:
+    name: App del cliente (Expo)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - name: Versiones compatibles con el SDK
+        run: npx expo install --check
+      - name: Empaquetar para Android
+        run: npx expo export --platform android --output-dir dist
