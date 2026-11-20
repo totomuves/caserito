@@ -42,10 +42,6 @@ jobs:
         if: steps.token.outputs.hay == 'si'
         run: npm install --no-audit --no-fund
 
-      - name: Vincular con el proyecto en expo.dev
-        if: steps.token.outputs.hay == 'si'
-        run: eas init --non-interactive --force
-
       - name: Configurar EAS Update
         if: steps.token.outputs.hay == 'si'
         run: eas update:configure --platform all --non-interactive

@@ -9,7 +9,10 @@
     "backgroundColor": "#F3E6CC",
     "android": {
       "package": "cl.caserito.app",
-      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"]
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ]
     },
     "ios": {
       "bundleIdentifier": "cl.caserito.app",
@@ -24,6 +27,11 @@
           "locationWhenInUsePermission": "Caserito usa tu ubicación para mostrarte los drops del barrio a pocas cuadras."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "ad8f9042-40e8-4c50-ad1f-c9075bf93abd"
+      }
+    }
   }
 }
