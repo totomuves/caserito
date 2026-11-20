@@ -14,10 +14,14 @@ export default function App() {
   const [error, setError] = useState('');
   const [admin, setAdmin] = useState(false);
   const [soloAdmin, setSoloAdmin] = useState(false);
+  const [recuperando, setRecuperando] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSesion(data.session));
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => setSesion(s));
+    const { data } = supabase.auth.onAuthStateChange((evento, s) => {
+      if (evento === 'PASSWORD_RECOVERY') setRecuperando(true);
+      setSesion(s);
+    });
     return () => data.subscription.unsubscribe();
   }, []);
 
@@ -37,6 +41,7 @@ export default function App() {
   }, [sesion]);
 
   if (sesion === undefined) return <Cargando />;
+  if (recuperando && sesion) return <NuevaClave alTerminar={() => setRecuperando(false)} />;
   if (!sesion) return <Login />;
   if (error) return <Marco><div className="contenido"><div className="error">{error}</div></div></Marco>;
   if (local === undefined) return <Cargando />;
@@ -105,4 +110,29 @@ function Tab({ id, actual, setear, texto, icono }) {
 
 function Cargando() {
   return <div className="app"><div className="contenido"><p className="ayuda">Cargando…</p></div></div>;
+}
+
+function NuevaClave({ alTerminar }) {
+  const [clave, setClave] = useState('');
+  const [error, setError] = useState('');
+  const [enviando, setEnviando] = useState(false);
+  async function guardar(e) {
+    e.preventDefault();
+    setEnviando(true); setError('');
+    const { error } = await supabase.auth.updateUser({ password: clave });
+    setEnviando(false);
+    if (error) setError(explicar(error)); else alTerminar();
+  }
+  return (
+    <Marco>
+      <form className="contenido" onSubmit={guardar}>
+        <h1 className="letrista">CLAVE NUEVA</h1>
+        <label className="campo">Escribe tu contraseña nueva
+          <input type="password" autoComplete="new-password" minLength={6} required value={clave} onChange={(e) => setClave(e.target.value)} />
+        </label>
+        {error && <div className="error">{error}</div>}
+        <button className="boton grande" disabled={enviando}>Guardar y entrar</button>
+      </form>
+    </Marco>
+  );
 }

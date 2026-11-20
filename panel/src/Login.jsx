@@ -12,6 +12,13 @@ export default function Login() {
   async function enviar(e) {
     e.preventDefault();
     setError(''); setMsg(''); setEnviando(true);
+    if (modo === 'olvide') {
+      const o = await supabase.auth.resetPasswordForEmail(correo, { redirectTo: window.location.origin });
+      setEnviando(false);
+      if (o.error) setError(explicar(o.error));
+      else setMsg('Te mandamos un correo para crear una contraseña nueva. Ábrelo desde este mismo teléfono.');
+      return;
+    }
     const r = modo === 'entrar'
       ? await supabase.auth.signInWithPassword({ email: correo, password: clave })
       : await supabase.auth.signUp({ email: correo, password: clave });
@@ -25,20 +32,27 @@ export default function Login() {
       <header className="barra"><span className="marca letrista">Caserito · Local</span></header>
       <div className="toldo" />
       <form className="contenido" onSubmit={enviar}>
-        <h1 className="letrista">{modo === 'entrar' ? 'ENTRA A TU LOCAL' : 'INSCRIBE TU LOCAL'}</h1>
+        <h1 className="letrista">{modo === 'entrar' ? 'ENTRA A TU LOCAL' : modo === 'crear' ? 'INSCRIBE TU LOCAL' : 'RECUPERA TU CLAVE'}</h1>
         <p className="ayuda">Suelta drops para que los caseritos del barrio lleguen a tu local.</p>
         <label className="campo">Correo
           <input type="email" autoComplete="email" required value={correo} onChange={(e) => setCorreo(e.target.value)} />
         </label>
-        <label className="campo">Contraseña
-          <input type="password" autoComplete={modo === 'entrar' ? 'current-password' : 'new-password'} minLength={6} required value={clave} onChange={(e) => setClave(e.target.value)} />
-        </label>
+        {modo !== 'olvide' && (
+          <label className="campo">Contraseña
+            <input type="password" autoComplete={modo === 'entrar' ? 'current-password' : 'new-password'} minLength={6} required value={clave} onChange={(e) => setClave(e.target.value)} />
+          </label>
+        )}
         {error && <div className="error">{error}</div>}
         {msg && <div className="tarjeta">{msg}</div>}
-        <button className="boton grande" disabled={enviando}>{modo === 'entrar' ? 'Entrar' : 'Crear cuenta'}</button>
-        <button type="button" className="pildora" onClick={() => setModo(modo === 'entrar' ? 'crear' : 'entrar')}>
+        <button className="boton grande" disabled={enviando}>{modo === 'entrar' ? 'Entrar' : modo === 'crear' ? 'Crear cuenta' : 'Mandarme el correo'}</button>
+        <button type="button" className="pildora" onClick={() => { setModo(modo === 'entrar' ? 'crear' : 'entrar'); setError(''); setMsg(''); }}>
           {modo === 'entrar' ? '¿Primera vez? Inscribe tu local' : 'Ya tengo cuenta'}
         </button>
+        {modo === 'entrar' && (
+          <button type="button" className="pildora" style={{ background: 'transparent' }} onClick={() => { setModo('olvide'); setError(''); setMsg(''); }}>
+            Olvidé mi contraseña
+          </button>
+        )}
       </form>
     </div>
   );
