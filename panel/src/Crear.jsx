@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { supabase, explicar } from './supabase.js';
 import { frasesPara, formatoPrecio } from './frases.js';
 
@@ -20,21 +20,35 @@ function horaPorDefecto() {
   return String(d.getHours()).padStart(2, '0') + ':00';
 }
 
-export default function Crear({ local }) {
-  const [tipo, setTipo] = useState('normal');
-  const [titulo, setTitulo] = useState('');
-  const [precio, setPrecio] = useState('');
-  const [precioNormal, setPrecioNormal] = useState('');
-  const [cupo, setCupo] = useState('20');
-  const [hasta, setHasta] = useState(horaPorDefecto());
+function horaDe(iso) {
+  const d = new Date(iso);
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
+// base: un drop para duplicar o editar (si trae editarId). Sin base: drop nuevo.
+export default function Crear({ local, base, alTerminar }) {
+  const editarId = base && base.editarId;
+  const bloqueado = !!(editarId && base.anotados > 0); // ya hay gente anotada: no se cambia precio ni tipo
+  const [tipo, setTipo] = useState(base ? base.tipo : 'normal');
+  const [titulo, setTitulo] = useState(base ? base.titulo : '');
+  const [precio, setPrecio] = useState(base && base.precio != null ? String(base.precio) : '');
+  const [precioNormal, setPrecioNormal] = useState(base && base.precio_normal != null ? String(base.precio_normal) : '');
+  const [cupo, setCupo] = useState(base ? String(base.cupo) : '20');
+  const [hasta, setHasta] = useState(editarId ? horaDe(base.termina_at) : horaPorDefecto());
   const [niveles, setNiveles] = useState(NIVELES_BASE);
   const [i, setI] = useState(0);
-  const [frase, setFrase] = useState('');
-  const [editada, setEditada] = useState(false);
+  const [frase, setFrase] = useState(base && base.frase ? base.frase : '');
+  const [editada, setEditada] = useState(!!(base && base.frase));
   const [aprobada, setAprobada] = useState(false);
   const [error, setError] = useState('');
   const [listo, setListo] = useState(null);
   const [enviando, setEnviando] = useState(false);
+
+  useEffect(() => {
+    if (!base || base.tipo !== 'grupal') return;
+    supabase.from('drop_niveles').select('umbral, beneficio').eq('drop_id', base.id).order('umbral')
+      .then(({ data }) => { if (data && data.length) setNiveles(data.map((n) => ({ umbral: String(n.umbral), beneficio: n.beneficio }))); });
+  }, [base && base.id]);
 
   const opciones = useMemo(
     () => frasesPara(local.cocina_pais || 'Otra', { producto: titulo.trim(), precio, cupo, hora: hasta }),
@@ -59,9 +73,9 @@ export default function Crear({ local }) {
     if (!titulo.trim()) { setError('Escribe qué ofreces.'); return; }
     if (termina <= new Date()) { setError('La hora de término ya pasó. Elige una hora más tarde.'); return; }
     if (!(Number(cupo) > 0)) { setError('Indica cuántos hay.'); return; }
+    if (editarId && Number(cupo) < (base.canjes || 0)) { setError(`Ya van ${base.canjes} canjes: el cupo no puede ser menor.`); return; }
     setEnviando(true);
-    const { data, error } = await supabase.from('drops').insert({
-      local_id: local.id,
+    const campos = {
       tipo,
       titulo: titulo.trim(),
       precio: precio === '' ? null : Number(precio),
@@ -70,7 +84,11 @@ export default function Crear({ local }) {
       frase: fraseActual,
       frase_aprobada: true,
       termina_at: termina.toISOString(),
-    }).select().single();
+    };
+    const { data, error } = editarId
+      ? await supabase.from('drops').update(campos).eq('id', editarId).select().single()
+      : await supabase.from('drops').insert({ ...campos, local_id: local.id }).select().single();
+    if (!error && editarId) await supabase.from('drop_niveles').delete().eq('drop_id', editarId);
     if (!error && tipo === 'grupal') {
       const r = await supabase.from('drop_niveles').insert(
         niveles.filter((n) => n.umbral > 0 && n.beneficio.trim()).map((n) => ({ drop_id: data.id, umbral: Number(n.umbral), beneficio: n.beneficio.trim() }))
@@ -79,20 +97,28 @@ export default function Crear({ local }) {
     }
     setEnviando(false);
     if (error) { setError(explicar(error)); return; }
-    setListo(data);
     setAprobada(false);
+    if (editarId && alTerminar) { alTerminar('Cambios guardados.'); return; }
+    setListo(data);
   }
 
   const tipoActual = TIPOS.find((t) => t.id === tipo);
 
   return (
     <div className="contenido">
-      <h1 className="letrista">SOLTAR UN DROP</h1>
+      <h1 className="letrista">{editarId ? 'EDITAR DROP' : base ? 'DUPLICAR DROP' : 'SOLTAR UN DROP'}</h1>
+      {base && (
+        <div className="tarjeta" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span className="ayuda">{editarId ? 'Editando' : 'Copia de'}: <b>{base.titulo}</b></span>
+          <button type="button" className="pildora" onClick={() => alTerminar && alTerminar()}>Cancelar</button>
+        </div>
+      )}
+      {bloqueado && <p className="ayuda">Ya hay caseritos anotados, así que el tipo y los precios no se pueden cambiar. Puedes cambiar la frase, la hora o subir el cupo.</p>}
 
       <div className="campo">Tipo de drop
         <div className="pildoras">
           {TIPOS.map((t) => (
-            <button type="button" key={t.id} className={'pildora' + (tipo === t.id ? ' activa' : '')} onClick={() => { setTipo(t.id); setListo(null); }}>{t.texto}</button>
+            <button type="button" key={t.id} disabled={bloqueado} className={'pildora' + (tipo === t.id ? ' activa' : '')} onClick={() => { setTipo(t.id); setListo(null); }}>{t.texto}</button>
           ))}
         </div>
         <p className="ayuda">{tipoActual.ayuda}</p>
@@ -104,10 +130,10 @@ export default function Crear({ local }) {
 
       <div className="fila">
         <label className="campo">Precio drop
-          <input inputMode="numeric" value={precio} onChange={cambio((v) => setPrecio(v.replace(/\D/g, '')))} placeholder="2990" style={{ background: 'var(--amarillo)', fontWeight: 800 }} />
+          <input inputMode="numeric" disabled={bloqueado} value={precio} onChange={cambio((v) => setPrecio(v.replace(/\D/g, '')))} placeholder="2990" style={{ background: 'var(--amarillo)', fontWeight: 800 }} />
         </label>
         <label className="campo">Precio normal
-          <input inputMode="numeric" value={precioNormal} onChange={cambio((v) => setPrecioNormal(v.replace(/\D/g, '')))} placeholder="4500" />
+          <input inputMode="numeric" disabled={bloqueado} value={precioNormal} onChange={cambio((v) => setPrecioNormal(v.replace(/\D/g, '')))} placeholder="4500" />
         </label>
         <label className="campo">¿Cuántos?
           <input inputMode="numeric" value={cupo} onChange={cambio((v) => setCupo(v.replace(/\D/g, '')))} />
@@ -162,7 +188,7 @@ export default function Crear({ local }) {
         </div>
       )}
       <button className="boton grande" disabled={!aprobada || enviando} onClick={publicar}>
-        {enviando ? 'Publicando…' : 'Soltar drop'}
+        {enviando ? 'Guardando…' : editarId ? 'Guardar cambios' : 'Soltar drop'}
       </button>
       {!aprobada && <p className="ayuda" style={{ textAlign: 'center' }}>Aprueba la frase para poder publicar.</p>}
     </div>

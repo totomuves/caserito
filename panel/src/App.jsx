@@ -6,6 +6,7 @@ import Crear from './Crear.jsx';
 import Escanear from './Escanear.jsx';
 import Resultados from './Resultados.jsx';
 import Admin from './Admin.jsx';
+import MisDrops from './MisDrops.jsx';
 
 export default function App() {
   const [sesion, setSesion] = useState(undefined);
@@ -16,6 +17,8 @@ export default function App() {
   const [soloAdmin, setSoloAdmin] = useState(false);
   const [recuperando, setRecuperando] = useState(false);
   const [editandoLocal, setEditandoLocal] = useState(false);
+  const [base, setBase] = useState(null);
+  const [aviso, setAviso] = useState('');
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSesion(data.session));
@@ -81,11 +84,20 @@ export default function App() {
         <button className="pildora" onClick={() => setEditandoLocal(true)}>Editar mi local</button>
         {admin && <button className="pildora activa" onClick={() => setSoloAdmin(true)}>Ir al admin</button>}
       </div>
-      {pestana === 'crear' && <Crear local={local} />}
+      {pestana === 'crear' && (
+        <Crear key={base ? base.id + (base.editarId ? '-e' : '-d') : 'nuevo'} local={local} base={base}
+          alTerminar={(m) => { setBase(null); setAviso(m || ''); setPestana('drops'); }} />
+      )}
+      {pestana === 'drops' && (
+        <MisDrops key={aviso} local={local} aviso={aviso}
+          alDuplicar={(d) => { setAviso(''); setBase(d); setPestana('crear'); }}
+          alEditar={(d) => { setAviso(''); setBase({ ...d, editarId: d.id }); setPestana('crear'); }} />
+      )}
       {pestana === 'escanear' && <Escanear />}
       {pestana === 'resultados' && <Resultados local={local} />}
       <nav className="nav" aria-label="Secciones">
-        <Tab id="crear" actual={pestana} setear={setPestana} texto="Crear" icono="M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM12 8v8M8 12h8" />
+        <Tab id="crear" actual={pestana} setear={(p) => { setBase(null); setPestana(p); }} texto="Crear" icono="M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM12 8v8M8 12h8" />
+        <Tab id="drops" actual={pestana} setear={(p) => { setAviso(''); setPestana(p); }} texto="Mis drops" icono="M4 6h16M4 12h16M4 18h10" />
         <Tab id="escanear" actual={pestana} setear={setPestana} texto="Escanear" icono="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M4 12h16" />
         <Tab id="resultados" actual={pestana} setear={setPestana} texto="Resultados" icono="M5 20V10M12 20V4M19 20v-7" />
       </nav>
