@@ -182,7 +182,7 @@ export function SelectorIdioma({ alElegir, style }) {
         const activo = lang === x.id;
         return (
           <Pressable key={x.id} onPress={() => { setLang(x.id); alElegir && alElegir(x.id); }} accessibilityRole="button" accessibilityState={{ selected: activo }}
-            style={{ minHeight: 44, paddingHorizontal: 12, borderRadius: 22, borderWidth: 2.5, borderColor: C.negro, backgroundColor: activo ? C.negro : C.papel, justifyContent: 'center' }}>
+            style={{ minHeight: 44, paddingHorizontal: 12, borderRadius: 0, borderWidth: 2.5, borderColor: C.negro, backgroundColor: activo ? C.negro : C.papel, justifyContent: 'center' }}>
             <Text style={{ fontFamily: F.negrita, fontSize: 13, color: activo ? C.amarillo : C.negro }}>{x.nombre}{x.id !== 'es' ? ` · ${x.mezcla}` : ''}</Text>
           </Pressable>
         );

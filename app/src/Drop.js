@@ -60,12 +60,12 @@ export default function Drop({ drop, usuario, alCerrar }) {
     <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
       <View style={{ backgroundColor: C.amarillo, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <Pressable onPress={alCerrar} accessibilityRole="button" accessibilityLabel={t("Volver", "Volver · Back")}
-          style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 2.5, borderColor: C.negro, backgroundColor: C.papel, alignItems: 'center', justifyContent: 'center' }}>
+          style={{ width: 44, height: 44, borderRadius: 0, borderWidth: 2.5, borderColor: C.negro, backgroundColor: C.papel, alignItems: 'center', justifyContent: 'center' }}>
           <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={C.negro} strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round"><Path d="M15 18l-6-6 6-6" /></Svg>
         </Pressable>
         {destino && destino.logo ? (
           <Image source={{ uri: destino.logo }} accessibilityLabel={`Logo de ${drop.local_nombre}`}
-            style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 2.5, borderColor: C.negro, backgroundColor: C.papel }} />
+            style={{ width: 44, height: 44, borderRadius: 0, borderWidth: 2.5, borderColor: C.negro, backgroundColor: C.papel }} />
         ) : null}
         <View style={{ flex: 1 }}>
           <Text style={{ fontFamily: F.negrita, fontSize: 17 }} numberOfLines={1}>{drop.local_nombre}</Text>
@@ -76,7 +76,7 @@ export default function Drop({ drop, usuario, alCerrar }) {
       </View>
       <Ola color={C.amarillo} />
 
-      <View style={{ marginHorizontal: 16, marginTop: 14, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: 22, padding: 18, gap: 10 }}>
+      <View style={{ marginHorizontal: 16, marginTop: 14, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: 0, padding: 18, gap: 10 }}>
         <EtiquetaPrecio valor={drop.tipo === 'sorpresa' && !mio ? '¿?' : precio(drop.precio)} />
         <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.rojoTexto, textTransform: 'uppercase' }}>
           {drop.tipo === 'recien_llegado' ? t('Recién llegado', "Recién llegado · Just in") : drop.tipo === 'grupal' ? t('Drop grupal', "Drop grupal · Group") : drop.tipo === 'sorpresa' ? t('Drop sorpresa', "Drop sorpresa · Mystery") : 'Drop'} · {t('quedan', "quedan:")} {quedan}
@@ -101,20 +101,20 @@ export default function Drop({ drop, usuario, alCerrar }) {
         {mio === undefined ? null : !mio ? (
           <Boton texto={t("Me sumo", "Me sumo · Join")} grande fondo={C.amarillo} color={C.negro} onPress={sumarme} style={{ marginTop: 6 }} />
         ) : mio.canjeado_at ? (
-          <View style={{ backgroundColor: C.azul, borderRadius: 14, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <View style={{ backgroundColor: C.azul, borderRadius: 0, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
             <Brillo tam={22} color={C.amarillo} />
             <Text style={{ fontFamily: F.negrita, color: '#FFFFFF', fontSize: 15, flex: 1 }}>{t('¡Canjeado! Ganaste la lámina de este local.', "¡Canjeado! Ganaste la lámina de este local for your álbum.")}</Text>
           </View>
         ) : drop.dentro_del_radio ? (
           <View style={{ alignItems: 'center', gap: 8, marginTop: 6 }}>
-            <View style={{ backgroundColor: '#FFFFFF', padding: 12, borderRadius: 14, borderWidth: 2, borderColor: C.negro }}>
+            <View style={{ backgroundColor: '#FFFFFF', padding: 12, borderRadius: 0, borderWidth: 2, borderColor: C.negro }}>
               <QRCode value={mio.codigo} size={200} />
             </View>
             <Text style={{ fontFamily: F.media, fontSize: 13, color: C.gris }}>{t('o dicta este código en caja', "o lee este código en la caja")}</Text>
             <Text style={{ ...letrista, fontSize: 28, letterSpacing: 4 }}>{mio.codigo.slice(0, 4)} {mio.codigo.slice(4)}</Text>
           </View>
         ) : (
-          <View style={{ backgroundColor: C.negro, borderRadius: 14, padding: 14, gap: 4 }}>
+          <View style={{ backgroundColor: C.negro, borderRadius: 0, padding: 14, gap: 4 }}>
             <Text style={{ fontFamily: F.negrita, color: C.amarillo, fontSize: 15 }}>{t('¡Estás dentro!', "¡Estás dentro! You’re in.")}</Text>
             <Text style={{ fontFamily: F.normal, color: '#FFFFFF', fontSize: 14 }}>{t(`Tu código para canjear aparece cuando llegues al local. Estás ${cuad(drop.cuadras)}.`, `Tu QR aparece when you llegas al local. Estás a ${cuad(drop.cuadras)}.`)}</Text>
           </View>
@@ -131,12 +131,12 @@ export default function Drop({ drop, usuario, alCerrar }) {
       ) : null}
 
       <View style={{ marginHorizontal: 16, marginTop: 14, flexDirection: 'row', gap: 10 }}>
-        <View style={{ flex: 1, backgroundColor: C.negro, borderRadius: 16, padding: 12 }}>
+        <View style={{ flex: 1, backgroundColor: C.negro, borderRadius: 0, padding: 12 }}>
           <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.amarillo }}>{t('Termina en', "Termina en")}</Text>
           <Text style={{ ...letrista, fontSize: 24, color: C.papel }}>{reloj}</Text>
         </View>
         <Pressable onPress={() => Share.share({ message: t(`¡Caserito! ${drop.local_nombre} soltó un drop: ${drop.frase || drop.titulo}. Bájate Caserito y súmate.`, `¡Caserito! ${drop.local_nombre} soltó un drop: ${drop.frase || drop.titulo}. Get Caserito y súmate.`) })}
-          style={{ flex: 1, backgroundColor: C.azul, borderRadius: 16, borderWidth: 2.5, borderColor: C.negro, padding: 12, justifyContent: 'center' }}>
+          style={{ flex: 1, backgroundColor: C.azul, borderRadius: 0, borderWidth: 2.5, borderColor: C.negro, padding: 12, justifyContent: 'center' }}>
           <Text style={{ fontFamily: F.negrita, fontSize: 15, color: '#FFFFFF' }}>{t('Pasarle el dato a un amigo', "Pásale el dato · Tell a friend")}</Text>
         </Pressable>
       </View>
@@ -175,7 +175,7 @@ function Resena({ localId, usuario, t }) {
       </View>
       <TextInput value={texto} onChangeText={(v) => { setTexto(v); setEnviada(false); }} maxLength={280} multiline
         placeholder={t("Cuéntale al barrio (opcional)", "Cuéntale al barrio (optional)")} placeholderTextColor={C.gris}
-        style={{ minHeight: 70, borderWidth: 2, borderColor: C.negro, borderRadius: 12, backgroundColor: '#FFFFFF', padding: 10, fontFamily: F.normal, fontSize: 15, textAlignVertical: 'top' }} />
+        style={{ minHeight: 70, borderWidth: 2, borderColor: C.negro, borderRadius: 0, backgroundColor: '#FFFFFF', padding: 10, fontFamily: F.normal, fontSize: 15, textAlignVertical: 'top' }} />
       {!enviada && <Boton texto={t("Publicar reseña", "Publicar reseña")} deshabilitado={!estrellas} onPress={enviar} />}
       <Text style={{ fontFamily: F.normal, fontSize: 12, color: C.gris }}>{t('Reseña verificada: solo reseñan quienes canjearon aquí.', "Reseña verificada: solo quienes compraron here pueden opinar.")}</Text>
       {error ? <Text style={{ fontFamily: F.negrita, color: C.rojoTexto }}>{error}</Text> : null}

@@ -4,15 +4,19 @@ import Svg, { Path } from 'react-native-svg';
 import { C, F, letrista } from './tema';
 
 // Borde ondulado entre bandas de color, como los lienzos de feria
+// Corte entre el encabezado y el contenido: franja Bauhaus (línea negra con figuras)
 export function Ola({ color, fondo = C.crema, abajo = true }) {
-  const { width } = useWindowDimensions();
-  const d = abajo
-    ? 'M0 0H390V8Q341 22 292 12T195 12T97 12T0 8Z'
-    : 'M0 14Q48 0 97 10T195 10T292 10T390 14V22H0Z';
   return (
-    <Svg width={width} height={22} viewBox="0 0 390 22" preserveAspectRatio="none" style={{ backgroundColor: fondo }}>
-      <Path d={d} fill={color} />
-    </Svg>
+    <View style={{ backgroundColor: fondo }} accessibilityElementsHidden importantForAccessibility="no">
+      {abajo ? <View style={{ height: 6, backgroundColor: color }} /> : null}
+      <View style={{ height: 3, backgroundColor: C.negro }} />
+      <View style={{ flexDirection: 'row', height: 10 }}>
+        {[C.rojo, C.amarillo, C.azul, C.negro, C.papel, C.rojo, C.azul, C.amarillo].map((c, i) => (
+          <View key={i} style={{ flex: 1, backgroundColor: c, borderRightWidth: i < 7 ? 3 : 0, borderBottomWidth: 3, borderColor: C.negro }} />
+        ))}
+      </View>
+      {!abajo ? <View style={{ height: 6, backgroundColor: color }} /> : null}
+    </View>
   );
 }
 
@@ -65,7 +69,7 @@ export function Pildora({ texto, activa, onPress, color = C.negro }) {
 export function Boton({ texto, onPress, fondo = C.negro, color = C.papel, deshabilitado, grande, style }) {
   return (
     <Pressable onPress={deshabilitado ? undefined : onPress} accessibilityRole="button" accessibilityState={{ disabled: !!deshabilitado }}
-      style={({ pressed }) => [{ minHeight: grande ? 52 : 44, borderRadius: 26, borderWidth: 2.5, borderColor: C.negro, backgroundColor: deshabilitado ? '#E7DCC4' : fondo, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 18, opacity: pressed ? 0.85 : 1 }, style]}>
+      style={({ pressed }) => [{ minHeight: grande ? 52 : 44, borderRadius: 0, borderWidth: 3, borderColor: C.negro, backgroundColor: deshabilitado ? '#E7DCC4' : fondo, shadowColor: fondo === C.negro ? C.rojo : C.negro, shadowOffset: { width: 4, height: 4 }, shadowOpacity: deshabilitado ? 0 : 1, shadowRadius: 0, elevation: 0, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 18, opacity: pressed ? 0.85 : 1 }, style]}>
       <Text style={[grande ? { ...letrista, fontSize: 19 } : { fontFamily: F.negrita, fontSize: 15 }, { color: deshabilitado ? C.gris : color }]}>{texto}</Text>
     </Pressable>
   );

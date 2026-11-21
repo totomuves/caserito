@@ -103,7 +103,7 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
             const activo = x.id === barrioSel;
             return (
               <Pressable key={x.id} onPress={() => setBarrioSel(x.id)} accessibilityRole="button" accessibilityState={{ selected: activo }}
-                style={{ minHeight: 44, paddingHorizontal: 14, borderRadius: 22, borderWidth: 2.5, borderColor: C.negro, backgroundColor: activo ? C.negro : C.papel, justifyContent: 'center' }}>
+                style={{ minHeight: 44, paddingHorizontal: 14, borderRadius: 0, borderWidth: 2.5, borderColor: C.negro, backgroundColor: activo ? C.negro : C.papel, justifyContent: 'center' }}>
                 <Text style={{ fontFamily: F.negrita, fontSize: 14, color: activo ? C.amarillo : C.negro }}>
                   {x.nombre.replace(/^Barrio /, '')}{!x.lanzado ? t(' · pronto', ' · soon') : ''}
                 </Text>
@@ -114,7 +114,7 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
       )}
 
       {total === 0 && (
-        <View style={{ marginHorizontal: 16, marginTop: 6, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: 18, padding: 16, gap: 6 }}>
+        <View style={{ marginHorizontal: 16, marginTop: 6, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: 0, padding: 16, gap: 6 }}>
           <Text style={{ ...letrista, fontSize: 20 }}>{t('¡LLEGAMOS PRONTO!', '¡LLEGAMOS PRONTO! SOON')}</Text>
           <Text style={{ fontFamily: F.normal, fontSize: 14 }}>
             {t(`Todavía no hay locales de ${barrio ? barrio.nombre : 'este barrio'} en Caserito. Cuando se sumen, aquí aparecen sus láminas.`,
@@ -122,7 +122,7 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
           </Text>
         </View>
       )}
-      <View style={{ marginHorizontal: 16, marginTop: 6, backgroundColor: C.negro, borderRadius: 18, padding: 16, gap: 10 }}>
+      <View style={{ marginHorizontal: 16, marginTop: 6, backgroundColor: C.negro, borderRadius: 0, padding: 16, gap: 10 }}>
         <Text style={{ ...letrista, fontSize: 30, color: C.amarillo }}>{tengo} {t('DE', "DE")} {total}</Text>
         <View style={{ height: 14, borderRadius: 7, backgroundColor: '#3A3A3A', overflow: 'hidden' }}>
           <View style={{ width: total ? `${(tengo / total) * 100}%` : '0%', height: '100%', backgroundColor: C.amarillo }} />
@@ -145,7 +145,7 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
           const activa = sel === k;
           return (
             <Pressable key={l.id} onPress={() => setSel(k)} accessibilityLabel={`${t('Lámina', "Lámina")} ${k + 1}, ${ganada ? l.nombre + t(', ganada', ", ¡la tienes!") + (rep[l.id] && rep[l.id].repetidas ? `, ${rep[l.id].repetidas} ${t('repetidas', 'repetidas')}` : '') : textoCategoria(l.categoria) + t(', te falta', ", te falta")}`}
-              style={{ width: '22.6%', height: 118, borderRadius: 12, borderWidth: activa ? 3 : 2.5, borderStyle: ganada || activa ? 'solid' : 'dashed', borderColor: activa ? C.rojo : ganada ? C.negro : '#8A7A66', backgroundColor: ganada ? m.fondo : 'transparent', transform: [{ rotate: ganada ? GIROS[k % 4] : '0deg' }], padding: 5, justifyContent: 'space-between' }}>
+              style={{ width: '22.6%', height: 118, borderRadius: 0, borderWidth: activa ? 3 : 2.5, borderStyle: ganada || activa ? 'solid' : 'dashed', borderColor: activa ? C.rojo : ganada ? C.negro : '#8A7A66', backgroundColor: ganada ? m.fondo : 'transparent', transform: [{ rotate: ganada ? GIROS[k % 4] : '0deg' }], padding: 5, justifyContent: 'space-between' }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Text style={{ ...letrista, fontSize: 13, color: ganada ? m.num : '#8A7A66' }}>{k + 1}{ganada ? letraLamina(l) : ''}</Text>
                 {ganada && rep[l.id] && rep[l.id].repetidas > 0 ? (
@@ -171,7 +171,7 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
       </View>
 
       {elegido && (
-        <View style={{ margin: 16, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: 18, padding: 16, gap: 8 }}>
+        <View style={{ margin: 16, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: 0, padding: 16, gap: 8 }}>
           <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.rojoTexto, textTransform: 'uppercase' }}>
             {t('Lámina', "Lámina")} {sel + 1} · {mias[elegido.id] ? t('ganada', "¡la tienes!") : t('te falta', "te falta")}
           </Text>
@@ -213,7 +213,7 @@ function Repetidas({ r, t, pidiendo, msg, alPedir }) {
       {!premio ? (
         <Text style={{ fontFamily: F.normal, fontSize: 13, color: C.gris }}>{t('Cada canje extra en este local es una repetida. Este local todavía no las cambia por nada.', 'Cada canje extra here es una repetida. Este local no las cambia yet.')}</Text>
       ) : r.codigo ? (
-        <View style={{ alignItems: 'center', gap: 8, backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 2, borderColor: C.negro, padding: 14 }}>
+        <View style={{ alignItems: 'center', gap: 8, backgroundColor: '#FFFFFF', borderRadius: 0, borderWidth: 2, borderColor: C.negro, padding: 14 }}>
           <Text style={{ ...letrista, fontSize: 18, textAlign: 'center' }}>{t('CAMBIO LISTO', 'CAMBIO LISTO · READY')}</Text>
           <Text style={{ fontFamily: F.negrita, fontSize: 15, textAlign: 'center' }}>{r.premio}</Text>
           <QRCode value={r.codigo} size={170} />
@@ -242,15 +242,15 @@ function Repetidas({ r, t, pidiendo, msg, alPedir }) {
 function ArteBarrio({ a, t, msg, alPedir }) {
   const listo = a.tengo >= a.necesarias;
   return (
-    <View style={{ marginHorizontal: 16, marginTop: 14, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.azul, borderRadius: 18, padding: 16, gap: 8 }}>
+    <View style={{ marginHorizontal: 16, marginTop: 14, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.azul, borderRadius: 0, padding: 16, gap: 8 }}>
       <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.azul, textTransform: 'uppercase' }}>{t('Arte del barrio', 'Arte del barrio · local art')}</Text>
       <Text style={{ ...letrista, fontSize: 22 }}>{a.nombre.toUpperCase()}</Text>
-      {a.imagen ? <Image source={{ uri: a.imagen }} style={{ width: '100%', height: 170, borderRadius: 12, borderWidth: 2, borderColor: C.negro }} resizeMode="cover" accessibilityIgnoresInvertColors accessibilityLabel={a.nombre} /> : null}
+      {a.imagen ? <Image source={{ uri: a.imagen }} style={{ width: '100%', height: 170, borderRadius: 0, borderWidth: 2, borderColor: C.negro }} resizeMode="cover" accessibilityIgnoresInvertColors accessibilityLabel={a.nombre} /> : null}
       {a.descripcion ? <Text style={{ fontFamily: F.normal, fontSize: 14 }}>{a.descripcion}</Text> : null}
       {a.canjeado_at ? (
         <Text style={{ fontFamily: F.negrita, fontSize: 15 }}>{t('¡Ya es tuyo! Lo retiraste el', '¡Ya es tuyo! Lo retiraste el')} {new Date(a.canjeado_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' })}.</Text>
       ) : a.codigo ? (
-        <View style={{ alignItems: 'center', gap: 8, backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 2, borderColor: C.negro, padding: 14 }}>
+        <View style={{ alignItems: 'center', gap: 8, backgroundColor: '#FFFFFF', borderRadius: 0, borderWidth: 2, borderColor: C.negro, padding: 14 }}>
           <QRCode value={a.codigo} size={170} />
           <Text style={{ fontFamily: F.negrita, fontSize: 20, letterSpacing: 3 }}>{a.codigo}</Text>
           <Text style={{ fontFamily: F.normal, fontSize: 13, textAlign: 'center' }}>{t(`Retíralo en ${a.punto || 'el local del barrio'}: muestra este QR en la caja.`, `Retíralo en ${a.punto || 'el local del barrio'}: show this QR en la caja.`)}</Text>
@@ -278,7 +278,7 @@ function EdicionEspecial({ ide, barrio, tengo, necesarias, t }) {
   const nombre = (barrio ? barrio.nombre : 'Barrio Italia').replace(/^Barrio /, '');
   return (
     <View style={{ marginHorizontal: 16, marginTop: 14, flexDirection: 'row', gap: 14, alignItems: 'center' }}>
-      <View style={{ width: 112, height: 150, borderRadius: 14, borderWidth: 3, borderColor: lista ? '#C9A227' : '#8A7A66', borderStyle: lista ? 'solid' : 'dashed',
+      <View style={{ width: 112, height: 150, borderRadius: 0, borderWidth: 3, borderColor: lista ? '#C9A227' : '#8A7A66', borderStyle: lista ? 'solid' : 'dashed',
         backgroundColor: lista ? ide.principal : 'transparent', padding: 8, justifyContent: 'space-between', transform: [{ rotate: '-2deg' }] }}
         accessibilityLabel={lista ? `${t('Lámina edición especial de', 'Edición especial de')} ${nombre}` : t('Lámina edición especial, bloqueada', 'Edición especial, locked')}>
         {lista ? <Motivo tipo={ide.motivo} a={ide.principal} b={ide.acento} alto={6} /> : null}

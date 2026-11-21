@@ -40,7 +40,7 @@ export function FiltrosMapa({ drops, filtro, alElegir, arriba = 60 }) {
           if (f.id !== 'todo' && !n) return null;
           return (
             <Pressable key={f.id} onPress={() => alElegir(f.id)} accessibilityRole="button" accessibilityState={{ selected: activo }}
-              style={{ minHeight: 36, paddingHorizontal: 14, borderRadius: 18, borderWidth: 2.5, borderColor: C.negro, backgroundColor: activo ? C.amarillo : C.papel, justifyContent: 'center' }}>
+              style={{ minHeight: 36, paddingHorizontal: 14, borderRadius: 0, borderWidth: 2.5, borderColor: C.negro, backgroundColor: activo ? C.amarillo : C.papel, justifyContent: 'center' }}>
               <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.negro }}>{t(f.es, f.en)}{f.id === 'todo' ? ` · ${n}` : ''}</Text>
             </Pressable>
           );
@@ -105,7 +105,7 @@ export function useVistaBarrio(dropsPropios) {
 export function SelectorBarrios({ barrios, vista, alElegir, flotante = true, titulo }) {
   const { t } = useIdioma();
   if (!barrios || barrios.length < 2) return null;
-  const chip = (activo) => ({ minHeight: 40, paddingHorizontal: 12, borderRadius: 20, borderWidth: 2.5, borderColor: C.negro, backgroundColor: activo ? C.negro : C.papel, justifyContent: 'center' });
+  const chip = (activo) => ({ minHeight: 40, paddingHorizontal: 12, borderRadius: 0, borderWidth: 2.5, borderColor: C.negro, backgroundColor: activo ? C.negro : C.papel, justifyContent: 'center' });
   const texto = (activo) => ({ fontFamily: F.negrita, fontSize: 13, color: activo ? C.amarillo : C.negro });
   return (
     <View style={flotante ? { position: 'absolute', top: 10, left: 0, right: 0, zIndex: 900 } : { marginTop: 10, gap: 6 }} pointerEvents="box-none">
@@ -147,18 +147,18 @@ export function HojaMapa({ drops, pos, sel, alAbrir, coords = {} }) {
   return (
     <>
       {pos.aprox && (
-        <View style={{ position: 'absolute', top: 112, left: 16, right: 16, backgroundColor: C.papel, borderWidth: 2, borderColor: C.negro, borderRadius: 14, padding: 10, zIndex: 1000 }}>
+        <View style={{ position: 'absolute', top: 112, left: 16, right: 16, backgroundColor: C.papel, borderWidth: 2, borderColor: C.negro, borderRadius: 0, padding: 10, zIndex: 1000 }}>
           <Text style={{ fontFamily: F.media, fontSize: 13 }}>{t('Sin tu ubicación te mostramos Barrio Italia. Actívala para ver a cuántas cuadras está cada drop.', "Activa tu ubicación to see a cuántas cuadras está cada drop. Por ahora: Barrio Italia.")}</Text>
         </View>
       )}
-      <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 1000, backgroundColor: C.papel, borderTopLeftRadius: 26, borderTopRightRadius: 26, borderTopWidth: 2.5, borderColor: C.negro, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 92, gap: 10 }}>
+      <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 1000, backgroundColor: C.papel, borderTopLeftRadius: 0, borderTopRightRadius: 0, borderTopWidth: 2.5, borderColor: C.negro, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 92, gap: 10 }}>
         <View style={{ alignSelf: 'center', width: 44, height: 5, borderRadius: 3, backgroundColor: C.negro, opacity: 0.25 }} />
         <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' }}>
           <Text style={{ ...letrista, fontSize: 20 }}>{sel ? t('ESTE DROP', 'ESTE DROP') : t('MÁS CERCA DE TI', 'MÁS CERCA · CLOSEST')}</Text>
           <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.gris }}>{drops.length} {drops.length === 1 ? t('drop activo', 'drop live') : t('drops activos', 'drops live')}</Text>
         </View>
         {cercano ? (
-          <Pressable onPress={() => alAbrir(cercano)} style={{ backgroundColor: '#FFFFFF', borderWidth: 2.5, borderColor: C.negro, borderRadius: 18, padding: 14, gap: 7, shadowColor: C.negro, shadowOffset: { width: 3, height: 3 }, shadowOpacity: 1, shadowRadius: 0, elevation: 3 }}>
+          <Pressable onPress={() => alAbrir(cercano)} style={{ backgroundColor: '#FFFFFF', borderWidth: 2.5, borderColor: C.negro, borderRadius: 0, padding: 14, gap: 7, shadowColor: C.negro, shadowOffset: { width: 3, height: 3 }, shadowOpacity: 1, shadowRadius: 0, elevation: 3 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
               <Text style={{ fontFamily: F.negrita, fontSize: 12, color: COLOR_TIPO[cercano.tipo] || C.rojoTexto, textTransform: 'uppercase', flexShrink: 1 }}>{tur ? categoriaTur(cercano.categoria, lang) || textoCategoria(cercano.categoria) : textoCategoria(cercano.categoria)} · {t('quedan', 'quedan')} {cercano.quedan}</Text>
               {cercano.precio ? <Text style={{ ...letrista, fontSize: 16, backgroundColor: C.amarillo, borderWidth: 2, borderColor: C.negro, borderRadius: 6, paddingHorizontal: 6, overflow: 'hidden', transform: [{ rotate: '-4deg' }] }}>{precio(cercano.precio)}</Text> : null}
@@ -173,15 +173,15 @@ export function HojaMapa({ drops, pos, sel, alAbrir, coords = {} }) {
             </View>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               {cercano.dentro_del_radio || !destino ? (
-                <Pressable onPress={() => alAbrir(cercano)} accessibilityRole="button" style={{ flex: 1, minHeight: 48, borderRadius: 14, backgroundColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
+                <Pressable onPress={() => alAbrir(cercano)} accessibilityRole="button" style={{ flex: 1, minHeight: 48, borderRadius: 0, backgroundColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
                   <Text style={{ fontFamily: F.negrita, fontSize: 15, color: C.amarillo }}>{cercano.dentro_del_radio ? t('Canjear ahora', 'Canjear now') : t('Ver drop', 'Ver drop')}</Text>
                 </Pressable>
               ) : (
                 <>
-                  <Pressable onPress={() => caminar(destino)} accessibilityRole="button" style={{ flex: 1, minHeight: 48, borderRadius: 14, backgroundColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
+                  <Pressable onPress={() => caminar(destino)} accessibilityRole="button" style={{ flex: 1, minHeight: 48, borderRadius: 0, backgroundColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
                     <Text style={{ fontFamily: F.negrita, fontSize: 15, color: C.amarillo }}>{t(`Cómo llegar · ${minutos(cercano)} min`, `Cómo llegar · ${minutos(cercano)} min walk`)}</Text>
                   </Pressable>
-                  <Pressable onPress={() => alAbrir(cercano)} accessibilityRole="button" style={{ minHeight: 48, paddingHorizontal: 16, borderRadius: 14, borderWidth: 2.5, borderColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
+                  <Pressable onPress={() => alAbrir(cercano)} accessibilityRole="button" style={{ minHeight: 48, paddingHorizontal: 16, borderRadius: 0, borderWidth: 2.5, borderColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
                     <Text style={{ fontFamily: F.negrita, fontSize: 15 }}>{t('Ver', 'Ver')}</Text>
                   </Pressable>
                 </>

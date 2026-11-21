@@ -200,11 +200,11 @@ function Caserito() {
           )}
 
           {!dropAbierto && (
-            <View style={{ position: 'absolute', left: 12, right: 12, bottom: 14, height: 64, backgroundColor: C.negro, borderRadius: 22, flexDirection: 'row', zIndex: 5000, elevation: 20 }}>
-              <Tab id="inicio" texto={t("Inicio", "Inicio")} actual={pestana} setear={setPestana} d="M3 10l9-6 9 6M5 10v10h14V10M10 20v-5h4v5" />
-              <Tab id="mapa" texto={t("Mapa", "Mapa")} actual={pestana} setear={setPestana} d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14" />
-              <Tab id="album" texto={t("Álbum", "Álbum")} actual={pestana} setear={setPestana} d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM4 12h16M12 3v18" />
-              <Tab id="tu" texto={t("Tú", "Tú")} actual={pestana} setear={setPestana} d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0" />
+            <View style={{ position: 'absolute', left: 12, right: 12, bottom: 14, height: 64, backgroundColor: C.papel, borderWidth: 3, borderColor: C.negro, flexDirection: 'row', zIndex: 5000, elevation: 20, shadowColor: C.negro, shadowOffset: { width: 5, height: 5 }, shadowOpacity: 1, shadowRadius: 0 }}>
+              <Tab id="inicio" texto={t("Inicio", "Inicio")} actual={pestana} setear={setPestana} figura="cuadrado" fondo={C.amarillo} />
+              <Tab id="mapa" texto={t("Mapa", "Mapa")} actual={pestana} setear={setPestana} figura="circulo" fondo={C.rojo} />
+              <Tab id="album" texto={t("Álbum", "Álbum")} actual={pestana} setear={setPestana} figura="triangulo" fondo={C.azul} />
+              <Tab id="tu" texto={t("Tú", "Tú")} actual={pestana} setear={setPestana} figura="cuarto" fondo={C.negro} />
             </View>
           )}
         </View>
@@ -213,14 +213,20 @@ function Caserito() {
   );
 }
 
-function Tab({ id, texto, actual, setear, d }) {
+// Pestañas Bauhaus: cada una con su figura (cuadrado, círculo, triángulo, cuarto de círculo)
+const FIGURAS = {
+  cuadrado: 'M3 3h18v18H3z',
+  circulo: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18z',
+  triangulo: 'M12 3L21 21H3z',
+  cuarto: 'M3 21A18 18 0 0 1 21 3V21z',
+};
+function Tab({ id, texto, actual, setear, figura, fondo }) {
   const activa = id === actual;
-  const color = activa ? C.amarillo : C.papel;
   return (
     <Pressable onPress={() => setear(id)} accessibilityRole="tab" accessibilityState={{ selected: activa }}
-      style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3 }}>
-      <Svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><Path d={d} /></Svg>
-      <Text style={{ color, fontFamily: activa ? F.negrita : F.media, fontSize: 11 }}>{texto}</Text>
+      style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3, backgroundColor: activa ? C.amarillo : 'transparent', borderRightWidth: id === 'tu' ? 0 : 3, borderColor: C.negro }}>
+      <Svg width={22} height={22} viewBox="0 0 24 24"><Path d={FIGURAS[figura]} fill={activa ? fondo : C.papel} stroke={C.negro} strokeWidth={2.5} strokeLinejoin="miter" /></Svg>
+      <Text style={{ color: C.negro, fontFamily: activa ? F.negrita : F.media, fontSize: 11 }}>{texto}</Text>
     </Pressable>
   );
 }
