@@ -462,7 +462,7 @@ function BarrioForm({ b, alGuardar }) {
         </label>
       </div>
       {b.limites && <span className="ayuda">Límites: {b.limites}</span>}
-      <label className="campo">Arte del barrio (vacío = sin arte)
+      <label className="campo">Arte del barrio: hay uno solo y lo gana el primero que junta las láminas (vacío = sin arte; si lo cambias, parte una carrera nueva)
         <input value={f.arte_nombre} maxLength={80} onChange={cambiar('arte_nombre')} placeholder="Ej: Serigrafía de Franklin por un artista del barrio" />
       </label>
       {f.arte_nombre.trim() && (

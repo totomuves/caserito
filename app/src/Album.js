@@ -303,15 +303,28 @@ function ArteBarrio({ a, t, msg, alPedir }) {
       {a.canjeado_at ? (
         <Text style={{ fontFamily: F.negrita, fontSize: 15 }}>{t('¡Ya es tuyo! Lo retiraste el', '¡Ya es tuyo! Lo retiraste el')} {new Date(a.canjeado_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' })}.</Text>
       ) : a.codigo ? (
+        <>
+        <Text style={{ fontFamily: F.negrita, fontSize: 15, color: C.rojoTexto }}>{t('¡GANASTE! Fuiste el primero del barrio.', '¡GANASTE! You were the first one.')}</Text>
         <View style={{ alignItems: 'center', gap: 8, backgroundColor: '#FFFFFF', borderRadius: R(16), borderWidth: 2, borderColor: C.negro, padding: 14 }}>
           <QRCode value={a.codigo} size={170} />
           <Text style={{ fontFamily: F.negrita, fontSize: 20, letterSpacing: 3 }}>{a.codigo}</Text>
           <Text style={{ fontFamily: F.normal, fontSize: 13, textAlign: 'center' }}>{t(`Retíralo en ${a.punto || 'el local del barrio'}: muestra este QR en la caja.`, `Retíralo en ${a.punto || 'el local del barrio'}: show this QR en la caja.`)}</Text>
+          {a.vence_at ? <Text style={{ fontFamily: F.negrita, fontSize: 12, textAlign: 'center' }}>{t(`Tienes hasta el ${new Date(a.vence_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' })} para retirarlo. Si no, pasa al siguiente.`, `Pick it up before ${new Date(a.vence_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' })}.`)}</Text> : null}
+        </View>
+        </>
+      ) : a.ganado ? (
+        <View style={{ gap: 4, backgroundColor: C.negro, padding: 12, borderRadius: R(12) }}>
+          <Text style={{ ...letrista, fontSize: 18, color: C.amarillo }}>{t(`¡YA LO GANÓ ${(a.ganador || 'UN CASERITO').toUpperCase()}!`, `¡${(a.ganador || 'UN CASERITO').toUpperCase()} ALREADY WON IT!`)}</Text>
+          <Text style={{ fontFamily: F.normal, fontSize: 13, color: C.papel }}>
+            {a.vence_at
+              ? t(`Si no lo retira antes del ${new Date(a.vence_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' })}, vuelve a quedar libre. Sigue juntando láminas.`, `Si no lo retira antes del ${new Date(a.vence_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' })}, it's up for grabs again.`)
+              : t('Ya lo retiró. Atento: cuando llegue un arte nuevo al barrio, parte otra carrera.', 'Ya lo retiró. Stay tuned for the next arte.')}
+          </Text>
         </View>
       ) : (
         <>
           <Text style={{ fontFamily: F.normal, fontSize: 14 }}>
-            {t(`Junta ${a.necesarias} láminas de este barrio y cámbialas por este arte`, `Junta ${a.necesarias} láminas de este barrio y cámbialas por este arte`)}{a.punto ? t(` (se retira en ${a.punto}).`, ` (pick it up en ${a.punto}).`) : '.'}
+            {t(`Hay uno solo: se lo lleva el primero que junte ${a.necesarias} láminas de este barrio`, `Only one: the first to collect ${a.necesarias} láminas de este barrio wins it`)}{a.punto ? t(` (se retira en ${a.punto}).`, ` (pick it up en ${a.punto}).`) : '.'}
           </Text>
           <View style={{ height: 12, borderRadius: 6, backgroundColor: '#E7DCC4', borderWidth: 2, borderColor: C.negro, overflow: 'hidden' }}>
             <View style={{ width: `${Math.min(100, (a.tengo / a.necesarias) * 100)}%`, height: '100%', backgroundColor: C.azul }} />
