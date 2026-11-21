@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, explicar } from './supabase.js';
 import EliminarLocal from './EliminarLocal.jsx';
+import ConfigurarLocal from './ConfigurarLocal.jsx';
 import { formatoPrecio } from './frases.js';
 import { textoCategoria } from './categorias.js';
 import Qr, { URL_APP } from './Qr.jsx';
@@ -17,7 +18,7 @@ const SECCIONES = [
   { id: 'estilo', texto: 'Estilo de la app' },
 ];
 
-export default function Admin() {
+export default function Admin({ usuario }) {
   const [seccion, setSeccion] = useState('resumen');
   return (
     <div className="contenido">
@@ -28,7 +29,7 @@ export default function Admin() {
         ))}
       </div>
       {seccion === 'resumen' && <Resumen irA={setSeccion} />}
-      {seccion === 'locales' && <Locales />}
+      {seccion === 'locales' && <Locales usuario={usuario} />}
       {seccion === 'drops' && <Drops />}
       {seccion === 'resenas' && <Resenas />}
       {seccion === 'comentarios' && <Comentarios />}
@@ -192,11 +193,17 @@ function ResumenSimple({ d }) {
   );
 }
 
-function Locales() {
+function Locales({ usuario }) {
   const { datos, error, recargar } = useCarga(() => supabase.from('locales')
     .select('id, nombre, barrio, categoria, categorias, cocina_pais, direccion, aprobado, activo, creado_at')
     .order('aprobado').order('creado_at', { ascending: false }));
   const [msg, setMsg] = useState('');
+  const [creando, setCreando] = useState(false);
+  const [entregas, setEntregas] = useState({});
+  const cargarEntregas = () => supabase.rpc('entregas_por_local').then(({ data, error: e }) => {
+    if (!e) setEntregas(Object.fromEntries((data || []).map((x) => [x.local_id, x])));
+  });
+  useEffect(() => { cargarEntregas(); }, [datos]);
   const [busca, setBusca] = useState('');
   const [barrio, setBarrio] = useState('');
   const [estado, setEstado] = useState('');
@@ -209,9 +216,21 @@ function Locales() {
 
   if (error) return <div className="error">{error}</div>;
   if (!datos) return <p className="ayuda">Cargando…</p>;
+  if (creando) {
+    return (
+      <div>
+        <div className="tarjeta" style={{ borderColor: 'var(--azul)', marginBottom: 12 }}>
+          <b>Crear local para entregarlo después</b>
+          <span className="ayuda">Queda a tu nombre mientras lo preparas (datos, logo, primer drop). Después generas el link de entrega y el dueño lo recibe con su cuenta.</span>
+        </div>
+        <ConfigurarLocal usuario={usuario} alGuardar={() => { setCreando(false); recargar(); }} alCancelar={() => setCreando(false)} />
+      </div>
+    );
+  }
   return (
     <>
       {msg && <div className="error">{msg}</div>}
+      <button className="boton" style={{ alignSelf: 'flex-start', marginBottom: 12 }} onClick={() => setCreando(true)}>+ Crear local para entregar</button>
       {datos.length === 0 && <div className="tarjeta">Todavía no se inscribe ningún local.</div>}
       {datos.length > 0 && (
         <div className="filtros">
@@ -248,10 +267,50 @@ function Locales() {
               ? <button className="boton" style={{ flex: 1, minHeight: 44 }} onClick={() => cambiar(l, { aprobado: true })}>Aprobar</button>
               : <button className="pildora" style={{ flex: 1 }} onClick={() => cambiar(l, { activo: !l.activo })}>{l.activo ? 'Pausar' : 'Reactivar'}</button>}
           </div>
+          <Entrega local={l} e={entregas[l.id]} alCambiar={cargarEntregas} />
           <EliminarLocal local={l} alEliminar={recargar} />
         </div>
       ))}
     </>
+  );
+}
+
+// Entregar un local que creó el admin: link para que el dueño lo reciba con su cuenta
+function Entrega({ local, e, alCambiar }) {
+  const [msg, setMsg] = useState('');
+  const [copiado, setCopiado] = useState(false);
+  if (!e) return null;
+  if (e.usado_at) return <span className="ayuda" style={{ fontWeight: 700, color: 'var(--azul)' }}>✓ Entregado a su dueño el {new Date(e.usado_at).toLocaleDateString('es-CL')}</span>;
+  if (!e.dueno_es_admin) return null;
+  const vigente = e.codigo && new Date(e.expira_at) > new Date();
+  const link = vigente ? `${window.location.origin}/?entrega=${e.codigo}` : '';
+  const texto = `¡Hola! Tu local ${local.nombre} ya está en Caserito. Entra con este link, crea tu cuenta y queda a tu nombre: ${link}`;
+  async function crear() {
+    setMsg('');
+    const { error } = await supabase.rpc('crear_entrega', { p_local: local.id });
+    if (error) setMsg(explicar(error)); else alCambiar();
+  }
+  async function copiar() {
+    try { await navigator.clipboard.writeText(link); setCopiado(true); setTimeout(() => setCopiado(false), 2000); } catch { window.prompt('Copia el link:', link); }
+  }
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, borderTop: '2px dashed var(--negro)', paddingTop: 8 }}>
+      <b style={{ fontSize: 14 }}>Este local está a tu nombre. Entrégaselo a su dueño:</b>
+      {vigente ? (
+        <>
+          <code style={{ fontSize: 13, wordBreak: 'break-all', background: '#fff', border: '2px solid var(--negro)', padding: 6 }}>{link}</code>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button className="pildora" onClick={copiar}>{copiado ? '¡Copiado!' : 'Copiar link'}</button>
+            <a className="pildora" href={`https://wa.me/?text=${encodeURIComponent(texto)}`} target="_blank" rel="noreferrer">Mandar por WhatsApp</a>
+            <button className="pildora" onClick={crear}>Link nuevo</button>
+          </div>
+          <span className="ayuda">Vence el {new Date(e.expira_at).toLocaleDateString('es-CL')}. Cuando el dueño lo abra y entre con su cuenta, el local pasa a su nombre.</span>
+        </>
+      ) : (
+        <button className="boton" style={{ alignSelf: 'flex-start', minHeight: 44 }} onClick={crear}>Crear link de entrega</button>
+      )}
+      {msg && <div className="error">{msg}</div>}
+    </div>
   );
 }
 

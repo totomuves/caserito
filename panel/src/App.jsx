@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase, explicar, leerInvitacion, olvidarInvitacion, leerInvitacionEquipo, olvidarInvitacionEquipo } from './supabase.js';
+import { supabase, explicar, leerInvitacion, olvidarInvitacion, leerInvitacionEquipo, olvidarInvitacionEquipo, leerEntrega, olvidarEntrega } from './supabase.js';
 import Equipo from './Equipo.jsx';
 import Resumen from './Resumen.jsx';
 
@@ -75,6 +75,15 @@ export default function App() {
         olvidarInvitacionEquipo();
         setAvisoInv(u.error ? explicar(u.error) : '¡Listo! Ya eres parte del equipo del local.');
       }
+      // Llegó con link para recibir un local que creó Caserito
+      let recibido = null;
+      const codigoEnt = leerEntrega();
+      if (codigoEnt) {
+        const r = await supabase.rpc('recibir_local', { p_codigo: codigoEnt });
+        olvidarEntrega();
+        if (r.error) setAvisoInv(explicar(r.error));
+        else { recibido = r.data; setAvisoInv('¡Listo! El local quedó a tu nombre. Revisa los datos y suelta tu primer drop.'); }
+      }
       // Mis locales: como dueño o como parte de un equipo
       const m = await supabase.rpc('mis_locales');
       if (m.error) {
@@ -85,7 +94,7 @@ export default function App() {
         return;
       }
       const filas = m.data || [];
-      const fila = filas.find((f) => f.rol === 'Dueño') || filas[0];
+      const fila = (recibido && filas.find((f) => f.local_id === recibido)) || filas.find((f) => f.rol === 'Dueño') || filas[0];
       if (!fila) { setPermisos(TODOS); setRol('Dueño'); setLocal(null); return; }
       const l = await supabase.from('locales').select('*').eq('id', fila.local_id).single();
       if (l.error) { setError(explicar(l.error)); return; }
@@ -101,7 +110,7 @@ export default function App() {
   if (admin && (soloAdmin || !local)) {
     return (
       <Marco>
-        <Admin />
+        <Admin usuario={sesion.user} />
         {!local && (
           <div className="contenido" style={{ paddingTop: 0 }}>
             <button className="pildora" onClick={() => { setSoloAdmin(false); setLocal(null); setAdmin(false); }}>Inscribir un local con esta cuenta</button>

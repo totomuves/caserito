@@ -58,3 +58,21 @@ export function olvidarInvitacionEquipo() {
 export function olvidarInvitacion() {
   try { localStorage.removeItem(CLAVE_INV); } catch { /* nada */ }
 }
+
+// Link para recibir un local que creó Caserito (?entrega=XXXX)
+const CLAVE_ENT = 'caserito_entrega';
+export function leerEntrega() {
+  try {
+    const u = new URL(window.location.href);
+    const c = u.searchParams.get('entrega');
+    if (c) {
+      localStorage.setItem(CLAVE_ENT, c.trim().toUpperCase());
+      u.searchParams.delete('entrega');
+      window.history.replaceState({}, '', u.pathname + u.search + u.hash);
+    }
+    return localStorage.getItem(CLAVE_ENT);
+  } catch { return null; }
+}
+export function olvidarEntrega() {
+  try { localStorage.removeItem(CLAVE_ENT); } catch { /* nada */ }
+}

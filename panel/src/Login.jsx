@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { supabase, explicar, leerInvitacion, leerInvitacionEquipo } from './supabase.js';
+import { supabase, explicar, leerInvitacion, leerInvitacionEquipo, leerEntrega } from './supabase.js';
 
 export default function Login() {
   const [invitado] = useState(() => !!leerInvitacion());
   const [codigoEquipo] = useState(() => leerInvitacionEquipo());
   const [equipo, setEquipo] = useState(null);
-  const [modo, setModo] = useState(invitado || codigoEquipo ? 'crear' : 'entrar');
+  const [codigoEntrega] = useState(() => leerEntrega());
+  const [entrega, setEntrega] = useState(null);
+  useEffect(() => {
+    if (!codigoEntrega) return;
+    supabase.rpc('ver_entrega', { p_codigo: codigoEntrega }).then(({ data }) => setEntrega((data && data[0]) || { vigente: false }));
+  }, [codigoEntrega]);
+  const [modo, setModo] = useState(invitado || codigoEquipo || leerEntrega() ? 'crear' : 'entrar');
 
   useEffect(() => {
     if (!codigoEquipo) return;
@@ -50,7 +56,15 @@ export default function Login() {
         ) : (
           <div className="error">Esa invitación ya se usó o venció. Pídele al dueño del local un link nuevo.</div>
         ))}
-        {invitado && !codigoEquipo && <div className="tarjeta" style={{ borderColor: 'var(--azul)' }}><b>¡Te invitaron a Caserito!</b><span className="ayuda">Crea tu cuenta e inscribe tu local: queda aprobado al tiro.</span></div>}
+        {codigoEntrega && entrega && (entrega.vigente ? (
+          <div className="tarjeta" style={{ borderColor: 'var(--rojo)' }}>
+            <b>¡Tu local {entrega.local_nombre} ya está en Caserito!</b>
+            <span className="ayuda">Lo dejamos listo{entrega.barrio ? ` en ${entrega.barrio}` : ''}. Crea tu cuenta con tu correo (o entra si ya tienes una) y queda a tu nombre.</span>
+          </div>
+        ) : (
+          <div className="error">Ese link de entrega ya se usó o venció. Pídele uno nuevo a Caserito.</div>
+        ))}
+        {invitado && !codigoEquipo && !codigoEntrega && <div className="tarjeta" style={{ borderColor: 'var(--azul)' }}><b>¡Te invitaron a Caserito!</b><span className="ayuda">Crea tu cuenta e inscribe tu local: queda aprobado al tiro.</span></div>}
         <label className="campo">Correo
           <input type="email" autoComplete="email" required value={correo} onChange={(e) => setCorreo(e.target.value)} />
         </label>
