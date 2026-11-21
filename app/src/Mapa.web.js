@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { C, cuadras, textoCategoria } from './tema';
-import { COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa } from './MapaComun';
+import { figuraDe } from './componentes';
+import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa } from './MapaComun';
 
 const L = require('leaflet');
 
@@ -21,6 +22,17 @@ function prepararEstilos() {
     .caserito-mapa { background:#FFF3B0; }
     .caserito-mapa .leaflet-tile-pane { filter: sepia(.55) saturate(1.6) hue-rotate(-8deg) brightness(1.04) contrast(1.05); }
     .caserito-pin { background: none; border: none; }
+    .lam-mapa { width:74px; background:${C.papel}; border:2.5px solid ${C.negro}; padding:3px; box-shadow:3px 3px 0 ${C.negro}; transform:rotate(var(--rot,-2deg)); font-family:Archivo, sans-serif; cursor:pointer; }
+    .lam-mapa:hover { transform:rotate(0deg) scale(1.08); z-index:1000; }
+    .lam-arte { position:relative; height:44px; border:2px solid ${C.negro}; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+    .lam-arte svg.f { position:absolute; width:46px; height:46px; left:-10px; top:-12px; }
+    .lam-arte img { position:relative; width:30px; height:30px; border-radius:50%; border:2px solid ${C.negro}; object-fit:cover; background:#fff; }
+    .ojos { position:relative; display:flex; gap:2px; }
+    .ojos span { width:11px; height:11px; border-radius:50%; background:#fff; border:1.5px solid ${C.negro}; position:relative; }
+    .ojos span::after { content:''; position:absolute; width:5px; height:5px; border-radius:50%; background:${C.negro}; left:1px; bottom:1px; }
+    .ojos span + span::after { left:auto; right:1px; top:1px; bottom:auto; }
+    .lam-mapa b { display:block; font-size:9.5px; line-height:1.1; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .lam-mapa i { display:block; font-style:normal; font-size:8.5px; font-weight:800; color:${C.rojo}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     /* Pin del diseño "pantallas": etiqueta de precio girada sobre una gota del color del tipo */
     .pin-wrap { position:relative; width:110px; height:92px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; }
     .tag { position:relative; font-family:Jost_800ExtraBold, Jost, Archivo, sans-serif; font-size:16px; line-height:1; padding:5px 8px 3px; white-space:nowrap;
@@ -62,6 +74,7 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null,
   const locales = useLocalesMapa();
   const [sel, setSel] = useState(null);
   const [filtro, setFiltro] = useState('todo');
+  const [cerca, setCerca] = useState(true); // zoom 16+: los locales se ven como mini láminas
   const visibles = filtrar(drops, filtro);
   const caja = useRef(null);
   const mapa = useRef(null);
@@ -75,6 +88,7 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null,
     if (!nodo || mapa.current) return;
     nodo.classList.add('caserito-mapa');
     const m = L.map(nodo, { zoomControl: false, attributionControl: true }).setView([pos.lat, pos.lng], 16);
+    m.on('zoomend', () => setCerca(m.getZoom() >= 16));
     // CARTO ahora pide una llave gratis (carto.com/basemaps/apikey). Sin llave, usamos OpenStreetMap.
     if (LLAVE_CARTO) {
       L.tileLayer(`https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${LLAVE_CARTO}`, {
@@ -121,10 +135,17 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null,
     if (!capa.current) return;
     capa.current.clearLayers();
     const conDrop = new Set(drops.map((d) => d.local_id));
-    locales.filter((l) => !conDrop.has(l.id)).forEach((l) => {
-      const icono = L.divIcon({ className: 'caserito-pin', html: '<div class="local-sin-drop"></div>', iconSize: [18, 18], iconAnchor: [9, 9] });
+    locales.filter((l) => !conDrop.has(l.id)).forEach((l, k) => {
+      const pal = paletaLocal(l.id);
+      const forma = RUTA_PIN[figuraDe(l.categoria)] || RUTA_PIN.circulo;
+      const html = cerca
+        ? `<div class="lam-mapa" style="--rot:${[-3, 2, -1, 3][k % 4]}deg"><div class="lam-arte" style="background:${pal.fondo}"><svg class="f" viewBox="0 0 36 36"><path d="${forma}" fill="${pal.figura}"/></svg>`
+          + (l.logo_url ? `<img src="${escapar(l.logo_url)}" alt="">` : '<div class="ojos"><span></span><span></span></div>')
+          + `</div><b>${escapar(l.nombre)}</b><i>★ ${escapar(especialidad(l))}</i></div>`
+        : '<div class="local-sin-drop"></div>';
+      const icono = L.divIcon({ className: 'caserito-pin', html, iconSize: cerca ? [80, 84] : [18, 18], iconAnchor: cerca ? [40, 42] : [9, 9] });
       L.marker([l.punto.lat, l.punto.lng], { icon: icono, title: l.nombre, keyboard: true, zIndexOffset: -100 })
-        .bindPopup(`<b>${escapar(l.nombre)}</b><br>${escapar(textoCategoria(l.categoria))}<br><span style="color:#4A4A4A">Sin drop ahora · vuelve más rato</span>`)
+        .bindPopup(`<b>${escapar(l.nombre)}</b><br>${escapar(textoCategoria(l.categoria))}${l.producto_estrella ? ' · ★ ' + escapar(l.producto_estrella) : ''}<br><span style="color:#4A4A4A">Sin drop ahora · gana su lámina con el próximo drop</span>`)
         .addTo(capa.current);
     });
     visibles.forEach((d) => {
@@ -143,7 +164,7 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null,
         .on('click', () => setSel(d))
         .addTo(capa.current);
     });
-  }, [drops, coords, locales, filtro]);
+  }, [drops, coords, locales, filtro, cerca]);
 
   return (
     <View style={{ flex: 1, zIndex: 0, isolation: 'isolate' }}>

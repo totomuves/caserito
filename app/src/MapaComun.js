@@ -80,6 +80,19 @@ export const RUTA_PIN = {
   rombo: 'M18 1L35 18L18 35L1 18z',
 };
 
+// Mini lámina de cada local en el mapa: colores por local, figura del rubro, ojos y su especialidad
+const PALETAS_MAPA = [
+  { fondo: C.amarillo, figura: C.rojo }, { fondo: C.azul, figura: C.amarillo }, { fondo: C.rojo, figura: C.amarillo },
+  { fondo: C.papel, figura: C.azul }, { fondo: C.negro, figura: C.amarillo },
+];
+export function paletaLocal(id) {
+  let h = 0; for (const ch of String(id)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return PALETAS_MAPA[h % PALETAS_MAPA.length];
+}
+export function especialidad(l) {
+  return (l.producto_estrella || '').trim() || textoCategoria(l.categoria);
+}
+
 // Minutos caminando (cuadras de 100 m a 80 m/min)
 export function minutos(d) { return Math.max(1, Math.round((d.cuadras || 1) * 1.25)); }
 // Qué tan cerca estás de desbloquearlo (0 a 1)
@@ -149,7 +162,7 @@ export function SelectorBarrios({ barrios, vista, alElegir, flotante = true, tit
 export function useLocalesMapa() {
   const [locales, setLocales] = useState([]);
   useEffect(() => {
-    supabase.from('locales').select('id, nombre, categoria, ubicacion').eq('activo', true).eq('aprobado', true)
+    supabase.from('locales').select('id, nombre, categoria, ubicacion, producto_estrella, logo_url').eq('activo', true).eq('aprobado', true)
       .then(({ data }) => {
         setLocales((data || []).map((l) => ({ ...l, punto: leerPunto(l.ubicacion) })).filter((l) => l.punto));
       });

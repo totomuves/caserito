@@ -4,7 +4,8 @@ import MapView, { Marker, Polygon } from 'react-native-maps';
 import Svg, { Path } from 'react-native-svg';
 import { puntosDe } from './barrios';
 import { C, letrista, cuadras, textoCategoria } from './tema';
-import { COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa } from './MapaComun';
+import { figuraDe } from './componentes';
+import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa } from './MapaComun';
 
 // Estilo amarillo pálido del diseño "pantallas" (Google Maps en Android)
 const ESTILO = [
@@ -37,20 +38,21 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null,
   const conDrop = new Set(drops.map((d) => d.local_id));
   const [sel, setSel] = useState(null);
   const [filtro, setFiltro] = useState('todo');
+  const [cerca, setCerca] = useState(true);
   const visibles = filtrar(drops, filtro);
 
   return (
     <View style={{ flex: 1, zIndex: 0 }}>
-      <MapView ref={mapa} style={{ flex: 1, backgroundColor: '#FFF3B0' }} showsUserLocation customMapStyle={ESTILO} showsPointsOfInterest={false}
+      <MapView ref={mapa} onRegionChangeComplete={(r) => setCerca(r.latitudeDelta < 0.012)} style={{ flex: 1, backgroundColor: '#FFF3B0' }} showsUserLocation customMapStyle={ESTILO} showsPointsOfInterest={false}
         initialRegion={{ latitude: pos.lat, longitude: pos.lng, latitudeDelta: 0.012, longitudeDelta: 0.012 }}>
         {barrios.map((b) => (
           <Polygon key={b.id} coordinates={puntosDe(b.limite).map((p) => ({ latitude: p.lat, longitude: p.lng }))}
             strokeColor={C.azul} strokeWidth={2} lineDashPattern={[8, 6]} fillColor="rgba(255,209,0,0.10)" tappable={false} />
         ))}
-        {locales.filter((l) => !conDrop.has(l.id)).map((l) => (
-          <Marker key={'l' + l.id} coordinate={{ latitude: l.punto.lat, longitude: l.punto.lng }} title={l.nombre}
-            description={`${textoCategoria(l.categoria)} · sin drop ahora`} tracksViewChanges={false}>
-            <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: C.papel, borderWidth: 3, borderColor: C.negro }} />
+        {locales.filter((l) => !conDrop.has(l.id)).map((l, k) => (
+          <Marker key={'l' + l.id + (cerca ? 'c' : 'l')} coordinate={{ latitude: l.punto.lat, longitude: l.punto.lng }} title={l.nombre}
+            description={`${textoCategoria(l.categoria)}${l.producto_estrella ? ' · ★ ' + l.producto_estrella : ''} · sin drop ahora`} tracksViewChanges={false}>
+            {cerca ? <LaminaMapa l={l} k={k} /> : <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: C.papel, borderWidth: 3, borderColor: C.negro }} />}
           </Marker>
         ))}
         {visibles.map((d) => coords[d.local_id] && (
@@ -63,6 +65,23 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null,
       <SelectorBarrios barrios={barrios} vista={vista} alElegir={irA} />
       <FiltrosMapa drops={drops} filtro={filtro} alElegir={(f) => { setFiltro(f); setSel(null); }} arriba={barrios.length > 1 ? 58 : 10} />
       <HojaMapa drops={visibles} pos={pos} sel={sel} alAbrir={alAbrir} coords={coords} />
+    </View>
+  );
+}
+
+// Mini lámina del local (sin drop ahora): arte del rubro, ojos, nombre y su especialidad
+function LaminaMapa({ l, k }) {
+  const pal = paletaLocal(l.id);
+  return (
+    <View style={{ width: 76, padding: 3, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, transform: [{ rotate: `${[-3, 2, -1, 3][k % 4]}deg` }] }}>
+      <View style={{ height: 42, backgroundColor: pal.fondo, borderWidth: 2, borderColor: C.negro, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
+        <Svg width={46} height={46} viewBox="0 0 36 36" style={{ position: 'absolute', left: -10, top: -12 }}><Path d={RUTA_PIN[figuraDe(l.categoria)] || RUTA_PIN.circulo} fill={pal.figura} /></Svg>
+        <View style={{ flexDirection: 'row', gap: 2 }}>
+          {[0, 1].map((i) => <View key={i} style={{ width: 11, height: 11, borderRadius: 6, backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: C.negro, alignItems: i ? 'flex-end' : 'flex-start', justifyContent: i ? 'flex-start' : 'flex-end' }}><View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: C.negro }} /></View>)}
+        </View>
+      </View>
+      <Text numberOfLines={1} style={{ fontSize: 9.5, fontWeight: '800', marginTop: 2 }}>{l.nombre}</Text>
+      <Text numberOfLines={1} style={{ fontSize: 8.5, fontWeight: '800', color: C.rojo }}>★ {especialidad(l)}</Text>
     </View>
   );
 }
