@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LaminaLocal } from './arteLocal.js';
+import { LaminaLocal } from './arteLocal.jsx';
 import { supabase, explicar } from './supabase.js';
 import { COCINAS } from './frases.js';
 import { GRUPOS, CON_COCINA, MAX_CATEGORIAS } from './categorias.js';

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase, explicar } from './supabase.js';
 import EliminarLocal from './EliminarLocal.jsx';
 import ConfigurarLocal from './ConfigurarLocal.jsx';
-import { LaminaLocal } from './arteLocal.js';
+import { LaminaLocal } from './arteLocal.jsx';
 import { formatoPrecio } from './frases.js';
 import { textoCategoria } from './categorias.js';
 import Qr, { URL_APP } from './Qr.jsx';

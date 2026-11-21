@@ -10,7 +10,7 @@ import Crear from './Crear.jsx';
 import Escanear from './Escanear.jsx';
 import Resultados from './Resultados.jsx';
 import Admin from './Admin.jsx';
-import { LaminaLocal } from './arteLocal.js';
+import { LaminaLocal } from './arteLocal.jsx';
 import MisDrops from './MisDrops.jsx';
 import Ayuda from './Ayuda.jsx';
 import Qr, { URL_APP } from './Qr.jsx';
