@@ -3,6 +3,7 @@ import { Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-na
 import { supabase, explicar } from './supabase';
 import { C, F, letrista } from './tema';
 import { Ola, Boton } from './componentes';
+import { SelectorEstilo } from './estilo';
 import { useIdioma, SelectorIdioma } from './idioma';
 
 // "Tú": cuenta del caserito, apodo, idioma y comentarios de la beta
@@ -55,6 +56,11 @@ export default function Cuenta({ usuario, alAyuda }) {
       <View style={tarjeta}>
         <Text style={{ ...letrista, fontSize: 18 }}>{t('IDIOMA', "IDIOMA · LANGUAGE")}</Text>
         <SelectorIdioma />
+      </View>
+      <View style={{ marginHorizontal: 16, marginTop: 18, gap: 8 }}>
+        <Text style={{ ...letrista, fontSize: 20 }}>ESTILO</Text>
+        <Text style={{ fontFamily: F.media, fontSize: 13, color: C.gris }}>Elige cómo se ve la app. Puedes cambiarlo cuando quieras.</Text>
+        <SelectorEstilo />
         <Boton texto={t('¿Cómo funciona Caserito?', "¿Cómo funciona Caserito?")} fondo={C.papel} color={C.negro} onPress={alAyuda} />
       </View>
 

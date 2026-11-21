@@ -5,7 +5,9 @@ import { C, F, letrista, CATEGORIAS, textoCategoria, tieneCategoria, precio, cua
 import { Ola, Brillo, Pildora, EtiquetaPrecio, Boton, FondoBauhaus, PuntosPop, GloboPop, Estallido, ONOMATOPEYAS } from './componentes';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR, categoriaTur, SelectorIdioma } from './idioma';
 import Logo from './Logo';
-import { SelectorBarrios } from './MapaComun';
+import { SelectorBarrios, useCoordenadas } from './MapaComun';
+import { useEstilo } from './estilo';
+import Portada from './Portada';
 import Svg, { Path } from 'react-native-svg';
 
 function etiquetaPara(d, hora, t, cuad) {
@@ -27,6 +29,8 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
   const [refrescando, setRefrescando] = useState(false);
   const { tur, lang, t, cuad, setTur } = useIdioma();
   const [verIdiomas, setVerIdiomas] = useState(false);
+  const { estilo } = useEstilo();
+  const coords = useCoordenadas(estilo === 'diario' ? drops : []);
 
   useEffect(() => {
     supabase.from('gustos').select('*').eq('usuario_id', usuario.id).order('creado_at')
@@ -59,6 +63,10 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
   async function alternar(g) {
     setGustos(gustos.map((x) => (x.id === g.id ? { ...x, activo: !x.activo } : x)));
     await supabase.from('gustos').update({ activo: !g.activo }).eq('id', g.id);
+  }
+
+  if (estilo === 'diario') {
+    return <Portada drops={drops} nombreBarrio={nombreBarrio} barrios={barrios} visita={visita} alVisitar={alVisitar} alAbrir={alAbrir} alRefrescar={alRefrescar} coords={coords} t={t} cuad={cuad} />;
   }
 
   return (

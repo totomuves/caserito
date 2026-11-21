@@ -13,6 +13,9 @@ export const C = {
 export const F = {
   letrista: 'Jost_800ExtraBold',
   pincel: 'LuckiestGuy_400Regular',
+  titular: 'Anton_400Regular',
+  angosta: 'ArchivoNarrow_700Bold',
+  serifa: 'Gelasio_400Regular',
   normal: 'Archivo_400Regular',
   media: 'Archivo_600SemiBold',
   negrita: 'Archivo_800ExtraBold',

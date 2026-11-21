@@ -8,6 +8,10 @@ import { useFonts, LuckiestGuy_400Regular } from '@expo-google-fonts/luckiest-gu
 import { Archivo_400Regular, Archivo_600SemiBold, Archivo_800ExtraBold } from '@expo-google-fonts/archivo';
 import { Jost_700Bold } from '@expo-google-fonts/jost/700Bold';
 import { Jost_800ExtraBold } from '@expo-google-fonts/jost/800ExtraBold';
+import { Anton_400Regular } from '@expo-google-fonts/anton/400Regular';
+import { ArchivoNarrow_700Bold } from '@expo-google-fonts/archivo-narrow/700Bold';
+import { Gelasio_400Regular } from '@expo-google-fonts/gelasio/400Regular';
+import { EstiloProvider, useEstilo } from './src/estilo';
 import { supabase, explicar } from './src/supabase';
 import { C, F, BARRIO_ITALIA } from './src/tema';
 import { IdiomaProvider, useIdioma } from './src/idioma';
@@ -21,12 +25,12 @@ import { barrioDe } from './src/barrios';
 import { estadoAvisos, activarAvisos, descartarAvisos, ubicarAviso, alTocarAviso, avisarPuerta } from './src/avisos';
 
 export default function App() {
-  return <IdiomaProvider><Caserito /></IdiomaProvider>;
+  return <IdiomaProvider><EstiloProvider><Caserito /></EstiloProvider></IdiomaProvider>;
 }
 
 function Caserito() {
   const { t, tur } = useIdioma();
-  const [fuentes] = useFonts({ LuckiestGuy_400Regular, Jost_700Bold, Jost_800ExtraBold, Archivo_400Regular, Archivo_600SemiBold, Archivo_800ExtraBold });
+  const [fuentes] = useFonts({ LuckiestGuy_400Regular, Jost_700Bold, Jost_800ExtraBold, Anton_400Regular, ArchivoNarrow_700Bold, Gelasio_400Regular, Archivo_400Regular, Archivo_600SemiBold, Archivo_800ExtraBold });
   const [usuario, setUsuario] = useState(null);
   const [pos, setPos] = useState(null);
   const [drops, setDrops] = useState([]);
@@ -224,6 +228,15 @@ const FIGURAS = {
 };
 function Tab({ id, texto, actual, setear, figura, fondo }) {
   const activa = id === actual;
+  const { estilo } = useEstilo();
+  if (estilo === 'diario') {
+    return (
+      <Pressable onPress={() => setear(id)} accessibilityRole="tab" accessibilityState={{ selected: activa }}
+        style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: activa ? '#D7261E' : C.negro }}>
+        <Text style={{ color: '#FFFFFF', fontFamily: F.titular, fontSize: 15 }}>{id === 'inicio' ? 'PORTADA' : texto.toUpperCase()}</Text>
+      </Pressable>
+    );
+  }
   return (
     <Pressable onPress={() => setear(id)} accessibilityRole="tab" accessibilityState={{ selected: activa }}
       style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3, backgroundColor: activa ? C.amarillo : 'transparent', borderRightWidth: id === 'tu' ? 0 : 3, borderColor: C.negro }}>
