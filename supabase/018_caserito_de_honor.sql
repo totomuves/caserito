@@ -58,3 +58,7 @@ $$;
 revoke all on function caserito.visitas_en(uuid, uuid) from public, anon, authenticated;
 grant execute on function caserito.mis_honores() to authenticated;
 grant execute on function caserito.puede_honor(uuid) to authenticated;
+
+-- La función "retrato" del servidor necesita leer y escribir en el esquema caserito
+grant usage on schema caserito to service_role;
+grant all on all tables in schema caserito to service_role;
