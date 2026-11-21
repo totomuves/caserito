@@ -6,3 +6,4 @@ export async function activarAvisos() { return { ok: false, motivo: 'no_soportad
 export async function ubicarAviso() {}
 export function alTocarAviso() { return () => {}; }
 export async function avisarPuerta() {}
+export async function avisarBarrio() {}

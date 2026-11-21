@@ -23,7 +23,7 @@ import Drop from './src/Drop';
 import Ayuda from './src/Ayuda';
 import Cuenta from './src/Cuenta';
 import { barrioDe } from './src/barrios';
-import { estadoAvisos, activarAvisos, descartarAvisos, ubicarAviso, alTocarAviso, avisarPuerta } from './src/avisos';
+import { estadoAvisos, activarAvisos, descartarAvisos, ubicarAviso, alTocarAviso, avisarPuerta, avisarBarrio } from './src/avisos';
 
 export default function App() {
   return <IdiomaProvider><EstiloProvider><Caserito /></EstiloProvider></IdiomaProvider>;
@@ -160,6 +160,9 @@ function Caserito() {
   useEffect(() => { if (avisos === 'activo' && usuario) ubicarAviso(pos); }, [pos, avisos, usuario]);
   // Llegó a la puerta de un local con drop: aviso con su QR listo
   useEffect(() => { if (avisos === 'activo' && !lejos) avisarPuerta(drops, tur); }, [drops, avisos, lejos, tur]);
+  // Al entrar al perímetro de un barrio: aviso tipo "red disponible" (una vez al día por barrio)
+  const dentroDeBarrio = (() => { const r = barrioDe(pos, barrios); return r && r.dentro ? r.barrio : null; })();
+  useEffect(() => { if (avisos === 'activo' && dentroDeBarrio) avisarBarrio(dentroDeBarrio, drops.length, tur); }, [dentroDeBarrio && dentroDeBarrio.id, avisos]);
   const cargarRef = useRef(cargar);
   cargarRef.current = cargar;
   useEffect(() => alTocarAviso((id) => { setAbierto(id); setPestana('inicio'); cargarRef.current(); }), []);

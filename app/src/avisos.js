@@ -117,3 +117,28 @@ export async function avisarPuerta(drops, tur) {
   }
   await AsyncStorage.setItem(CLAVE_PUERTA, JSON.stringify([...puertaAvisada].slice(-200))).catch(() => {});
 }
+
+// Aviso tipo "red disponible" al entrar al perímetro de un barrio (una vez al día por barrio)
+const CLAVE_BARRIO = 'caserito_barrio_avisado';
+export async function avisarBarrio(barrio, cuantos, tur) {
+  if (!barrio) return;
+  const hoy = new Date().toISOString().slice(0, 10);
+  let vistos = {};
+  try { vistos = JSON.parse((await AsyncStorage.getItem(CLAVE_BARRIO)) || '{}'); } catch { vistos = {}; }
+  if (vistos[barrio.id] === hoy) return;
+  vistos[barrio.id] = hoy;
+  await AsyncStorage.setItem(CLAVE_BARRIO, JSON.stringify(vistos)).catch(() => {});
+  const p = await Notifications.getPermissionsAsync().catch(() => null);
+  if (!p || !p.granted) return;
+  await prepararCanal().catch(() => {});
+  const hay = cuantos === 1 ? (tur ? '1 drop live' : '1 drop activo') : `${cuantos} ${tur ? 'drops live' : 'drops activos'}`;
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: tur ? `📍 ${barrio.nombre} disponible · you're in` : `📍 ${barrio.nombre} disponible`,
+      body: cuantos ? (tur ? `Entraste al barrio: hay ${hay}. Tap to see them.` : `Entraste al barrio: hay ${hay}. Toca para verlos.`) : (tur ? 'Entraste al barrio. No drops right now, vuelve más rato.' : 'Entraste al barrio. Ahora no hay drops, vuelve más rato.'),
+      data: { pestana: 'mapa' },
+      sound: 'default',
+    },
+    trigger: null,
+  }).catch(() => {});
+}
