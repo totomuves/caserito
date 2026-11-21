@@ -16,7 +16,10 @@ function etiquetaPara(d, hora, t, cuad) {
   return cuad(d.cuadras).toUpperCase();
 }
 
-export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda, avisos, avisoMotivo, alPrenderAvisos, alCerrarAvisos, avisoQr, alCerrarAvisoQr }) {
+export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda, avisos, avisoMotivo, alPrenderAvisos, alCerrarAvisos, avisoQr, alCerrarAvisoQr, barrioActual, barrioLejos }) {
+  const b = barrioActual && barrioActual.barrio;
+  const nombreBarrio = (b && b.nombre) || 'Barrio Italia';
+  const lugar = b ? (barrioActual.dentro ? `${b.nombre} · ${b.comuna}` : b.nombre) : 'Barrio Italia';
   const [filtro, setFiltro] = useState('todo');
   const [gustos, setGustos] = useState([]);
   const [i, setI] = useState(0);
@@ -63,7 +66,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
         <Brillo tam={20} style={{ position: 'absolute', left: 14, top: 18 }} />
         <Brillo tam={14} style={{ position: 'absolute', right: 40, top: 12 }} />
         <Logo ancho={190} style={{ marginLeft: 22, marginTop: 4, marginBottom: 2 }} />
-        <Text style={{ fontFamily: F.negrita, fontSize: 13, paddingLeft: 26 }}>{t('Barrio Italia · tu barrio te tiene ofertas', "Barrio Italia · ofertas like a local")}</Text>
+        <Text style={{ fontFamily: F.negrita, fontSize: 13, paddingLeft: 26 }}>{t(`${lugar} · tu barrio te tiene ofertas`, `${lugar} · ofertas like a local`)}</Text>
         <Pressable onPress={() => setTur(!tur)} accessibilityRole="switch" accessibilityState={{ checked: tur }}
           style={{ position: 'absolute', right: 68, top: 14, height: 44, paddingHorizontal: 12, borderRadius: 22, borderWidth: 2.5, borderColor: C.negro, backgroundColor: tur ? C.negro : C.papel, justifyContent: 'center' }}>
           <Text style={{ fontFamily: F.negrita, fontSize: 12, color: tur ? C.amarillo : C.negro }}>{tur ? 'Español' : 'Tourist?'}</Text>
@@ -78,7 +81,8 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
       {lejos ? (
         <View style={{ marginHorizontal: 16, marginBottom: 6, backgroundColor: C.papel, borderWidth: 2, borderColor: C.negro, borderRadius: 14, padding: 10 }}>
           <Text style={{ fontFamily: F.media, fontSize: 13 }}>
-            {t('Estás lejos de Barrio Italia: te mostramos sus drops. Para canjear, tienes que llegar al local.', "Estás lejos de Barrio Italia: these are sus drops. Para canjear, tienes que estar en el local.")}
+            {t(`No hay drops cerca de ti: te mostramos los de ${barrioLejos || nombreBarrio}. Para canjear, tienes que llegar al local.`,
+               `No drops cerca de ti: these are the ones de ${barrioLejos || nombreBarrio}. Para canjear, tienes que estar en el local.`)}
           </Text>
         </View>
       ) : null}

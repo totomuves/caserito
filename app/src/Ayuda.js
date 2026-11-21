@@ -10,7 +10,7 @@ const PASOS = [
   ['Mira los drops', 'Un drop es una oferta de un local del barrio, con cupo y hora de término. Los ves en Inicio, en la pizarra y en el Mapa.'],
   ['Súmate', 'Toca un drop y "Me sumo". No necesitas estar en el local para anotarte.'],
   ['Llega al local', 'Cuando llegas al local (a unos 50 m, media cuadra), aparece tu código QR. Muéstralo en la caja (o dicta el código) y te cobran el precio del drop.'],
-  ['Junta láminas', 'Tu primer canje en cada local te da su lámina del álbum de Barrio Italia. Al juntar varias hay premios.'],
+  ['Junta láminas', 'Tu primer canje en cada local te da su lámina del álbum de tu barrio. Al juntar varias hay premios.'],
   ['Deja tu reseña', 'Después de canjear puedes poner estrellas y un comentario. Solo reseña quien compró: por eso son reseñas de verdad.'],
 ];
 
@@ -26,10 +26,10 @@ const DUDAS = [
 ];
 
 const PASOS_TUR = [
-  ['Mira los drops', 'Un drop is a deal de un local de Barrio Italia: pocas unidades, termina pronto. Los ves en Inicio (la pizarra) y en el Mapa.'],
+  ['Mira los drops', 'Un drop is a deal de un local del barrio: pocas unidades, termina pronto. Los ves en Inicio (la pizarra) y en el Mapa.'],
   ['Súmate · Join', 'Toca un drop y "Me sumo". No necesitas estar en el local yet.'],
   ['Camina pa’llá', 'Cuando llegas al local (~50 m, media cuadra), aparece tu código QR. Muéstralo en la caja y paga el precio del drop.'],
-  ['Junta láminas', 'Tu primer canje en cada local te da su lámina for the álbum de Barrio Italia. Más láminas, más premios.'],
+  ['Junta láminas', 'Tu primer canje en cada local te da su lámina for the álbum del barrio. Más láminas, más premios.'],
   ['Deja tu reseña', 'Después de canjear puedes calificar el local. Solo opinan quienes compraron: reseñas reales, nada de fakes.'],
 ];
 

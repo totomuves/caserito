@@ -24,6 +24,7 @@ function prepararEstilos() {
       padding:3px 6px 0; font-family:LuckiestGuy_400Regular, sans-serif; font-style:italic; font-size:14px; white-space:nowrap; transform:rotate(-4deg); }
     .caserito-pin .tag.sorpresa { background:${C.negro}; color:${C.amarillo}; }
     .caserito-pin .punto { width:14px; height:14px; margin:2px auto 0; border-radius:7px; border:2px solid ${C.negro}; box-sizing:border-box; }
+    .caserito-barrio { font: 700 12px Archivo, sans-serif; color: #1E5AA8; text-align: center; text-shadow: 0 0 3px #FFF6E5, 0 0 3px #FFF6E5; opacity: .85; white-space: nowrap; }
     .caserito-yo { width:18px; height:18px; border-radius:9px; background:#1D4ED8; border:3px solid #fff; box-shadow:0 0 0 6px rgba(29,78,216,.25); box-sizing:border-box; }
   `;
   document.head.appendChild(st);
@@ -33,12 +34,13 @@ function escapar(t) {
   return String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-export default function Mapa({ drops, pos, alAbrir }) {
+export default function Mapa({ drops, pos, alAbrir, barrios = [] }) {
   const coords = useCoordenadas(drops);
   const [sel, setSel] = useState(null);
   const caja = useRef(null);
   const mapa = useRef(null);
   const capa = useRef(null);
+  const capaBarrios = useRef(null);
 
   // Crear el mapa una vez
   useEffect(() => {
@@ -62,11 +64,24 @@ export default function Mapa({ drops, pos, alAbrir }) {
     if (!pos.aprox) {
       L.marker([pos.lat, pos.lng], { icon: L.divIcon({ className: '', html: '<div class="caserito-yo"></div>', iconSize: [18, 18] }), interactive: false }).addTo(m);
     }
+    capaBarrios.current = L.layerGroup().addTo(m);
     capa.current = L.layerGroup().addTo(m);
     mapa.current = m;
     setTimeout(() => m.invalidateSize(), 50);
     return () => { m.remove(); mapa.current = null; };
   }, []);
+
+  // Límites de los barrios (línea azul punteada y el nombre al medio)
+  useEffect(() => {
+    const g = capaBarrios.current;
+    if (!g) return;
+    g.clearLayers();
+    barrios.forEach((b) => {
+      if (!b.limite) return;
+      L.geoJSON(b.limite, { interactive: false, style: { color: '#1E5AA8', weight: 2, dashArray: '8 6', fillColor: '#FFD100', fillOpacity: 0.08 } }).addTo(g);
+      L.marker([b.lat, b.lng], { interactive: false, icon: L.divIcon({ className: '', html: `<div class="caserito-barrio">${String(b.nombre).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))}</div>`, iconSize: [140, 22], iconAnchor: [70, 11] }) }).addTo(g);
+    });
+  }, [barrios]);
 
   // Pines de los drops
   useEffect(() => {

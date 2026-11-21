@@ -78,7 +78,7 @@ function Resumen() {
 
 function Locales() {
   const { datos, error, recargar } = useCarga(() => supabase.from('locales')
-    .select('id, nombre, categoria, categorias, cocina_pais, direccion, aprobado, activo, creado_at')
+    .select('id, nombre, barrio, categoria, categorias, cocina_pais, direccion, aprobado, activo, creado_at')
     .order('aprobado').order('creado_at', { ascending: false }));
   const [msg, setMsg] = useState('');
 
@@ -97,7 +97,7 @@ function Locales() {
       {datos.map((l) => (
         <div className="tarjeta" key={l.id} style={{ borderColor: l.aprobado ? 'var(--negro)' : 'var(--rojo)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-            <b>{l.nombre}</b>
+            <b>{l.nombre}{l.barrio ? <span className="ayuda" style={{ fontWeight: 600 }}> · {l.barrio}</span> : null}</b>
             <span style={{ fontSize: 12, fontWeight: 800, color: l.aprobado ? (l.activo ? 'var(--azul)' : 'var(--gris)') : '#C20826' }}>
               {!l.aprobado ? 'POR APROBAR' : l.activo ? 'ACTIVO' : 'PAUSADO'}
             </span>
@@ -237,7 +237,7 @@ function Invitar() {
   const [nueva, setNueva] = useState(null);
 
   const link = (c) => `${window.location.origin}/?invitacion=${c}`;
-  const textoWsp = (n, c) => `¡Hola${n ? ' ' + n : ''}! Te invito a Caserito, la app de drops de Barrio Italia. Inscribe tu local aquí y queda aprobado al tiro: ${link(c)}`;
+  const textoWsp = (n, c) => `¡Hola${n ? ' ' + n : ''}! Te invito a Caserito, la app de drops de tu barrio. Inscribe tu local aquí y queda aprobado al tiro: ${link(c)}`;
 
   async function crear(e) {
     e.preventDefault();

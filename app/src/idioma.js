@@ -26,7 +26,7 @@ export function IdiomaProvider({ children }) {
   // t('texto en español', 'texto en Spanglish')
   const t = (es, sp) => (tur && sp !== undefined ? sp : es);
   const cuad = (n) => {
-    if (n >= 99) return tur ? 'lejos, en Barrio Italia (far)' : 'lejos, en Barrio Italia';
+    if (n >= 99) return tur ? 'lejos (far)' : 'lejos';
     const base = n <= 1 ? '1 cuadra' : `${n} cuadras`;
     if (!tur) return base;
     const m = Math.max(1, n) * 100;

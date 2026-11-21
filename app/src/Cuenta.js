@@ -188,7 +188,7 @@ function Comentarios() {
     <View style={[tarjeta, { backgroundColor: C.negro }]}>
       <Text style={{ ...letrista, fontSize: 18, color: C.amarillo }}>{t('ESTAMOS EN PRUEBA', "BETA · EN PRUEBA")}</Text>
       <Text style={{ fontFamily: F.normal, fontSize: 14, color: C.papel }}>
-        {t('Caserito lo están probando amigos y locales amigos de Barrio Italia. ¿Algo no funcionó o se te ocurre algo? Cuéntanos.', "Amigos y locales amigos de Barrio Italia are testing Caserito. ¿Algo falló o tienes una idea? Cuéntanos.")}
+        {t('Caserito lo están probando amigos y locales amigos. ¿Algo no funcionó o se te ocurre algo? Cuéntanos.', "Amigos y locales amigos are testing Caserito. ¿Algo falló o tienes una idea? Cuéntanos.")}
       </Text>
       <TextInput value={texto} onChangeText={(v) => { setTexto(v); setEstado(''); }} maxLength={1000} multiline
         placeholder={t('Ej: no me apareció el QR en el café de la esquina', "Ej: my QR no apareció en el café")} placeholderTextColor={C.gris}

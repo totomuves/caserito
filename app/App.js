@@ -15,6 +15,7 @@ import Album from './src/Album';
 import Drop from './src/Drop';
 import Ayuda from './src/Ayuda';
 import Cuenta from './src/Cuenta';
+import { barrioDe } from './src/barrios';
 import { estadoAvisos, activarAvisos, descartarAvisos, ubicarAviso, alTocarAviso, avisarPuerta } from './src/avisos';
 
 export default function App() {
@@ -32,6 +33,7 @@ function Caserito() {
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(true);
   const [lejos, setLejos] = useState(false);
+  const [centroLejos, setCentroLejos] = useState(null);
   const [avisos, setAvisos] = useState(null);
   const [avisoMotivo, setAvisoMotivo] = useState('');
 
@@ -62,6 +64,13 @@ function Caserito() {
     return () => escucha.subscription.unsubscribe();
   }, []);
 
+  // 1b) Barrios con sus límites (si el SQL 015 no está, se sigue como antes: solo Barrio Italia)
+  const [barrios, setBarrios] = useState([]);
+  useEffect(() => {
+    if (!usuario) return;
+    supabase.rpc('barrios_mapa').then(({ data, error }) => { if (!error && data) setBarrios(data); });
+  }, [usuario]);
+
   // 2) Ubicación (si no la da, usamos el centro de Barrio Italia)
   useEffect(() => {
     let sub;
@@ -80,18 +89,25 @@ function Caserito() {
   const cargar = useCallback(async () => {
     if (!usuario || !pos) return;
     let { data, error } = await supabase.rpc('drops_cerca', { lat: pos.lat, lng: pos.lng, radio_m: 3000 });
-    // Lejos de Barrio Italia (o sin drops cerca): mostramos los del barrio, para que cualquiera pueda mirar
-    let lejos = false;
+    // Sin drops cerca: mostramos los del barrio más cercano que tenga, para que cualquiera pueda mirar
+    let lejos = false, mostrado = null;
     if (!error && (!data || data.length === 0) && !pos.aprox) {
-      const r = await supabase.rpc('drops_cerca', { lat: BARRIO_ITALIA.lat, lng: BARRIO_ITALIA.lng, radio_m: 3000 });
-      if (!r.error && r.data && r.data.length) {
-        lejos = true;
-        data = r.data.map((d) => ({ ...d, dentro_del_radio: false, cuadras: Math.max(d.cuadras, 99) }));
+      const { barrio } = barrioDe(pos, barrios);
+      const candidatos = [barrio, ...barrios.filter((b) => b.lanzado && b !== barrio)].filter(Boolean)
+        .map((b) => ({ lat: b.lat, lng: b.lng, nombre: b.nombre }));
+      if (!candidatos.length) candidatos.push({ ...BARRIO_ITALIA, nombre: 'Barrio Italia' });
+      for (const c of candidatos) {
+        const r = await supabase.rpc('drops_cerca', { lat: c.lat, lng: c.lng, radio_m: 2000 });
+        if (!r.error && r.data && r.data.length) {
+          lejos = true; mostrado = c;
+          data = r.data.map((d) => ({ ...d, dentro_del_radio: false, cuadras: Math.max(d.cuadras, 99) }));
+          break;
+        }
       }
     }
-    if (error) setError(explicar(error)); else { setError(''); setDrops(data || []); setLejos(lejos); }
+    if (error) setError(explicar(error)); else { setError(''); setDrops(data || []); setLejos(lejos); setCentroLejos(mostrado); }
     setCargando(false);
-  }, [usuario, pos]);
+  }, [usuario, pos, barrios]);
 
   useEffect(() => { cargar(); const t = setInterval(cargar, 30000); return () => clearInterval(t); }, [cargar]);
 
@@ -155,14 +171,14 @@ function Caserito() {
             <Ayuda alCerrar={() => setPestana('inicio')} />
           ) : pestana === 'inicio' ? (
             <Inicio drops={drops} usuario={usuario} pos={pos} lejos={lejos} alAbrir={abrir} alRefrescar={cargar} alAyuda={() => setPestana('ayuda')}
-              avisoQr={avisoQr} alCerrarAvisoQr={() => setAvisoQr('')}
+              avisoQr={avisoQr} alCerrarAvisoQr={() => setAvisoQr('')} barrioActual={barrioDe(pos, barrios)} barrioLejos={centroLejos && centroLejos.nombre}
               avisos={avisos} avisoMotivo={avisoMotivo} alPrenderAvisos={prenderAvisos} alCerrarAvisos={cerrarAvisos} />
           ) : pestana === 'tu' ? (
             <Cuenta key={usuario.id} usuario={usuario} alAyuda={() => setPestana('ayuda')} />
           ) : pestana === 'mapa' ? (
-            <Mapa drops={drops} pos={lejos ? { ...BARRIO_ITALIA } : pos} alAbrir={abrir} />
+            <Mapa drops={drops} pos={lejos ? (centroLejos || { ...BARRIO_ITALIA }) : pos} alAbrir={abrir} barrios={barrios} />
           ) : (
-            <Album usuario={usuario} alIrAlMapa={() => setPestana('mapa')} />
+            <Album usuario={usuario} alIrAlMapa={() => setPestana('mapa')} barrios={barrios} barrioInicial={(barrioDe(pos, barrios).barrio || {}).id} />
           )}
 
           {!dropAbierto && (

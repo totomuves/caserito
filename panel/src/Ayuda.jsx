@@ -90,7 +90,7 @@ function Comentarios() {
   return (
     <form className="pizarra" onSubmit={enviar}>
       <span className="etiqueta">Estamos en prueba</span>
-      <span>Caserito lo están probando locales amigos de Barrio Italia. ¿Algo no funcionó o te falta algo? Cuéntanos.</span>
+      <span>Caserito lo están probando locales amigos. ¿Algo no funcionó o te falta algo? Cuéntanos.</span>
       <label className="campo" style={{ color: 'inherit' }}>Tu comentario
         <textarea value={texto} maxLength={1000} rows={3} onChange={(e) => { setTexto(e.target.value); setEstado(''); }}
           placeholder="Ej: no pude escanear con la cámara del iPhone" />

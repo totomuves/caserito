@@ -13,7 +13,11 @@ const MARCOS = [
 ];
 const GIROS = ['-2deg', '1.5deg', '-1deg', '2deg'];
 
-export default function Album({ usuario, alIrAlMapa }) {
+export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial }) {
+  // Un álbum por barrio: parte en el barrio donde estás
+  const [barrioSel, setBarrioSel] = useState(barrioInicial || null);
+  useEffect(() => { if (!barrioSel && barrioInicial) setBarrioSel(barrioInicial); }, [barrioInicial]);
+  const barrio = barrios.find((x) => x.id === barrioSel) || null;
   const [locales, setLocales] = useState(null);
   const [mias, setMias] = useState({});
   const [sel, setSel] = useState(null);
@@ -42,7 +46,13 @@ export default function Album({ usuario, alIrAlMapa }) {
 
   useEffect(() => {
     (async () => {
-      const l = await supabase.from('locales').select('id, nombre, categoria, producto_estrella, logo_url, creado_at').eq('activo', true).eq('aprobado', true).eq('barrio', 'Barrio Italia').order('creado_at');
+      setSel(null);
+      const campos = 'id, nombre, categoria, producto_estrella, logo_url, creado_at';
+      let l = barrioSel
+        ? await supabase.from('locales').select(campos).eq('activo', true).eq('aprobado', true).eq('barrio_id', barrioSel).order('creado_at')
+        : { error: true };
+      // Sin el SQL 015 (o sin barrios): el álbum de Barrio Italia, como antes
+      if (l.error) l = await supabase.from('locales').select(campos).eq('activo', true).eq('aprobado', true).eq('barrio', 'Barrio Italia').order('creado_at');
       if (l.error) { setError(explicar(l.error)); return; }
       const m = await supabase.from('laminas').select('local_id, ganada_at').eq('usuario_id', usuario.id);
       const mapa = {};
@@ -50,7 +60,7 @@ export default function Album({ usuario, alIrAlMapa }) {
       setLocales(l.data || []);
       setMias(mapa);
     })();
-  }, [usuario.id]);
+  }, [usuario.id, barrioSel]);
 
   if (error) return <Text style={{ padding: 20, fontFamily: F.media }}>{error}</Text>;
   if (!locales) return null;
@@ -65,10 +75,35 @@ export default function Album({ usuario, alIrAlMapa }) {
       <View style={{ backgroundColor: C.amarillo, paddingHorizontal: 18, paddingTop: 10, paddingBottom: 4 }}>
         <Brillo tam={22} style={{ position: 'absolute', right: 28, top: 16 }} />
         <Text style={{ fontFamily: F.negrita, fontSize: 13 }}>{t('Tu álbum de', "Tu sticker album · Álbum de")}</Text>
-        <Text style={{ ...letrista, fontSize: 34, color: C.rojo, textShadowColor: C.azul, textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 0 }}>BARRIO ITALIA</Text>
+        <Text style={{ ...letrista, fontSize: 34, color: C.rojo, textShadowColor: C.azul, textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 0 }}>{(barrio ? barrio.nombre : 'Barrio Italia').toUpperCase()}</Text>
+        {barrio ? <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{barrio.comuna}</Text> : null}
       </View>
       <Ola color={C.amarillo} />
+      {barrios.length > 1 && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingBottom: 10 }}>
+          {barrios.map((x) => {
+            const activo = x.id === barrioSel;
+            return (
+              <Pressable key={x.id} onPress={() => setBarrioSel(x.id)} accessibilityRole="button" accessibilityState={{ selected: activo }}
+                style={{ minHeight: 44, paddingHorizontal: 14, borderRadius: 22, borderWidth: 2.5, borderColor: C.negro, backgroundColor: activo ? C.negro : C.papel, justifyContent: 'center' }}>
+                <Text style={{ fontFamily: F.negrita, fontSize: 14, color: activo ? C.amarillo : C.negro }}>
+                  {x.nombre.replace(/^Barrio /, '')}{!x.lanzado ? t(' · pronto', ' · soon') : ''}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      )}
 
+      {total === 0 && (
+        <View style={{ marginHorizontal: 16, marginTop: 6, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: 18, padding: 16, gap: 6 }}>
+          <Text style={{ ...letrista, fontSize: 20 }}>{t('¡LLEGAMOS PRONTO!', '¡LLEGAMOS PRONTO! SOON')}</Text>
+          <Text style={{ fontFamily: F.normal, fontSize: 14 }}>
+            {t(`Todavía no hay locales de ${barrio ? barrio.nombre : 'este barrio'} en Caserito. Cuando se sumen, aquí aparecen sus láminas.`,
+               `Todavía no hay locales de ${barrio ? barrio.nombre : 'este barrio'}. Cuando se sumen, sus láminas show up here.`)}
+          </Text>
+        </View>
+      )}
       <View style={{ marginHorizontal: 16, marginTop: 6, backgroundColor: C.negro, borderRadius: 18, padding: 16, gap: 10 }}>
         <Text style={{ ...letrista, fontSize: 30, color: C.amarillo }}>{tengo} {t('DE', "DE")} {total}</Text>
         <View style={{ height: 14, borderRadius: 7, backgroundColor: '#3A3A3A', overflow: 'hidden' }}>
