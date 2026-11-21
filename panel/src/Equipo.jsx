@@ -7,7 +7,7 @@ export const PERMISOS = [
   { id: 'escanear', texto: 'Escanear QR', ayuda: 'Canjear el código de los caseritos en la caja.' },
   { id: 'resultados', texto: 'Ver resultados', ayuda: 'Cuántos vieron, se anotaron y canjearon.' },
   { id: 'resenas', texto: 'Responder reseñas', ayuda: 'Ver y contestar lo que opinan los clientes.' },
-  { id: 'local', texto: 'Editar el local', ayuda: 'Nombre, logo, categorías y ubicación.' },
+  { id: 'local', texto: 'Editar el local', ayuda: 'Nombre, categorías y ubicación.' },
 ];
 const textoPermiso = (id) => (PERMISOS.find((p) => p.id === id) || { texto: id }).texto;
 

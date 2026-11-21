@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase, explicar } from './supabase.js';
 import EliminarLocal from './EliminarLocal.jsx';
 import ConfigurarLocal from './ConfigurarLocal.jsx';
+import { LaminaLocal } from './arteLocal.js';
 import { formatoPrecio } from './frases.js';
 import { textoCategoria } from './categorias.js';
 import Qr, { URL_APP } from './Qr.jsx';
@@ -221,7 +222,7 @@ function Locales({ usuario }) {
       <div>
         <div className="tarjeta" style={{ borderColor: 'var(--azul)', marginBottom: 12 }}>
           <b>Crear local para entregarlo después</b>
-          <span className="ayuda">Queda a tu nombre mientras lo preparas (datos, logo, primer drop). Después generas el link de entrega y el dueño lo recibe con su cuenta.</span>
+          <span className="ayuda">Queda a tu nombre mientras lo preparas (datos, ubicación, primer drop). Después generas el link de entrega y el dueño lo recibe con su cuenta.</span>
         </div>
         <ConfigurarLocal usuario={usuario} alGuardar={() => { setCreando(false); recargar(); }} alCancelar={() => setCreando(false)} />
       </div>
@@ -253,7 +254,7 @@ function Locales({ usuario }) {
         && (!estado || (estado === 'pendiente' ? !l.aprobado : estado === 'activo' ? l.aprobado && l.activo : l.aprobado && !l.activo))).map((l) => (
         <div className="tarjeta" key={l.id} style={{ borderColor: l.aprobado ? 'var(--negro)' : 'var(--rojo)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-            <b>{l.nombre}{l.barrio ? <span className="ayuda" style={{ fontWeight: 600 }}> · {l.barrio}</span> : null}</b>
+            <b style={{ display: 'flex', alignItems: 'center', gap: 8 }}><LaminaLocal id={l.id} categoria={l.categoria} tam={34} />{l.nombre}{l.barrio ? <span className="ayuda" style={{ fontWeight: 600 }}> · {l.barrio}</span> : null}</b>
             <span style={{ fontSize: 12, fontWeight: 800, color: l.aprobado ? (l.activo ? 'var(--azul)' : 'var(--gris)') : '#C20826' }}>
               {!l.aprobado ? 'POR APROBAR' : l.activo ? 'ACTIVO' : 'PAUSADO'}
             </span>

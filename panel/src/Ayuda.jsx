@@ -3,7 +3,7 @@ import { supabase, explicar } from './supabase.js';
 
 // Manual para locales: pasos cortos y respuestas a lo que más se pregunta
 const PASOS = [
-  ['Inscribe tu local', 'Crea tu cuenta, marca la ubicación estando DENTRO del local, elige hasta 3 categorías (la primera es la principal), tu cocina si das comida y sube tu logo. Si te llegó un link de invitación, tu local queda aprobado al tiro; si no, lo aprobamos el mismo día.'],
+  ['Inscribe tu local', 'Crea tu cuenta, marca la ubicación estando DENTRO del local, elige hasta 3 categorías (la primera es la principal), tu cocina si das comida. Tu logo es tu lámina: cada local recibe la suya, única. Si te llegó un link de invitación, tu local queda aprobado al tiro; si no, lo aprobamos el mismo día.'],
   ['Suelta un drop', 'En Crear: elige el tipo, escribe qué ofreces, el precio del drop y el normal, cuántos hay y hasta qué hora. Elige una frase (o edítala), apruébala y toca "Soltar drop". Aparece al tiro en el mapa.'],
   ['Atiende al caserito', 'Cuando llegue, abre Escanear y apunta a su QR (o escribe el código que te dicta). Te dice "¡Canjeado!" y cuánto cobrar. Cada código sirve una sola vez.'],
   ['Repite lo que funciona', 'En Mis drops: Duplicar copia un drop con todo para soltarlo otra vez. También puedes editarlo, terminarlo antes o eliminarlo si nadie se anotó.'],

@@ -152,7 +152,6 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null,
     locales.filter((l) => !conDrop.has(l.id)).forEach((l, k) => {
       const html = cerca
         ? `<div class="lam-flota" style="--rot:${[-3, 2, -1, 3][k % 4]}deg;--delay:-${(k % 5) * 0.6}s"><div class="lam-mapa"><div class="lam-arte">${arteHtml(l.id, l.categoria)}`
-          + (l.logo_url ? `<img src="${escapar(l.logo_url)}" alt="" style="position:absolute;right:2px;bottom:2px;width:18px;height:18px">` : '')
           + `</div><b>${escapar(l.nombre)}</b><i>★ ${escapar(especialidad(l))}</i></div><div class="hilo"></div><div class="ubic"></div><div class="sombra"></div></div>`
         : '<div class="local-sin-drop"></div>';
       const icono = L.divIcon({ className: 'caserito-pin', html, iconSize: cerca ? [94, 150] : [18, 18], iconAnchor: cerca ? [47, 138] : [9, 9] });

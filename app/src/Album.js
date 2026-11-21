@@ -234,7 +234,7 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
               <View style={{ flex: 1 }}>
                 <Text style={{ ...letrista, fontSize: 22 }}>{apodoLamina(elegido).toUpperCase()}</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  {elegido.logo_url ? <Image source={{ uri: elegido.logo_url }} style={{ width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, borderColor: C.negro }} accessibilityIgnoresInvertColors /> : null}
+                  
                   <Text style={{ fontFamily: F.negrita, fontSize: 14 }}>{elegido.nombre} · {t('lámina', 'lámina')} {sel + 1}{letraLamina(elegido)}</Text>
                 </View>
               </View>

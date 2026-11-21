@@ -5,6 +5,7 @@ import Svg, { Path } from 'react-native-svg';
 import { supabase, explicar, leerPunto } from './supabase';
 import { C, F, letrista, precio, cuadras, textoCategoria, R, ESTILO } from './tema';
 import { Ola, Boton, EtiquetaPrecio, Brillo, FondoBauhaus, Figura, PuntosPop, GloboPop, Estallido } from './componentes';
+import { ArteLocal } from './arteLocal';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR, categoriaTur } from './idioma';
 
 export default function Drop({ drop, usuario, alCerrar }) {
@@ -64,10 +65,9 @@ export default function Drop({ drop, usuario, alCerrar }) {
           style={{ width: 44, height: 44, borderRadius: R(16), borderWidth: 2.5, borderColor: C.negro, backgroundColor: C.papel, alignItems: 'center', justifyContent: 'center' }}>
           <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={C.negro} strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round"><Path d="M15 18l-6-6 6-6" /></Svg>
         </Pressable>
-        {destino && destino.logo ? (
-          <Image source={{ uri: destino.logo }} accessibilityLabel={`Logo de ${drop.local_nombre}`}
-            style={{ width: 44, height: 44, borderRadius: R(16), borderWidth: 2.5, borderColor: C.negro, backgroundColor: C.papel }} />
-        ) : null}
+        <View accessibilityLabel={`Lámina de ${drop.local_nombre}`} style={{ width: 44, height: 44, borderWidth: 2.5, borderColor: C.negro, overflow: 'hidden', backgroundColor: C.papel }}>
+          <ArteLocal id={drop.local_id} categoria={drop.categoria} ancho={39} alto={39} borde={false} />
+        </View>
         <View style={{ flex: 1 }}>
           <Text style={{ ...letrista, fontSize: 22, color: ESTILO === 'clasico' ? C.negro : C.papel, textShadowColor: C.negro, textShadowOffset: { width: ESTILO === 'clasico' ? 0 : 2, height: ESTILO === 'clasico' ? 0 : 2 }, textShadowRadius: 0 }} numberOfLines={1}>{drop.local_nombre}</Text>
           <Text style={{ fontFamily: F.negrita, fontSize: 12, color: ESTILO === 'clasico' ? C.negro : C.papel }}>

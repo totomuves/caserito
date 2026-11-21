@@ -10,6 +10,7 @@ import Crear from './Crear.jsx';
 import Escanear from './Escanear.jsx';
 import Resultados from './Resultados.jsx';
 import Admin from './Admin.jsx';
+import { LaminaLocal } from './arteLocal.js';
 import MisDrops from './MisDrops.jsx';
 import Ayuda from './Ayuda.jsx';
 import Qr, { URL_APP } from './Qr.jsx';
@@ -203,7 +204,7 @@ function Marco({ local, rol, children, alAyuda }) {
       <header className="barra">
         <div>
           <span className="marca"><img src="/logo.svg" alt="Caserito" style={{ height: 30, display: 'block' }} /><small style={{ color: 'var(--amarillo)', fontWeight: 800 }}>Local</small></span>
-          {local && <small>{local.nombre}{rol && rol !== 'Dueño' ? ` · ${rol}` : ''}</small>}
+          {local && <small style={{ display: 'flex', alignItems: 'center', gap: 6 }}><LaminaLocal id={local.id} categoria={local.categoria} tam={22} />{local.nombre}{rol && rol !== 'Dueño' ? ` · ${rol}` : ''}</small>}
           {correo && <small className="correo-sesion" title={correo}>Conectado como {correo}</small>}
         </div>
         <div style={{ display: 'flex', gap: 6 }}>

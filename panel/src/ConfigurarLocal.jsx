@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { LaminaLocal } from './arteLocal.js';
 import { supabase, explicar } from './supabase.js';
 import { COCINAS } from './frases.js';
 import { GRUPOS, CON_COCINA, MAX_CATEGORIAS } from './categorias.js';
@@ -128,13 +129,13 @@ export default function ConfigurarLocal({ usuario, local, alGuardar, alCancelar,
         </div>
       )}
       <div className="tarjeta" style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-        <div style={{ width: 72, height: 72, borderRadius: 36, border: '2.5px solid var(--negro)', background: 'var(--crema)', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {logo ? <img src={logo} alt="Logo del local" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span className="letrista" style={{ fontSize: 26 }}>{(nombre || '?').slice(0, 1).toUpperCase()}</span>}
-        </div>
-        <label className="pildora" style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
-          {subiendo ? 'Subiendo…' : logo ? 'Cambiar logo' : 'Subir logo (opcional)'}
-          <input type="file" accept="image/*" onChange={subirLogo} style={{ display: 'none' }} />
-        </label>
+        {local ? <LaminaLocal id={local.id} categoria={categorias[0] || local.categoria} tam={72} /> : (
+          <span style={{ width: 72, height: 72, border: '2.5px dashed var(--negro)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 26 }}>?</span>
+        )}
+        <span className="ayuda" style={{ fontSize: 14 }}>
+          <b style={{ display: 'block', color: 'var(--negro)' }}>Tu logo es tu lámina</b>
+          {local ? 'Cada local tiene su propia lámina Bauhaus, única. Es la que ven los caseritos en el mapa y en su álbum.' : 'Al guardar, tu local recibe su propia lámina Bauhaus, única. Es su logo en el mapa y en el álbum.'}
+        </span>
       </div>
       <label className="campo">Tu producto estrella (para la lámina del álbum)
         <input value={estrella} onChange={(e) => setEstrella(e.target.value)} placeholder="Ej: arepa, cortado, vinilo, chaqueta vintage" />
