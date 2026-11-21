@@ -26,7 +26,7 @@ export default function Admin() {
           <button key={s.id} className={'pildora' + (seccion === s.id ? ' activa' : '')} onClick={() => setSeccion(s.id)}>{s.texto}</button>
         ))}
       </div>
-      {seccion === 'resumen' && <Resumen />}
+      {seccion === 'resumen' && <Resumen irA={setSeccion} />}
       {seccion === 'locales' && <Locales />}
       {seccion === 'drops' && <Drops />}
       {seccion === 'resenas' && <Resenas />}
@@ -51,11 +51,127 @@ function useCarga(fn, deps = []) {
   return { datos, error, recargar: () => setN(n + 1) };
 }
 
-function Resumen() {
-  const { datos, error } = useCarga(() => supabase.rpc('admin_resumen'));
+function Resumen({ irA }) {
+  const { datos, error } = useCarga(async () => {
+    const t = await supabase.rpc('admin_tablero');
+    if (!t.error) return { data: { tablero: t.data } };
+    const r = await supabase.rpc('admin_resumen'); // sin el SQL 017: el resumen de antes
+    return r.error ? r : { data: { viejo: r.data } };
+  });
   if (error) return <div className="error">{error}</div>;
   if (!datos) return <p className="ayuda">Cargando…</p>;
-  const d = datos;
+  if (datos.viejo) return <ResumenSimple d={datos.viejo} />;
+  const { kpis: k, serie, barrios, top_locales: top, alertas } = datos.tablero;
+  const cambio = (a, b) => (!b ? (a ? 'nuevo' : '') : `${a >= b ? '▲' : '▼'} ${Math.abs(Math.round(((a - b) / b) * 100))}% vs semana anterior`);
+  const maxSerie = Math.max(1, ...(serie || []).map((x) => x.canjes));
+  const conv = k.anotados_semana ? Math.round((k.canjes_semana / k.anotados_semana) * 100) : null;
+  const nAlertas = (alertas.por_aprobar || []).length + (alertas.dormidos || []).length + (alertas.resenas_bajas || []).length + (alertas.comentarios ? 1 : 0);
+  return (
+    <>
+      <div className="pizarra">
+        <span className="etiqueta">Ventas por Caserito · últimos 7 días</span>
+        <span className="precio" style={{ fontSize: 38 }}>{formatoPrecio(k.ventas_semana) || '$0'}</span>
+        <span style={{ fontSize: 13 }}>{k.canjes_semana} canjes · {k.canjes_hoy} hoy · {cambio(k.canjes_semana, k.canjes_semana_ant)}</span>
+      </div>
+
+      <div className="stats">
+        <div className="stat"><b>{k.caseritos_semana}</b><span>caseritos esta semana</span></div>
+        <div className="stat"><b>{k.caseritos}</b><span>caseritos en total</span></div>
+        <div className="stat"><b>{k.caseritos ? Math.round((k.caseritos_vuelven / k.caseritos) * 100) : 0}%</b><span>vuelve a canjear</span></div>
+        <div className="stat"><b>{conv === null ? '–' : conv + '%'}</b><span>de los anotados canjea</span></div>
+        <div className="stat"><b>{k.con_cuenta}</b><span>con cuenta guardada</span></div>
+        <div className="stat"><b>{k.visitas_semana}</b><span>visitas nuevas (7 días)</span></div>
+        <div className="stat"><b>{k.locales}</b><span>locales activos</span></div>
+        <div className="stat" style={{ background: k.locales_pendientes ? 'var(--amarillo)' : undefined }}><b>{k.locales_pendientes}</b><span style={{ color: 'var(--negro)' }}>por aprobar</span></div>
+        <div className="stat"><b>{k.drops_activos}</b><span>drops en vivo</span></div>
+        <div className="stat"><b>{k.drops_semana}</b><span>drops (7 días)</span></div>
+        <div className="stat"><b>{k.nota ?? '–'}</b><span>nota promedio · {k.resenas} reseñas</span></div>
+        <div className="stat"><b>{nAlertas}</b><span>alertas</span></div>
+      </div>
+
+      <div className="tablero-cols">
+        <section className="tablero-col" aria-labelledby="a-serie">
+          <h2 id="a-serie" className="letrista">CANJES · 30 DÍAS</h2>
+          <div className="tarjeta">
+            <div className="barras" aria-hidden="true">
+              {(serie || []).map((x) => <div key={x.dia} title={`${x.dia} · ${x.canjes} canjes · ${formatoPrecio(x.ventas) || '$0'}`} style={{ height: Math.max(4, (x.canjes / maxSerie) * 100) + '%' }} />)}
+            </div>
+            <div className="etiquetas-horas" aria-hidden="true">{(serie || []).map((x, i) => <span key={x.dia}>{i % 5 ? '' : Number(x.dia.slice(8))}</span>)}</div>
+            <p className="ayuda">{(serie || []).reduce((a, x) => a + x.canjes, 0)} canjes y {formatoPrecio((serie || []).reduce((a, x) => a + x.ventas, 0)) || '$0'} en ventas en 30 días.</p>
+          </div>
+
+          <h2 className="letrista">BARRIOS</h2>
+          <div className="tarjeta">
+            <table className="tabla">
+              <thead><tr><th scope="col">Barrio</th><th scope="col">Locales</th><th scope="col">En vivo</th><th scope="col">Canjes 7d</th><th scope="col">Ventas 7d</th></tr></thead>
+              <tbody>
+                {(barrios || []).map((b) => (
+                  <tr key={b.id}>
+                    <td><b>{b.nombre}</b><span className="ayuda" style={{ display: 'block' }}>{b.comuna}{b.lanzado ? '' : ' · pronto'}{b.pendientes ? ` · ${b.pendientes} por aprobar` : ''}</span></td>
+                    <td>{b.locales}</td><td>{b.drops_activos}</td><td>{b.canjes_semana}</td><td>{formatoPrecio(b.ventas_semana) || '$0'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <button className="pildora" style={{ alignSelf: 'flex-start' }} onClick={() => irA('barrios')}>Barrios y arte</button>
+          </div>
+
+          <h2 className="letrista">LOCALES QUE MÁS MUEVEN · 7 DÍAS</h2>
+          <div className="tarjeta">
+            {!top || !top.length ? <span className="ayuda">Todavía no hay locales activos.</span> : (
+              <table className="tabla">
+                <thead><tr><th scope="col">Local</th><th scope="col">Canjes</th><th scope="col">Ventas</th><th scope="col">Drops</th></tr></thead>
+                <tbody>
+                  {top.map((l, i) => (
+                    <tr key={l.id}>
+                      <td>{i + 1}. {l.nombre}<span className="ayuda" style={{ display: 'block' }}>{l.barrio}</span></td>
+                      <td>{l.canjes}</td><td>{formatoPrecio(l.ventas) || '$0'}</td><td>{l.drops}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </section>
+
+        <section className="tablero-col" aria-labelledby="a-alertas">
+          <h2 id="a-alertas" className="letrista">ALERTAS</h2>
+          {nAlertas === 0 && <div className="tarjeta"><span>Todo en orden. ✓</span></div>}
+          {(alertas.por_aprobar || []).length > 0 && (
+            <div className="tarjeta" style={{ borderColor: 'var(--rojo)' }}>
+              <b>{alertas.por_aprobar.length} {alertas.por_aprobar.length === 1 ? 'local espera' : 'locales esperan'} aprobación</b>
+              {alertas.por_aprobar.slice(0, 5).map((l) => <span key={l.id}>· {l.nombre}{l.barrio ? ` (${l.barrio})` : ''}</span>)}
+              <button className="pildora" style={{ alignSelf: 'flex-start' }} onClick={() => irA('locales')}>Ir a aprobar</button>
+            </div>
+          )}
+          {(alertas.dormidos || []).length > 0 && (
+            <div className="tarjeta">
+              <b>{alertas.dormidos.length} {alertas.dormidos.length === 1 ? 'local lleva' : 'locales llevan'} 14 días sin soltar drops</b>
+              {alertas.dormidos.slice(0, 6).map((l) => <span key={l.id}>· {l.nombre} <span className="ayuda">{l.ultimo_drop ? `(último: ${new Date(l.ultimo_drop).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })})` : '(nunca)'}</span></span>)}
+              <span className="ayuda">Escríbeles: un drop en su hora más tranquila suele reactivarlos.</span>
+            </div>
+          )}
+          {(alertas.resenas_bajas || []).length > 0 && (
+            <div className="tarjeta">
+              <b>Reseñas de 1–2 estrellas (30 días)</b>
+              {alertas.resenas_bajas.slice(0, 4).map((r, i) => <span key={i}>· {r.local}: {'★'.repeat(r.estrellas)} {r.texto ? `“${r.texto}”` : ''}</span>)}
+              <button className="pildora" style={{ alignSelf: 'flex-start' }} onClick={() => irA('resenas')}>Ver reseñas</button>
+            </div>
+          )}
+          {alertas.comentarios > 0 && (
+            <div className="tarjeta">
+              <b>{alertas.comentarios} {alertas.comentarios === 1 ? 'comentario' : 'comentarios'} de la beta sin leer</b>
+              <button className="pildora" style={{ alignSelf: 'flex-start' }} onClick={() => irA('comentarios')}>Leer</button>
+            </div>
+          )}
+          <p className="ayuda">Caseritos: personas que canjearon al menos una vez. Visitas: teléfonos o navegadores que abrieron la app. No se cuentan locales ni admins.</p>
+        </section>
+      </div>
+    </>
+  );
+}
+
+function ResumenSimple({ d }) {
   return (
     <>
       <div className="pizarra">
@@ -65,15 +181,11 @@ function Resumen() {
       </div>
       <div className="stats">
         <div className="stat"><b>{d.caseritos}</b><span>caseritos</span></div>
-        <div className="stat"><b>{d.con_cuenta ?? 0}</b><span>con cuenta</span></div>
-        <div className="stat"><b>{d.visitas ?? '–'}</b><span>visitas ({d.visitas_semana ?? 0} esta semana)</span></div>
         <div className="stat"><b>{d.locales_aprobados}</b><span>locales activos</span></div>
-        <div className="stat" style={{ background: d.locales_pendientes ? 'var(--amarillo)' : undefined }}><b>{d.locales_pendientes}</b><span style={{ color: 'var(--negro)' }}>por aprobar</span></div>
+        <div className="stat"><b>{d.locales_pendientes}</b><span>por aprobar</span></div>
         <div className="stat"><b>{d.drops_activos}</b><span>drops ahora</span></div>
-        <div className="stat"><b>{d.drops_semana}</b><span>drops semana</span></div>
-        <div className="stat"><b>{d.resenas}</b><span>reseñas</span></div>
       </div>
-      <p className="ayuda">Caseritos: se sumaron a al menos un drop. Visitas: teléfonos o navegadores que abrieron la app (cada uno cuenta aparte, también tus pruebas). No se cuentan locales ni admins.</p>
+      <p className="ayuda">Corre el SQL 017 en Supabase para ver el tablero completo.</p>
     </>
   );
 }
@@ -83,6 +195,9 @@ function Locales() {
     .select('id, nombre, barrio, categoria, categorias, cocina_pais, direccion, aprobado, activo, creado_at')
     .order('aprobado').order('creado_at', { ascending: false }));
   const [msg, setMsg] = useState('');
+  const [busca, setBusca] = useState('');
+  const [barrio, setBarrio] = useState('');
+  const [estado, setEstado] = useState('');
 
   async function cambiar(l, campos) {
     setMsg('');
@@ -96,7 +211,25 @@ function Locales() {
     <>
       {msg && <div className="error">{msg}</div>}
       {datos.length === 0 && <div className="tarjeta">Todavía no se inscribe ningún local.</div>}
-      {datos.map((l) => (
+      {datos.length > 0 && (
+        <div className="filtros">
+          <label className="campo">Buscar<input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Nombre o dirección" /></label>
+          <label className="campo">Barrio
+            <select value={barrio} onChange={(e) => setBarrio(e.target.value)}>
+              <option value="">Todos</option>
+              {[...new Set(datos.map((l) => l.barrio).filter(Boolean))].sort().map((b) => <option key={b} value={b}>{b}</option>)}
+            </select>
+          </label>
+          <label className="campo">Estado
+            <select value={estado} onChange={(e) => setEstado(e.target.value)}>
+              <option value="">Todos</option><option value="pendiente">Por aprobar</option><option value="activo">Activos</option><option value="pausado">Pausados</option>
+            </select>
+          </label>
+        </div>
+      )}
+      {datos.filter((l) => (!busca || `${l.nombre} ${l.direccion || ''}`.toLowerCase().includes(busca.toLowerCase()))
+        && (!barrio || l.barrio === barrio)
+        && (!estado || (estado === 'pendiente' ? !l.aprobado : estado === 'activo' ? l.aprobado && l.activo : l.aprobado && !l.activo))).map((l) => (
         <div className="tarjeta" key={l.id} style={{ borderColor: l.aprobado ? 'var(--negro)' : 'var(--rojo)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
             <b>{l.nombre}{l.barrio ? <span className="ayuda" style={{ fontWeight: 600 }}> · {l.barrio}</span> : null}</b>
