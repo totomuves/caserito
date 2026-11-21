@@ -3,7 +3,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { supabase, leerPunto } from './supabase';
 import { C, F, letrista, precio, cuadras, textoCategoria } from './tema';
 import { caminar } from './Drop';
-import { figuraDe, colorDe, Figura } from './componentes';
+import { figuraDe, colorDe, Figura, PuntosPop, GloboPop, Estallido } from './componentes';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR, categoriaTur } from './idioma';
 
 export const COLOR_TIPO = { normal: C.rojo, grupal: C.azul, sorpresa: '#B45309', recien_llegado: C.negro };
@@ -179,10 +179,15 @@ export function HojaMapa({ drops, pos, sel, alAbrir, coords = {} }) {
           <Pressable onPress={() => alAbrir(cercano)} style={{ backgroundColor: '#FFFFFF', borderWidth: 2.5, borderColor: C.negro, borderRadius: 0, padding: 14, gap: 7, shadowColor: C.negro, shadowOffset: { width: 3, height: 3 }, shadowOpacity: 1, shadowRadius: 0, elevation: 3 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
               <Text style={{ fontFamily: F.negrita, fontSize: 12, color: COLOR_TIPO[cercano.tipo] || C.rojoTexto, textTransform: 'uppercase', flexShrink: 1 }}>{tur ? categoriaTur(cercano.categoria, lang) || textoCategoria(cercano.categoria) : textoCategoria(cercano.categoria)} · {t('quedan', 'quedan')} {cercano.quedan}</Text>
-              {cercano.precio ? <Text style={{ ...letrista, fontSize: 16, backgroundColor: C.amarillo, borderWidth: 2, borderColor: C.negro, borderRadius: 6, paddingHorizontal: 6, overflow: 'hidden', transform: [{ rotate: '-4deg' }] }}>{precio(cercano.precio)}</Text> : null}
             </View>
-            <Text style={{ fontFamily: F.negrita, fontSize: 18 }}>{cercano.local_nombre}</Text>
-            <FraseGlosario texto={`“${cercano.frase || cercano.titulo}”`} colorAyuda={C.rojoTexto} numberOfLines={2} style={{ fontFamily: F.media, fontSize: 15, fontStyle: 'italic' }} />
+            <Text style={{ ...letrista, fontSize: 19 }}>{cercano.local_nombre}</Text>
+            <View style={{ height: 86, borderWidth: 2.5, borderColor: C.negro, overflow: 'hidden', padding: 8 }}>
+              <PuntosPop color={C.rojo} fondo="#FFE3E3" tam={2.6} sep={8} />
+              <GloboPop style={{ maxWidth: '76%' }}>
+                <FraseGlosario texto={cercano.frase || cercano.titulo} colorAyuda={C.rojoTexto} numberOfLines={2} style={{ fontFamily: F.negrita, fontSize: 12, lineHeight: 15, textTransform: 'uppercase' }} />
+              </GloboPop>
+              <Estallido texto={cercano.tipo === 'sorpresa' ? '¿?' : precio(cercano.precio) || '¡YA!'} tam={64} style={{ position: 'absolute', right: 2, bottom: 2 }} />
+            </View>
             <Text style={{ fontFamily: F.negrita, fontSize: 13 }}>
               {cercano.dentro_del_radio ? t('¡Estás aquí! Ya puedes canjearlo.', '¡Llegaste! Listo pa’ canjear.') : t(`Estás ${cuad(cercano.cuadras)} · se desbloquea al llegar`, `Estás a ${cuad(cercano.cuadras)} · se activa al llegar`)}
             </Text>

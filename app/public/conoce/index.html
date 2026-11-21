@@ -74,6 +74,12 @@
   .tarjeta { background:#fff; border:2.5px solid var(--negro); border-radius:14px; padding:10px; box-shadow:3px 3px 0 var(--negro); }
   .tarjeta .cat { font-size:10px; font-weight:900; color:var(--rojo); text-transform:uppercase; letter-spacing:.5px; }
   .tarjeta b { display:block; font-size:15px; margin:2px 0; }
+  .pop { position:relative; height:74px; border:2.5px solid var(--negro); margin:4px 0 8px; padding:6px; overflow:hidden;
+    background-color:#FFE3E3; background-image:radial-gradient(var(--rojo) 2px, transparent 2.5px), radial-gradient(var(--rojo) 2px, transparent 2.5px); background-size:8px 8px; background-position:0 0,4px 4px; }
+  .pop .globo { position:relative; background:#fff; border:2.5px solid var(--negro); border-radius:14px; padding:4px 8px; font-weight:800; font-size:10px; line-height:1.25; text-transform:uppercase; max-width:72%; }
+  .pop .globo::after { content:''; position:absolute; left:16px; bottom:-10px; border-left:4px solid transparent; border-right:12px solid transparent; border-top:10px solid var(--negro); }
+  .pop .zas { position:absolute; right:4px; bottom:4px; width:58px; height:58px; display:flex; align-items:center; justify-content:center; font-family:Jost, Archivo, sans-serif; font-weight:800; font-size:13px; color:var(--rojo); text-shadow:1px 1px 0 var(--negro); background:var(--amarillo);
+    clip-path:polygon(50% 0,58% 18%,75% 7%,74% 26%,93% 25%,82% 41%,100% 50%,82% 59%,93% 75%,74% 74%,75% 93%,58% 82%,50% 100%,42% 82%,25% 93%,26% 74%,7% 75%,18% 59%,0 50%,18% 41%,7% 25%,26% 26%,25% 7%,42% 18%); }
   .tarjeta i { font-size:12px; display:block; margin-bottom:6px; }
   .barra-avance { height:9px; border:2px solid var(--negro); border-radius:5px; background:var(--suave); overflow:hidden; margin-bottom:8px; }
   .barra-avance div { width:62%; height:100%; background:var(--amarillo); }
@@ -119,6 +125,7 @@
   .ediciones { display:grid; grid-template-columns:repeat(4, 1fr); gap:22px; }
   .lamina { background:var(--papel); color:var(--negro); border:3px solid var(--negro); padding:12px; box-shadow:7px 7px 0 var(--negro); }
   .lamina:nth-child(odd) { transform:rotate(-2deg); } .lamina:nth-child(even) { transform:rotate(1.5deg); }
+  .lamina .arte { background-image:radial-gradient(rgba(17,17,17,.28) 2.2px, transparent 2.7px), radial-gradient(rgba(17,17,17,.28) 2.2px, transparent 2.7px); background-size:11px 11px; background-position:0 0, 5.5px 5.5px; }
   .lamina .arte { height:170px; border:3px solid var(--negro); position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; }
   .lamina .arte .g1 { position:absolute; border-radius:50%; width:120px; height:120px; }
   .lamina .arte .g2 { position:absolute; width:70px; height:70px; }
@@ -240,7 +247,7 @@
             <div class="tarjeta">
               <span class="cat">Café · quedan 4</span>
               <b>Café del Barrio</b>
-              <i>“Cortado + medialuna a luca nueve, ¡al tiro que se acaba!”</i>
+              <div class="pop"><div class="globo">Cortado + medialuna a luca nueve, ¡al tiro!</div><div class="zas">$1.990</div></div>
               <div class="barra-avance"><div></div></div>
               <div class="ir">Cómo llegar · 2 min</div>
             </div>
