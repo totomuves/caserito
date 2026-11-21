@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { supabase, leerPunto } from './supabase';
 import { C, F, letrista, precio, cuadras, textoCategoria } from './tema';
-import { Boton } from './componentes';
+import { caminar } from './Drop';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR } from './idioma';
 
 export const COLOR_TIPO = { normal: C.rojo, grupal: C.azul, sorpresa: '#B45309', recien_llegado: C.negro };
@@ -14,6 +14,58 @@ export function urgente(d) {
   const min = d.termina_at ? (new Date(d.termina_at).getTime() - Date.now()) / 60000 : 999;
   return (d.tipo !== 'recien_llegado' && d.quedan != null && d.quedan <= 3) || min < 20;
 }
+
+// Filtros del mapa (como en el diseño "Caserito — pantallas")
+const COMIDA = ['comer', 'tomar', 'dulce', 'almacen'];
+export const FILTROS = [
+  { id: 'todo', es: 'Todo', en: 'All', pasa: () => true },
+  { id: 'comida', es: 'Comida', en: 'Food', pasa: (d) => COMIDA.includes(d.categoria) || (d.categorias || []).some((c) => COMIDA.includes(c)) },
+  { id: 'cafe', es: 'Café', en: 'Coffee', pasa: (d) => d.categoria === 'cafe' || (d.categorias || []).includes('cafe') },
+  { id: 'grupal', es: 'Grupales', en: 'Group', pasa: (d) => d.tipo === 'grupal' },
+];
+export function filtrar(drops, id) {
+  const f = FILTROS.find((x) => x.id === id) || FILTROS[0];
+  return drops.filter(f.pasa);
+}
+
+// Chips de filtro bajo los barrios
+export function FiltrosMapa({ drops, filtro, alElegir, arriba = 60 }) {
+  const { t } = useIdioma();
+  return (
+    <View style={{ position: 'absolute', top: arriba, left: 0, right: 0, zIndex: 900 }} pointerEvents="box-none">
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 12 }}>
+        {FILTROS.map((f) => {
+          const activo = filtro === f.id;
+          const n = filtrar(drops, f.id).length;
+          if (f.id !== 'todo' && !n) return null;
+          return (
+            <Pressable key={f.id} onPress={() => alElegir(f.id)} accessibilityRole="button" accessibilityState={{ selected: activo }}
+              style={{ minHeight: 36, paddingHorizontal: 14, borderRadius: 18, borderWidth: 2.5, borderColor: C.negro, backgroundColor: activo ? C.amarillo : C.papel, justifyContent: 'center' }}>
+              <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.negro }}>{t(f.es, f.en)}{f.id === 'todo' ? ` · ${n}` : ''}</Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
+}
+
+// Lo que va en la etiqueta girada sobre el pin
+export function etiquetaTag(d) {
+  if (d.tipo === 'sorpresa') return '¿Sorpresa?';
+  if (d.tipo === 'grupal') return `Quedan ${d.quedan}`;
+  return precio(d.precio) || '¡Nuevo!';
+}
+// Lo que va dentro de la gota
+export function centroPin(d) {
+  if (d.tipo === 'sorpresa') return '?';
+  if (d.tipo === 'grupal') return '👥';
+  return d.quedan != null && d.tipo !== 'recien_llegado' ? String(d.quedan) : '★';
+}
+// Minutos caminando (cuadras de 100 m a 80 m/min)
+export function minutos(d) { return Math.max(1, Math.round((d.cuadras || 1) * 1.25)); }
+// Qué tan cerca estás de desbloquearlo (0 a 1)
+export function avance(d) { return d.dentro_del_radio ? 1 : Math.max(0.06, Math.min(0.95, 1 - (d.cuadras - 0.5) / 15)); }
 
 export function etiquetaPin(d) {
   return d.tipo === 'sorpresa' ? '¿?' : d.tipo === 'grupal' ? `${d.quedan}` : precio(d.precio) || '¡NUEVO!';
@@ -88,30 +140,56 @@ export function useLocalesMapa() {
 }
 
 // Aviso sin ubicación + hoja de abajo con el drop elegido o el más cercano
-export function HojaMapa({ drops, pos, sel, alAbrir }) {
+export function HojaMapa({ drops, pos, sel, alAbrir, coords = {} }) {
   const cercano = sel || [...drops].sort((a, b) => a.cuadras - b.cuadras)[0];
   const { tur, t, cuad } = useIdioma();
+  const destino = cercano && coords[cercano.local_id];
   return (
     <>
       {pos.aprox && (
-        <View style={{ position: 'absolute', top: 12, left: 16, right: 16, backgroundColor: C.papel, borderWidth: 2, borderColor: C.negro, borderRadius: 14, padding: 10, zIndex: 1000 }}>
+        <View style={{ position: 'absolute', top: 112, left: 16, right: 16, backgroundColor: C.papel, borderWidth: 2, borderColor: C.negro, borderRadius: 14, padding: 10, zIndex: 1000 }}>
           <Text style={{ fontFamily: F.media, fontSize: 13 }}>{t('Sin tu ubicación te mostramos Barrio Italia. Actívala para ver a cuántas cuadras está cada drop.', "Activa tu ubicación to see a cuántas cuadras está cada drop. Por ahora: Barrio Italia.")}</Text>
         </View>
       )}
-      <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 1000, backgroundColor: C.crema, borderTopLeftRadius: 26, borderTopRightRadius: 26, borderTopWidth: 2.5, borderColor: C.negro, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 92, gap: 10 }}>
-        <Text style={{ ...letrista, fontSize: 19 }}>{sel ? t('ESTE DROP', "ESTE DROP") : t('MÁS CERCA DE TI', "EL MÁS CERCA · CLOSEST")}</Text>
+      <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 1000, backgroundColor: C.papel, borderTopLeftRadius: 26, borderTopRightRadius: 26, borderTopWidth: 2.5, borderColor: C.negro, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 92, gap: 10 }}>
+        <View style={{ alignSelf: 'center', width: 44, height: 5, borderRadius: 3, backgroundColor: C.negro, opacity: 0.25 }} />
+        <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' }}>
+          <Text style={{ ...letrista, fontSize: 20 }}>{sel ? t('ESTE DROP', 'ESTE DROP') : t('MÁS CERCA DE TI', 'MÁS CERCA · CLOSEST')}</Text>
+          <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.gris }}>{drops.length} {drops.length === 1 ? t('drop activo', 'drop live') : t('drops activos', 'drops live')}</Text>
+        </View>
         {cercano ? (
-          <Pressable onPress={() => alAbrir(cercano)} style={{ backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: 18, padding: 14, gap: 6 }}>
-            <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.rojoTexto, textTransform: 'uppercase' }}>{tur ? CATEGORIA_TUR[cercano.categoria] || textoCategoria(cercano.categoria) : textoCategoria(cercano.categoria)} · {t('quedan', "quedan:")} {cercano.quedan}</Text>
-            <Text style={{ fontFamily: F.negrita, fontSize: 17 }}>{cercano.local_nombre}</Text>
-            <FraseGlosario texto={(cercano.frase || cercano.titulo).toUpperCase()} colorAyuda={C.rojoTexto} numberOfLines={2} style={{ ...letrista, fontSize: 15 }} />
+          <Pressable onPress={() => alAbrir(cercano)} style={{ backgroundColor: '#FFFFFF', borderWidth: 2.5, borderColor: C.negro, borderRadius: 18, padding: 14, gap: 7, shadowColor: C.negro, shadowOffset: { width: 3, height: 3 }, shadowOpacity: 1, shadowRadius: 0, elevation: 3 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
+              <Text style={{ fontFamily: F.negrita, fontSize: 12, color: COLOR_TIPO[cercano.tipo] || C.rojoTexto, textTransform: 'uppercase', flexShrink: 1 }}>{tur ? CATEGORIA_TUR[cercano.categoria] || textoCategoria(cercano.categoria) : textoCategoria(cercano.categoria)} · {t('quedan', 'quedan')} {cercano.quedan}</Text>
+              {cercano.precio ? <Text style={{ ...letrista, fontSize: 16, backgroundColor: C.amarillo, borderWidth: 2, borderColor: C.negro, borderRadius: 6, paddingHorizontal: 6, overflow: 'hidden', transform: [{ rotate: '-4deg' }] }}>{precio(cercano.precio)}</Text> : null}
+            </View>
+            <Text style={{ fontFamily: F.negrita, fontSize: 18 }}>{cercano.local_nombre}</Text>
+            <FraseGlosario texto={`“${cercano.frase || cercano.titulo}”`} colorAyuda={C.rojoTexto} numberOfLines={2} style={{ fontFamily: F.media, fontSize: 15, fontStyle: 'italic' }} />
             <Text style={{ fontFamily: F.negrita, fontSize: 13 }}>
-              {cercano.dentro_del_radio ? t('¡Estás aquí! Ya puedes canjearlo.', "¡Llegaste! Listo pa’ canjear.") : t(`Estás ${cuad(cercano.cuadras)} · se desbloquea al llegar`, `Estás a ${cuad(cercano.cuadras)} · se activa al llegar`)}
+              {cercano.dentro_del_radio ? t('¡Estás aquí! Ya puedes canjearlo.', '¡Llegaste! Listo pa’ canjear.') : t(`Estás ${cuad(cercano.cuadras)} · se desbloquea al llegar`, `Estás a ${cuad(cercano.cuadras)} · se activa al llegar`)}
             </Text>
-            <Boton texto={t("Ver drop", "Ver drop")} onPress={() => alAbrir(cercano)} />
+            <View style={{ height: 10, borderRadius: 5, borderWidth: 2, borderColor: C.negro, backgroundColor: C.amarilloSuave, overflow: 'hidden' }}>
+              <View style={{ width: `${Math.round(avance(cercano) * 100)}%`, height: '100%', backgroundColor: cercano.dentro_del_radio ? '#1F9D55' : C.amarillo }} />
+            </View>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              {cercano.dentro_del_radio || !destino ? (
+                <Pressable onPress={() => alAbrir(cercano)} accessibilityRole="button" style={{ flex: 1, minHeight: 48, borderRadius: 14, backgroundColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ fontFamily: F.negrita, fontSize: 15, color: C.amarillo }}>{cercano.dentro_del_radio ? t('Canjear ahora', 'Canjear now') : t('Ver drop', 'Ver drop')}</Text>
+                </Pressable>
+              ) : (
+                <>
+                  <Pressable onPress={() => caminar(destino)} accessibilityRole="button" style={{ flex: 1, minHeight: 48, borderRadius: 14, backgroundColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ fontFamily: F.negrita, fontSize: 15, color: C.amarillo }}>{t(`Cómo llegar · ${minutos(cercano)} min`, `Cómo llegar · ${minutos(cercano)} min walk`)}</Text>
+                  </Pressable>
+                  <Pressable onPress={() => alAbrir(cercano)} accessibilityRole="button" style={{ minHeight: 48, paddingHorizontal: 16, borderRadius: 14, borderWidth: 2.5, borderColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ fontFamily: F.negrita, fontSize: 15 }}>{t('Ver', 'Ver')}</Text>
+                  </Pressable>
+                </>
+              )}
+            </View>
           </Pressable>
         ) : (
-          <Text style={{ fontFamily: F.media, fontSize: 14 }}>{t('No hay drops activos cerca en este momento.', "No drops cerca right now.")}</Text>
+          <Text style={{ fontFamily: F.media, fontSize: 14 }}>{t('No hay drops activos con este filtro ahora.', 'No drops con este filtro right now.')}</Text>
         )}
       </View>
     </>
