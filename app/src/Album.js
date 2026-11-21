@@ -180,7 +180,6 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
           const ganada = !!mias[l.id];
           const m = ide.marcos[k % 3];
           const activa = sel === k;
-          const m = ide.marcos[k % 3];
           return (
             ESTILO === 'clasico' ? (
             <Pressable key={l.id} onPress={() => setSel(k)} accessibilityLabel={`${t('Lámina', "Lámina")} ${k + 1}, ${ganada ? l.nombre + t(', ganada', ", ¡la tienes!") + (rep[l.id] && rep[l.id].repetidas ? `, ${rep[l.id].repetidas} ${t('repetidas', 'repetidas')}` : '') : textoCategoria(l.categoria) + t(', te falta', ", te falta")}`}
