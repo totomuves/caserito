@@ -55,6 +55,8 @@ export default function Resumen({ local, alCrear }) {
   const [periodo, setPeriodo] = useState(() => { try { return localStorage.getItem(CLAVE) || '7'; } catch { return '7'; } });
   const [drops, setDrops] = useState(null);
   const [nota, setNota] = useState(null);
+  const [historia, setHistoria] = useState(null);
+  const [resenas, setResenas] = useState([]);
   const [error, setError] = useState('');
   const [cuando, setCuando] = useState(null);
   const [, setTic] = useState(0);
@@ -63,14 +65,19 @@ export default function Resumen({ local, alCrear }) {
 
   async function cargar() {
     const { pDesde } = rangos(periodo, new Date());
-    const [d, c] = await Promise.all([
+    const [d, c, h, r] = await Promise.all([
       supabase.from('drops')
-        .select('id, titulo, tipo, precio, cupo, inicia_at, termina_at, participaciones(anotado_at, canjeado_at)')
+        .select('id, titulo, tipo, precio, cupo, inicia_at, termina_at, participaciones(usuario_id, anotado_at, canjeado_at)')
         .eq('local_id', local.id).gte('termina_at', pDesde.toISOString()).order('inicia_at', { ascending: false }),
       supabase.from('calificaciones').select('promedio, cantidad').eq('local_id', local.id).maybeSingle(),
+      // Historia completa de canjes del local: para saber quién es nuevo y quién vuelve
+      supabase.from('participaciones').select('usuario_id, canjeado_at, drops!inner(local_id)')
+        .eq('drops.local_id', local.id).not('canjeado_at', 'is', null).limit(5000),
+      supabase.from('resenas').select('estrellas, texto, creado_at').eq('local_id', local.id).eq('oculta', false).order('creado_at', { ascending: false }).limit(3),
     ]);
     if (d.error) { setError(explicar(d.error)); return; }
     setError(''); setDrops(d.data || []); setNota(c.data || null); setCuando(new Date());
+    setHistoria(h.error ? null : h.data || []); setResenas(r.error ? [] : r.data || []);
   }
   useEffect(() => {
     cargar();
@@ -143,6 +150,47 @@ export default function Resumen({ local, alCrear }) {
   canjes.sort((a, b) => b.f - a.f);
   proximos.sort((a, b) => new Date(a.inicia_at) - new Date(b.inicia_at));
   const tasa = m.anotados ? Math.round((m.canjes / m.anotados) * 100) : null;
+
+  // ¿Quién viene? Nuevos (primer canje en el período), vuelven (2+ canjes en total), únicos del período
+  const primerCanje = {}, totalPorPersona = {};
+  (historia || []).forEach((x) => {
+    const f = new Date(x.canjeado_at);
+    if (!primerCanje[x.usuario_id] || f < primerCanje[x.usuario_id]) primerCanje[x.usuario_id] = f;
+    totalPorPersona[x.usuario_id] = (totalPorPersona[x.usuario_id] || 0) + 1;
+  });
+  const unicosPeriodo = new Set();
+  drops.forEach((d) => (d.participaciones || []).forEach((x) => { if (x.canjeado_at && dentro(new Date(x.canjeado_at), desde, hasta)) unicosPeriodo.add(x.usuario_id); }));
+  const nuevos = [...unicosPeriodo].filter((u) => primerCanje[u] && dentro(primerCanje[u], desde, hasta)).length;
+  const historicos = Object.keys(totalPorPersona).length;
+  const vuelven = Object.values(totalPorPersona).filter((n) => n >= 2).length;
+
+  // Mejores drops del período, por canjes
+  const ranking = drops.filter((d) => dentro(new Date(d.inicia_at), desde, hasta) || (d.participaciones || []).some((x) => x.canjeado_at && dentro(new Date(x.canjeado_at), desde, hasta)))
+    .map((d) => {
+      const ps = d.participaciones || [];
+      const c = ps.filter((x) => x.canjeado_at && dentro(new Date(x.canjeado_at), desde, hasta)).length;
+      return { id: d.id, titulo: d.titulo, anotados: ps.length, canjes: c, conv: ps.length ? Math.round((c / ps.length) * 100) : 0, ventas: c * (d.precio || 0), agotado: ps.filter((x) => x.canjeado_at).length >= d.cupo };
+    })
+    .sort((a, b) => b.canjes - a.canjes).slice(0, 5);
+
+  // ¿Cuándo vienen? Por día de la semana y por hora, en el período
+  const DIAS_SEM = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá', 'Do'];
+  const porDiaSem = DIAS_SEM.map((x) => ({ x, n: 0 }));
+  const porHora = Array.from({ length: 16 }, (_, i) => ({ x: String(i + 8), n: 0 }));
+  drops.forEach((d) => (d.participaciones || []).forEach((x) => {
+    if (!x.canjeado_at) return;
+    const f = new Date(x.canjeado_at);
+    if (!dentro(f, desde, hasta)) return;
+    porDiaSem[(f.getDay() + 6) % 7].n += 1;
+    const hh = f.getHours();
+    if (hh >= 8 && hh <= 23) porHora[hh - 8].n += 1;
+  }));
+  const maxSem = Math.max(1, ...porDiaSem.map((x) => x.n));
+  const maxHora = Math.max(1, ...porHora.map((x) => x.n));
+  const diaTop = porDiaSem.reduce((a, b) => (b.n > a.n ? b : a));
+  const horaTop = porHora.reduce((a, b) => (b.n > a.n ? b : a));
+  const horasConDatos = porHora.filter((x) => x.n > 0);
+  const horaTranquila = horasConDatos.length >= 3 ? porHora.filter((x) => +x.x >= 10 && +x.x <= 20).reduce((a, b) => (b.n < a.n ? b : a)) : null;
   const maxBarra = Math.max(1, ...barras.map((x) => x.n));
   const mejor = barras.reduce((a, b) => (b.n > (a ? a.n : 0) ? b : a), null);
   const segundos = cuando ? Math.round((Date.now() - cuando.getTime()) / 1000) : 0;
@@ -226,6 +274,64 @@ export default function Resumen({ local, alCrear }) {
                 ))}
               </ul>
             )}
+          </div>
+
+          <h2 className="letrista">TUS CASERITOS</h2>
+          <div className="tarjeta">
+            {historia === null ? <span className="ayuda">No se pudo cargar la historia de canjes.</span> : (
+              <div className="mini-stats">
+                <div><b>{unicosPeriodo.size}</b><span>vinieron en {per.texto.toLowerCase()}</span></div>
+                <div><b>{nuevos}</b><span>nuevos (primera vez)</span></div>
+                <div><b>{historicos ? Math.round((vuelven / historicos) * 100) : 0}%</b><span>vuelve a canjear</span></div>
+                <div><b>{historicos}</b><span>caseritos en total · tu lámina entregada</span></div>
+              </div>
+            )}
+            <span className="ayuda">{historicos && vuelven / historicos < 0.25 ? 'Pocos vuelven: prueba un premio por láminas repetidas en "Editar mi local".' : historicos ? '¡Buena fidelidad! Los que vuelven son tus mejores caseritos.' : 'Cuando lleguen tus primeros caseritos, aquí ves cuántos son nuevos y cuántos vuelven.'}</span>
+          </div>
+
+          <h2 className="letrista">¿CUÁNDO VIENEN?</h2>
+          <div className="tarjeta">
+            <b style={{ fontSize: 13 }}>Por día</b>
+            <div className="barras chicas" aria-hidden="true">{porDiaSem.map((x) => <div key={x.x} title={`${x.x}: ${x.n}`} style={{ height: Math.max(4, (x.n / maxSem) * 100) + '%', background: x === diaTop && x.n ? 'var(--rojo)' : undefined }} />)}</div>
+            <div className="etiquetas-horas" aria-hidden="true">{porDiaSem.map((x) => <span key={x.x}>{x.x}</span>)}</div>
+            <b style={{ fontSize: 13, marginTop: 6 }}>Por hora</b>
+            <div className="barras chicas" aria-hidden="true">{porHora.map((x) => <div key={x.x} title={`${x.x}:00 · ${x.n}`} style={{ height: Math.max(4, (x.n / maxHora) * 100) + '%', background: x === horaTop && x.n ? 'var(--rojo)' : undefined }} />)}</div>
+            <div className="etiquetas-horas" aria-hidden="true">{porHora.map((x, i) => <span key={x.x}>{i % 2 ? '' : x.x}</span>)}</div>
+            <p className="ayuda">
+              {m.canjes ? `Tu mejor día es el ${diaTop.x.toLowerCase()} y tu mejor hora las ${horaTop.x}:00.` : 'Todavía no hay canjes en este período.'}
+              {horaTranquila ? ` La hora más tranquila es las ${horaTranquila.x}:00: buen momento para soltar un drop.` : ''}
+            </p>
+          </div>
+
+          <h2 className="letrista">TUS MEJORES DROPS</h2>
+          <div className="tarjeta">
+            {ranking.length === 0 ? <span className="ayuda">No hay drops en este período.</span> : (
+              <table className="tabla">
+                <thead><tr><th scope="col">Drop</th><th scope="col">Canjes</th><th scope="col">Convierte</th><th scope="col">Ventas</th></tr></thead>
+                <tbody>
+                  {ranking.map((r) => (
+                    <tr key={r.id}>
+                      <td>{r.titulo}{r.agotado ? <span className="pilita">agotado</span> : null}</td>
+                      <td>{r.canjes}/{r.anotados}</td>
+                      <td>{r.conv}%</td>
+                      <td>{formatoPrecio(r.ventas) || '$0'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            <span className="ayuda">Convierte = de los que se anotaron, cuántos llegaron a canjear. Si un drop se agota rápido, súbele el cupo o repítelo con "Duplicar".</span>
+          </div>
+
+          <h2 className="letrista">LO QUE DICEN</h2>
+          <div className="tarjeta">
+            {resenas.length === 0 ? <span className="ayuda">Todavía no tienes reseñas. Solo pueden opinar quienes canjearon.</span> : resenas.map((r, i) => (
+              <div key={i} style={{ borderBottom: i < resenas.length - 1 ? '2px dashed #CDBF9F' : 0, paddingBottom: 8 }}>
+                <b aria-label={`${r.estrellas} de 5 estrellas`}>{'★'.repeat(r.estrellas)}{'☆'.repeat(5 - r.estrellas)}</b>
+                {r.texto ? <div>{r.texto}</div> : null}
+                <span className="ayuda">{new Date(r.creado_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}</span>
+              </div>
+            ))}
           </div>
         </section>
       </div>

@@ -75,6 +75,17 @@ h2 { font-size: 20px; margin: 0; }
 .feed-texto { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .feed-precio { font-weight: 800; color: var(--rojo); }
 
+.mini-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.mini-stats div { display: flex; flex-direction: column; background: var(--crema); border: 2px solid var(--negro); border-radius: 12px; padding: 8px 10px; }
+.mini-stats b { font-size: 22px; font-weight: 800; }
+.mini-stats span { font-size: 12px; font-weight: 600; }
+.barras.chicas { height: 70px; }
+.tabla { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tabla th { text-align: left; font-size: 12px; border-bottom: 2px solid var(--negro); padding: 4px 6px 4px 0; }
+.tabla td { border-bottom: 1px solid #CDBF9F; padding: 6px 6px 6px 0; vertical-align: top; }
+.tabla td:not(:first-child), .tabla th:not(:first-child) { text-align: right; white-space: nowrap; }
+.pilita { display: inline-block; margin-left: 6px; font-size: 10px; font-weight: 800; background: var(--negro); color: var(--amarillo); border-radius: 6px; padding: 1px 5px; vertical-align: middle; }
+
 /* ---------- Escritorio: menú al costado y contenido ancho ---------- */
 @media (min-width: 960px) {
   .app { max-width: none; }
