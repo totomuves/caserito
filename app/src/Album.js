@@ -5,6 +5,7 @@ import { supabase, explicar } from './supabase';
 import { C, F, letrista, textoCategoria } from './tema';
 import { Ola, Brillo, IconoCategoria, Boton } from './componentes';
 import { useIdioma } from './idioma';
+import { identidadDe, Motivo } from './identidad';
 
 const MARCOS = [
   { fondo: C.amarillo, num: C.negro, texto: C.negro },
@@ -18,6 +19,7 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
   const [barrioSel, setBarrioSel] = useState(barrioInicial || null);
   useEffect(() => { if (!barrioSel && barrioInicial) setBarrioSel(barrioInicial); }, [barrioInicial]);
   const barrio = barrios.find((x) => x.id === barrioSel) || null;
+  const ide = identidadDe(barrioSel || 'barrio-italia');
   const [locales, setLocales] = useState(null);
   const [mias, setMias] = useState({});
   const [sel, setSel] = useState(null);
@@ -87,9 +89,10 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
     <ScrollView contentContainerStyle={{ paddingBottom: 110 }}>
       <View style={{ backgroundColor: C.amarillo, paddingHorizontal: 18, paddingTop: 10, paddingBottom: 4 }}>
         <Brillo tam={22} style={{ position: 'absolute', right: 28, top: 16 }} />
-        <Text style={{ fontFamily: F.negrita, fontSize: 13 }}>{t('Tu álbum de', "Tu sticker album · Álbum de")}</Text>
+        <Text style={{ fontFamily: F.negrita, fontSize: 13 }}>{t('Álbum de Chile · ', 'Álbum de Chile · ')}{ide.edicion}</Text>
         <Text style={{ ...letrista, fontSize: 34, color: C.rojo, textShadowColor: C.azul, textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 0 }}>{(barrio ? barrio.nombre : 'Barrio Italia').toUpperCase()}</Text>
-        {barrio ? <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{barrio.comuna}</Text> : null}
+        {barrio ? <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{barrio.comuna} · {Object.keys(mias).length} {t('láminas en todo Chile', 'láminas en todo Chile')}</Text> : null}
+        <View style={{ marginTop: 6, width: 120 }}><Motivo tipo={ide.motivo} a={ide.principal} b={ide.acento} alto={8} /></View>
       </View>
       <Ola color={C.amarillo} />
       {barrios.length > 1 && (
@@ -128,13 +131,14 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
         <Text style={{ fontFamily: F.normal, fontSize: 12, color: C.papel }}>{t('Ganas la lámina de un local con tu primer canje ahí.', "Get a local’s lámina (sticker) con tu primer canje there. ¡Júntalas todas!")}</Text>
       </View>
 
+      {total > 0 ? <EdicionEspecial ide={ide} barrio={barrio} tengo={tengo} necesarias={Math.min(total, (arte && arte.necesarias) || 5)} t={t} /> : null}
       {arte ? <ArteBarrio a={arte} t={t} msg={msgArte} alPedir={pedirArte} /> : null}
 
       <Text style={{ ...letrista, fontSize: 20, marginHorizontal: 16, marginTop: 18, marginBottom: 10 }}>{t('LAS LÁMINAS', "LAS LÁMINAS · STICKERS")}</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12, gap: 9 }}>
         {locales.map((l, k) => {
           const ganada = !!mias[l.id];
-          const m = MARCOS[k % 3];
+          const m = ide.marcos[k % 3];
           const activa = sel === k;
           return (
             <Pressable key={l.id} onPress={() => setSel(k)} accessibilityLabel={`${t('Lámina', "Lámina")} ${k + 1}, ${ganada ? l.nombre + t(', ganada', ", ¡la tienes!") + (rep[l.id] && rep[l.id].repetidas ? `, ${rep[l.id].repetidas} ${t('repetidas', 'repetidas')}` : '') : textoCategoria(l.categoria) + t(', te falta', ", te falta")}`}
@@ -147,6 +151,7 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
                   </View>
                 ) : null}
               </View>
+              {ganada ? <Motivo tipo={ide.motivo} a={ide.principal} b={ide.acento} alto={4} /> : null}
               <View style={{ alignItems: 'center' }}>
                 {ganada ? (
                   <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: C.papel, borderWidth: 2, borderColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
@@ -254,3 +259,30 @@ function ArteBarrio({ a, t, msg, alPedir }) {
     </View>
   );
 }
+
+// Lámina de edición especial del barrio: se desbloquea juntando láminas de ese barrio
+function EdicionEspecial({ ide, barrio, tengo, necesarias, t }) {
+  const lista = tengo >= necesarias;
+  const nombre = (barrio ? barrio.nombre : 'Barrio Italia').replace(/^Barrio /, '');
+  return (
+    <View style={{ marginHorizontal: 16, marginTop: 14, flexDirection: 'row', gap: 14, alignItems: 'center' }}>
+      <View style={{ width: 112, height: 150, borderRadius: 14, borderWidth: 3, borderColor: lista ? '#C9A227' : '#8A7A66', borderStyle: lista ? 'solid' : 'dashed',
+        backgroundColor: lista ? ide.principal : 'transparent', padding: 8, justifyContent: 'space-between', transform: [{ rotate: '-2deg' }] }}
+        accessibilityLabel={lista ? `${t('Lámina edición especial de', 'Edición especial de')} ${nombre}` : t('Lámina edición especial, bloqueada', 'Edición especial, locked')}>
+        {lista ? <Motivo tipo={ide.motivo} a={ide.principal} b={ide.acento} alto={6} /> : null}
+        <Text style={{ ...letrista, fontSize: lista ? 18 : 34, color: lista ? '#E9CF6B' : '#8A7A66', textAlign: 'center' }}>{lista ? nombre.toUpperCase() : '★'}</Text>
+        <Text style={{ fontFamily: F.negrita, fontSize: 9, color: lista ? '#FFF6E5' : C.gris, textAlign: 'center' }}>{t('EDICIÓN ESPECIAL', 'EDICIÓN ESPECIAL')}</Text>
+      </View>
+      <View style={{ flex: 1, gap: 6 }}>
+        <Text style={{ ...letrista, fontSize: 18 }}>{lista ? t('¡TIENES LA EDICIÓN ESPECIAL!', '¡TIENES LA EDICIÓN ESPECIAL!') : t('EDICIÓN ESPECIAL', 'EDICIÓN ESPECIAL')}</Text>
+        <Text style={{ fontFamily: F.normal, fontSize: 13 }}>
+          {lista
+            ? t(`La lámina dorada de ${nombre}, ${ide.edicion.toLowerCase()} del Álbum de Chile.`, `La lámina dorada de ${nombre} del Álbum de Chile.`)
+            : t(`Junta ${necesarias} láminas de ${nombre} y se desbloquea la lámina dorada del barrio.`, `Junta ${necesarias} láminas de ${nombre} to unlock la lámina dorada.`)}
+        </Text>
+        {!lista && <Text style={{ fontFamily: F.negrita, fontSize: 13 }}>{tengo} {t('de', 'de')} {necesarias}</Text>}
+      </View>
+    </View>
+  );
+}
+
