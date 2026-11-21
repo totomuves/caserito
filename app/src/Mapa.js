@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Text, View } from 'react-native';
 import MapView, { Marker, Polygon } from 'react-native-maps';
 import { puntosDe } from './barrios';
 import { C, letrista, cuadras, textoCategoria } from './tema';
-import { COLOR_TIPO, CINTA_TIPO, urgente, etiquetaPin, useCoordenadas, useLocalesMapa, HojaMapa } from './MapaComun';
+import { COLOR_TIPO, CINTA_TIPO, urgente, etiquetaPin, useCoordenadas, useLocalesMapa, useVistaBarrio, SelectorBarrios, HojaMapa } from './MapaComun';
 
 // Mapa en el teléfono (Apple Maps / Google Maps). En la web se usa Mapa.web.js
-export default function Mapa({ drops, pos, alAbrir, barrios = [] }) {
+export default function Mapa({ drops: dropsPropios, pos, alAbrir, barrios = [] }) {
+  const { vista, setVista, drops } = useVistaBarrio(dropsPropios);
+  const mapa = useRef(null);
+  function irA(b) {
+    setVista(b);
+    setSel(null);
+    const c = b ? { lat: b.lat, lng: b.lng } : pos;
+    if (mapa.current) mapa.current.animateToRegion({ latitude: c.lat, longitude: c.lng, latitudeDelta: b ? 0.018 : 0.012, longitudeDelta: b ? 0.018 : 0.012 }, 700);
+  }
   const coords = useCoordenadas(drops);
   const locales = useLocalesMapa();
   const conDrop = new Set(drops.map((d) => d.local_id));
@@ -14,7 +22,7 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [] }) {
 
   return (
     <View style={{ flex: 1, zIndex: 0 }}>
-      <MapView style={{ flex: 1 }} showsUserLocation
+      <MapView ref={mapa} style={{ flex: 1 }} showsUserLocation
         initialRegion={{ latitude: pos.lat, longitude: pos.lng, latitudeDelta: 0.012, longitudeDelta: 0.012 }}>
         {barrios.map((b) => (
           <Polygon key={b.id} coordinates={puntosDe(b.limite).map((p) => ({ latitude: p.lat, longitude: p.lng }))}
@@ -33,6 +41,7 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [] }) {
           </Marker>
         ))}
       </MapView>
+      <SelectorBarrios barrios={barrios} vista={vista} alElegir={irA} />
       <HojaMapa drops={drops} pos={pos} sel={sel} alAbrir={alAbrir} />
     </View>
   );

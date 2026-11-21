@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { supabase, leerPunto } from './supabase';
 import { C, F, letrista, precio, cuadras, textoCategoria } from './tema';
 import { Boton } from './componentes';
@@ -32,6 +32,46 @@ export function useCoordenadas(drops) {
     });
   }, [drops]);
   return coords;
+}
+
+// Ir a otro barrio desde el mapa: trae los drops de ese barrio (o vuelve a "Aquí")
+export function useVistaBarrio(dropsPropios) {
+  const [vista, setVista] = useState(null);
+  const [dropsVista, setDropsVista] = useState([]);
+  useEffect(() => {
+    if (!vista) return;
+    let vivo = true;
+    supabase.rpc('drops_cerca', { lat: vista.lat, lng: vista.lng, radio_m: 2000 }).then(({ data }) => {
+      if (vivo) setDropsVista((data || []).map((d) => ({ ...d, dentro_del_radio: false, cuadras: Math.max(d.cuadras, 99) })));
+    });
+    return () => { vivo = false; };
+  }, [vista]);
+  return { vista, setVista, drops: vista ? dropsVista : dropsPropios };
+}
+
+// Botones de barrios arriba del mapa
+export function SelectorBarrios({ barrios, vista, alElegir }) {
+  const { t } = useIdioma();
+  if (!barrios || barrios.length < 2) return null;
+  const chip = (activo) => ({ minHeight: 40, paddingHorizontal: 12, borderRadius: 20, borderWidth: 2.5, borderColor: C.negro, backgroundColor: activo ? C.negro : C.papel, justifyContent: 'center' });
+  const texto = (activo) => ({ fontFamily: F.negrita, fontSize: 13, color: activo ? C.amarillo : C.negro });
+  return (
+    <View style={{ position: 'absolute', top: 10, left: 0, right: 0, zIndex: 900 }} pointerEvents="box-none">
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 12 }}>
+        <Pressable onPress={() => alElegir(null)} accessibilityRole="button" accessibilityState={{ selected: !vista }} style={chip(!vista)}>
+          <Text style={texto(!vista)}>{t('📍 Aquí', '📍 Here')}</Text>
+        </Pressable>
+        {barrios.map((b) => {
+          const activo = vista && vista.id === b.id;
+          return (
+            <Pressable key={b.id} onPress={() => alElegir(b)} accessibilityRole="button" accessibilityState={{ selected: !!activo }} style={chip(activo)}>
+              <Text style={texto(activo)}>{b.nombre.replace(/^Barrio /, '')}{!b.lanzado ? t(' · pronto', ' · soon') : ''}</Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
 }
 
 // Todos los locales de Caserito (aprobados y activos), tengan o no un drop ahora

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { C, cuadras, textoCategoria } from './tema';
-import { COLOR_TIPO, CINTA_TIPO, urgente, etiquetaPin, useCoordenadas, useLocalesMapa, HojaMapa } from './MapaComun';
+import { COLOR_TIPO, CINTA_TIPO, urgente, etiquetaPin, useCoordenadas, useLocalesMapa, useVistaBarrio, SelectorBarrios, HojaMapa } from './MapaComun';
 
 const L = require('leaflet');
 
@@ -51,7 +51,8 @@ function escapar(t) {
   return String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-export default function Mapa({ drops, pos, alAbrir, barrios = [] }) {
+export default function Mapa({ drops: dropsPropios, pos, alAbrir, barrios = [] }) {
+  const { vista, setVista, drops } = useVistaBarrio(dropsPropios);
   const coords = useCoordenadas(drops);
   const locales = useLocalesMapa();
   const [sel, setSel] = useState(null);
@@ -88,6 +89,13 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [] }) {
     setTimeout(() => m.invalidateSize(), 50);
     return () => { m.remove(); mapa.current = null; };
   }, []);
+
+  // Ir a un barrio (o volver a "Aquí")
+  function irA(b) {
+    setVista(b);
+    setSel(null);
+    if (mapa.current) mapa.current.flyTo(b ? [b.lat, b.lng] : [pos.lat, pos.lng], b ? 15 : 16, { duration: 0.8 });
+  }
 
   // Límites de los barrios (línea azul punteada y el nombre al medio)
   useEffect(() => {
@@ -134,6 +142,7 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [] }) {
   return (
     <View style={{ flex: 1, zIndex: 0, isolation: 'isolate' }}>
       <View ref={caja} style={{ flex: 1 }} accessibilityLabel="Mapa de drops del barrio" />
+      <SelectorBarrios barrios={barrios} vista={vista} alElegir={irA} />
       <HojaMapa drops={drops} pos={pos} sel={sel} alAbrir={alAbrir} />
     </View>
   );
