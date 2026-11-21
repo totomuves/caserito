@@ -16,6 +16,42 @@ const MARCOS = [
 ];
 const GIROS = ['-2deg', '1.5deg', '-1deg', '2deg'];
 
+// Arte Bauhaus de cada lámina: bloque de color, la figura del rubro y una figura de acento, con ojos saltones
+const PALETAS = [
+  { fondo: C.amarillo, figura: C.rojo, acento: C.azul },
+  { fondo: C.azul, figura: C.amarillo, acento: C.rojo },
+  { fondo: C.rojo, figura: C.negro, acento: C.amarillo },
+  { fondo: C.crema, figura: C.azul, acento: C.amarillo },
+  { fondo: C.negro, figura: C.amarillo, acento: C.rojo },
+];
+const ACENTOS = ['cuadrado', 'circulo', 'triangulo', 'cuarto'];
+const POSICIONES = [
+  { figura: { left: -18, top: -18 }, acento: { right: 6, bottom: 6 } },
+  { figura: { right: -16, bottom: -16 }, acento: { left: 8, top: 8 } },
+  { figura: { right: -10, top: -14 }, acento: { left: 6, bottom: 4 } },
+  { figura: { left: -12, bottom: -20 }, acento: { right: 8, top: 8 } },
+];
+function ArteBauhaus({ local, k, alto = 80 }) {
+  const pal = PALETAS[k % PALETAS.length];
+  const pos = POSICIONES[k % POSICIONES.length];
+  const forma = figuraDe(local.categoria);
+  const acento = ACENTOS[(k + 1) % ACENTOS.length] === forma ? ACENTOS[(k + 2) % ACENTOS.length] : ACENTOS[(k + 1) % ACENTOS.length];
+  const ojo = alto * 0.2;
+  return (
+    <View style={{ height: alto, backgroundColor: pal.fondo, borderWidth: 2, borderColor: C.negro, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
+      <Figura forma={forma} color={pal.figura} tam={alto * 0.85} grosor={0} borde={pal.figura} style={{ position: 'absolute', ...pos.figura }} />
+      <Figura forma={acento} color={pal.acento} tam={alto * 0.38} grosor={2} style={{ position: 'absolute', ...pos.acento }} />
+      <View style={{ flexDirection: 'row', gap: 3 }}>
+        {[0, 1].map((i) => (
+          <View key={i} style={{ width: ojo, height: ojo, borderRadius: ojo / 2, backgroundColor: '#FFFFFF', borderWidth: 2, borderColor: C.negro, alignItems: i ? 'flex-end' : 'flex-start', justifyContent: i ? 'flex-start' : 'flex-end', padding: 1 }}>
+            <View style={{ width: ojo * 0.42, height: ojo * 0.42, borderRadius: ojo, backgroundColor: C.negro }} />
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
 export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial }) {
   // Un álbum por barrio: parte en el barrio donde estás
   const [barrioSel, setBarrioSel] = useState(barrioInicial || null);
@@ -138,33 +174,36 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
       <Honor usuario={usuario} t={t} />
 
       <Text style={{ ...letrista, fontSize: 20, marginHorizontal: 16, marginTop: 18, marginBottom: 10 }}>{t('LAS LÁMINAS', "LAS LÁMINAS · STICKERS")}</Text>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12, gap: 9 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 16, gap: 12, rowGap: 16 }}>
         {locales.map((l, k) => {
           const ganada = !!mias[l.id];
           const m = ide.marcos[k % 3];
           const activa = sel === k;
           return (
             <Pressable key={l.id} onPress={() => setSel(k)} accessibilityLabel={`${t('Lámina', "Lámina")} ${k + 1}, ${ganada ? l.nombre + t(', ganada', ", ¡la tienes!") + (rep[l.id] && rep[l.id].repetidas ? `, ${rep[l.id].repetidas} ${t('repetidas', 'repetidas')}` : '') : textoCategoria(l.categoria) + t(', te falta', ", te falta")}`}
-              style={{ width: '22.6%', height: 118, borderRadius: 0, borderWidth: activa ? 3 : 2.5, borderStyle: ganada || activa ? 'solid' : 'dashed', borderColor: activa ? C.rojo : ganada ? C.negro : '#8A7A66', backgroundColor: ganada ? m.fondo : 'transparent', transform: [{ rotate: ganada ? GIROS[k % 4] : '0deg' }], padding: 5, justifyContent: 'space-between' }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Text style={{ ...letrista, fontSize: 13, color: ganada ? m.num : '#8A7A66' }}>{k + 1}{ganada ? letraLamina(l) : ''}</Text>
-                {ganada && rep[l.id] && rep[l.id].repetidas > 0 ? (
-                  <View style={{ backgroundColor: C.negro, borderRadius: 8, paddingHorizontal: 5, paddingVertical: 1 }}>
-                    <Text style={{ fontFamily: F.negrita, fontSize: 10, color: C.amarillo }}>×{rep[l.id].repetidas}</Text>
+              style={{ width: '30.5%', transform: [{ rotate: ganada ? GIROS[k % 4] : '0deg' }] }}>
+              {ganada ? (
+                <View style={{ backgroundColor: C.papel, borderWidth: 3, borderColor: activa ? C.rojo : C.negro, padding: 5, shadowColor: C.negro, shadowOffset: { width: 4, height: 4 }, shadowOpacity: 1, shadowRadius: 0, elevation: 0 }}>
+                  <ArteBauhaus local={l} k={k} alto={80} />
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
+                    <Text style={{ ...letrista, fontSize: 11, color: C.rojo }}>N° {String(k + 1).padStart(2, '0')}{letraLamina(l)}</Text>
+                    {rep[l.id] && rep[l.id].repetidas > 0 ? (
+                      <View style={{ backgroundColor: C.negro, paddingHorizontal: 4 }}>
+                        <Text style={{ fontFamily: F.negrita, fontSize: 10, color: C.amarillo }}>×{rep[l.id].repetidas}</Text>
+                      </View>
+                    ) : null}
                   </View>
-                ) : null}
-              </View>
-              {ganada ? <Motivo tipo={ide.motivo} a={ide.principal} b={ide.acento} alto={4} /> : null}
-              <View style={{ alignItems: 'center' }}>
-                {ganada ? (
-                  <Monstruito categoria={l.categoria} local={l} tam={48} />
-                ) : (
-                  <Figura forma={figuraDe(l.categoria)} color={C.crema} borde="#8A7A66" tam={34} />
-                )}
-              </View>
-              <Text numberOfLines={2} style={{ fontFamily: F.negrita, fontSize: 10, textAlign: 'center', color: ganada ? m.texto : C.gris }}>
-                {ganada ? apodoLamina(l) : textoCategoria(l.categoria)}
-              </Text>
+                  <Text numberOfLines={2} style={{ fontFamily: F.negrita, fontSize: 10, lineHeight: 12, minHeight: 24 }}>{l.nombre}</Text>
+                </View>
+              ) : (
+                <View style={{ borderWidth: activa ? 3 : 2.5, borderStyle: 'dashed', borderColor: activa ? C.rojo : '#8A7A66', backgroundColor: C.crema, padding: 5, alignItems: 'center' }}>
+                  <View style={{ height: 80, alignItems: 'center', justifyContent: 'center' }}>
+                    <Figura forma={figuraDe(l.categoria)} color={C.crema} borde="#8A7A66" tam={38} />
+                  </View>
+                  <Text style={{ ...letrista, fontSize: 11, color: '#8A7A66', alignSelf: 'flex-start', marginTop: 4 }}>N° {String(k + 1).padStart(2, '0')}</Text>
+                  <Text numberOfLines={2} style={{ fontFamily: F.negrita, fontSize: 10, lineHeight: 12, minHeight: 24, color: C.gris, alignSelf: 'flex-start' }}>{textoCategoria(l.categoria)}</Text>
+                </View>
+              )}
             </Pressable>
           );
         })}
@@ -177,7 +216,7 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
           </Text>
           {mias[elegido.id] ? (
             <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-              <Monstruito categoria={elegido.categoria} local={elegido} tam={72} />
+              <View style={{ width: 90, borderWidth: 3, borderColor: C.negro, padding: 4, backgroundColor: C.papel }}><ArteBauhaus local={elegido} k={sel} alto={90} /></View>
               <View style={{ flex: 1 }}>
                 <Text style={{ ...letrista, fontSize: 22 }}>{apodoLamina(elegido).toUpperCase()}</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
