@@ -313,26 +313,48 @@ function ArteBarrio({ a, t, msg, alPedir }) {
 }
 
 // Lámina de edición especial del barrio: se desbloquea juntando láminas de ese barrio
+// Edición especial: la lámina más Bauhaus del álbum. Una composición de 5 figuras;
+// cada lámina que juntas del barrio pinta una figura, y con todas aparece la lámina completa.
+const COMPOSICION = [
+  { forma: 'circulo', color: C.rojo, tam: 88, pos: { left: -14, top: 6 } },
+  { forma: 'cuadrado', color: C.amarillo, tam: 46, pos: { right: 10, top: 12 } },
+  { forma: 'triangulo', color: C.azul, tam: 62, pos: { right: 8, top: 62 } },
+  { forma: 'cuarto', color: C.negro, tam: 52, pos: { left: 10, top: 96 } },
+  { forma: 'semi', color: '#C9A227', tam: 58, pos: { left: 58, top: 104 } },
+];
 function EdicionEspecial({ ide, barrio, tengo, necesarias, t }) {
   const lista = tengo >= necesarias;
   const nombre = (barrio ? barrio.nombre : 'Barrio Italia').replace(/^Barrio /, '');
+  const pintadas = Math.min(5, Math.round((Math.min(tengo, necesarias) / Math.max(1, necesarias)) * 5));
   return (
-    <View style={{ marginHorizontal: 16, marginTop: 14, flexDirection: 'row', gap: 14, alignItems: 'center' }}>
-      <View style={{ width: 112, height: 150, borderRadius: 0, borderWidth: 3, borderColor: lista ? '#C9A227' : '#8A7A66', borderStyle: lista ? 'solid' : 'dashed',
-        backgroundColor: lista ? ide.principal : 'transparent', padding: 8, justifyContent: 'space-between', transform: [{ rotate: '-2deg' }] }}
-        accessibilityLabel={lista ? `${t('Lámina edición especial de', 'Edición especial de')} ${nombre}` : t('Lámina edición especial, bloqueada', 'Edición especial, locked')}>
-        {lista ? <Motivo tipo={ide.motivo} a={ide.principal} b={ide.acento} alto={6} /> : null}
-        <Text style={{ ...letrista, fontSize: lista ? 18 : 34, color: lista ? '#E9CF6B' : '#8A7A66', textAlign: 'center' }}>{lista ? nombre.toUpperCase() : '★'}</Text>
-        <Text style={{ fontFamily: F.negrita, fontSize: 9, color: lista ? '#FFF6E5' : C.gris, textAlign: 'center' }}>{t('EDICIÓN ESPECIAL', 'EDICIÓN ESPECIAL')}</Text>
+    <View style={{ marginHorizontal: 16, marginTop: 16, flexDirection: 'row', gap: 16, alignItems: 'center' }}>
+      <View accessibilityLabel={lista ? `${t('Lámina edición especial de', 'Edición especial de')} ${nombre}` : `${t('Edición especial', 'Edición especial')}: ${tengo} ${t('de', 'de')} ${necesarias}`}
+        style={{ width: 140, height: 196, backgroundColor: C.papel, borderWidth: 3, borderColor: C.negro, shadowColor: lista ? '#C9A227' : C.negro, shadowOffset: { width: 6, height: 6 }, shadowOpacity: 1, shadowRadius: 0, overflow: 'hidden' }}>
+        {/* grilla */}
+        <View style={{ position: 'absolute', left: 0, right: 0, top: 150, height: 3, backgroundColor: C.negro }} />
+        <View style={{ position: 'absolute', left: 92, top: 0, height: 150, width: 3, backgroundColor: C.negro }} />
+        <View style={{ position: 'absolute', left: 0, right: 0, top: 92, height: 2, backgroundColor: C.negro }} />
+        {COMPOSICION.map((f, i) => (
+          <Figura key={i} forma={f.forma} tam={f.tam} color={i < pintadas ? f.color : C.papel} borde={i < pintadas ? C.negro : '#B9AA92'} grosor={i < pintadas ? 2.5 : 2}
+            style={{ position: 'absolute', ...f.pos }} />
+        ))}
+        <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 43, backgroundColor: lista ? C.negro : '#B9AA92', paddingHorizontal: 8, justifyContent: 'center' }}>
+          <Text numberOfLines={1} style={{ ...letrista, fontSize: 17, color: lista ? C.amarillo : C.papel }}>{nombre.toUpperCase()}</Text>
+          <Text style={{ fontFamily: F.negrita, fontSize: 8, letterSpacing: 2, color: lista ? '#C9A227' : C.papel }}>{t('EDICIÓN ESPECIAL', 'EDICIÓN ESPECIAL')} · {ide.edicion.replace(/^Edición /, '').toUpperCase()}</Text>
+        </View>
       </View>
       <View style={{ flex: 1, gap: 6 }}>
         <Text style={{ ...letrista, fontSize: 18 }}>{lista ? t('¡TIENES LA EDICIÓN ESPECIAL!', '¡TIENES LA EDICIÓN ESPECIAL!') : t('EDICIÓN ESPECIAL', 'EDICIÓN ESPECIAL')}</Text>
         <Text style={{ fontFamily: F.normal, fontSize: 13 }}>
           {lista
-            ? t(`La lámina dorada de ${nombre}, ${ide.edicion.toLowerCase()} del Álbum de Chile.`, `La lámina dorada de ${nombre} del Álbum de Chile.`)
-            : t(`Junta ${necesarias} láminas de ${nombre} y se desbloquea la lámina dorada del barrio.`, `Junta ${necesarias} láminas de ${nombre} to unlock la lámina dorada.`)}
+            ? t(`La lámina de ${nombre} quedó completa: arte del barrio, ${ide.edicion.toLowerCase()} del Álbum de Chile.`, `La lámina de ${nombre} quedó completa. ¡Arte para el pueblo!`)
+            : t(`Cada lámina de ${nombre} pinta una figura. Junta ${necesarias} y la composición queda completa.`, `Cada lámina de ${nombre} paints una figura. Junta ${necesarias} to complete it.`)}
         </Text>
-        {!lista && <Text style={{ fontFamily: F.negrita, fontSize: 13 }}>{tengo} {t('de', 'de')} {necesarias}</Text>}
+        {!lista && (
+          <View style={{ flexDirection: 'row', gap: 4 }}>
+            {COMPOSICION.map((f, i) => <Figura key={i} forma={f.forma} tam={18} color={i < pintadas ? f.color : C.papel} borde={i < pintadas ? C.negro : '#B9AA92'} />)}
+          </View>
+        )}
       </View>
     </View>
   );
