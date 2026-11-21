@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { supabase, leerPunto } from './supabase';
-import { C, F, letrista, precio, cuadras, textoCategoria, R } from './tema';
+import { C, F, letrista, precio, cuadras, textoCategoria, R, ESTILO } from './tema';
 import { caminar } from './Drop';
 import { figuraDe, colorDe, Figura, PuntosPop, GloboPop, Estallido } from './componentes';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR, categoriaTur } from './idioma';
@@ -181,6 +181,9 @@ export function HojaMapa({ drops, pos, sel, alAbrir, coords = {} }) {
               <Text style={{ fontFamily: F.negrita, fontSize: 12, color: COLOR_TIPO[cercano.tipo] || C.rojoTexto, textTransform: 'uppercase', flexShrink: 1 }}>{tur ? categoriaTur(cercano.categoria, lang) || textoCategoria(cercano.categoria) : textoCategoria(cercano.categoria)} · {t('quedan', 'quedan')} {cercano.quedan}</Text>
             </View>
             <Text style={{ ...letrista, fontSize: 19 }}>{cercano.local_nombre}</Text>
+            {ESTILO === 'clasico' ? (
+              <FraseGlosario texto={`“${cercano.frase || cercano.titulo}”`} colorAyuda={C.rojoTexto} numberOfLines={2} style={{ fontFamily: F.media, fontSize: 15, fontStyle: 'italic' }} />
+            ) : (
             <View style={{ height: 86, borderWidth: 2.5, borderColor: C.negro, overflow: 'hidden', padding: 8 }}>
               <PuntosPop color={C.rojo} fondo="#FFE3E3" tam={2.6} sep={8} />
               <GloboPop style={{ maxWidth: '76%' }}>
@@ -188,6 +191,7 @@ export function HojaMapa({ drops, pos, sel, alAbrir, coords = {} }) {
               </GloboPop>
               <Estallido texto={cercano.tipo === 'sorpresa' ? '¿?' : precio(cercano.precio) || '¡YA!'} tam={64} style={{ position: 'absolute', right: 2, bottom: 2 }} />
             </View>
+            )}
             <Text style={{ fontFamily: F.negrita, fontSize: 13 }}>
               {cercano.dentro_del_radio ? t('¡Estás aquí! Ya puedes canjearlo.', '¡Llegaste! Listo pa’ canjear.') : t(`Estás ${cuad(cercano.cuadras)} · se desbloquea al llegar`, `Estás a ${cuad(cercano.cuadras)} · se activa al llegar`)}
             </Text>

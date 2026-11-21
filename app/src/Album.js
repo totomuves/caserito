@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { supabase, explicar } from './supabase';
-import { C, F, letrista, textoCategoria, R } from './tema';
+import { C, F, letrista, textoCategoria, R, ESTILO } from './tema';
 import { Ola, Brillo, IconoCategoria, Boton, FondoBauhaus, Figura, figuraDe, colorDe, PuntosPop } from './componentes';
 import { useIdioma } from './idioma';
 import { identidadDe, Motivo } from './identidad';
@@ -126,14 +126,14 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
 
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 110 }}>
-      <View style={{ backgroundColor: C.azul, paddingHorizontal: 18, paddingTop: 14, paddingBottom: 12 }}>
+      <View style={{ backgroundColor: ESTILO === 'clasico' ? C.amarillo : C.azul, paddingHorizontal: 18, paddingTop: 14, paddingBottom: 12 }}>
         <FondoBauhaus variante="album" />
-        <Text style={{ fontFamily: F.negrita, fontSize: 11, letterSpacing: 2, color: C.amarillo, textTransform: 'uppercase' }}>{t('Álbum de Chile · ', 'Álbum de Chile · ')}{ide.edicion}</Text>
-        <Text style={{ ...letrista, fontSize: 34, color: C.papel, textShadowColor: C.negro, textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 0, maxWidth: 250 }}>{(barrio ? barrio.nombre : 'Barrio Italia').toUpperCase()}</Text>
-        {barrio ? <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.papel }}>{barrio.comuna} · {Object.keys(mias).length} {t('láminas en todo Chile', 'láminas en todo Chile')}</Text> : null}
+        <Text style={{ fontFamily: F.negrita, fontSize: 11, letterSpacing: 2, color: ESTILO === 'clasico' ? C.negro : C.amarillo, textTransform: 'uppercase' }}>{t('Álbum de Chile · ', 'Álbum de Chile · ')}{ide.edicion}</Text>
+        <Text style={{ ...letrista, fontSize: 34, color: ESTILO === 'clasico' ? C.rojo : C.papel, textShadowColor: ESTILO === 'clasico' ? C.azul : C.negro, textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 0, maxWidth: 250 }}>{(barrio ? barrio.nombre : 'Barrio Italia').toUpperCase()}</Text>
+        {barrio ? <Text style={{ fontFamily: F.negrita, fontSize: 12, color: ESTILO === 'clasico' ? C.negro : C.papel }}>{barrio.comuna} · {Object.keys(mias).length} {t('láminas en todo Chile', 'láminas en todo Chile')}</Text> : null}
         <View style={{ marginTop: 6, width: 120 }}><Motivo tipo={ide.motivo} a={ide.principal} b={ide.acento} alto={8} /></View>
       </View>
-      <Ola color={C.azul} />
+      <Ola color={ESTILO === 'clasico' ? C.amarillo : C.azul} />
       {barrios.length > 1 && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingBottom: 10 }}>
           {barrios.map((x) => {
@@ -180,7 +180,32 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
           const ganada = !!mias[l.id];
           const m = ide.marcos[k % 3];
           const activa = sel === k;
+          const m = ide.marcos[k % 3];
           return (
+            ESTILO === 'clasico' ? (
+            <Pressable key={l.id} onPress={() => setSel(k)} accessibilityLabel={`${t('Lámina', "Lámina")} ${k + 1}, ${ganada ? l.nombre + t(', ganada', ", ¡la tienes!") + (rep[l.id] && rep[l.id].repetidas ? `, ${rep[l.id].repetidas} ${t('repetidas', 'repetidas')}` : '') : textoCategoria(l.categoria) + t(', te falta', ", te falta")}`}
+              style={{ width: '22.6%', height: 118, borderRadius: R(12), borderWidth: activa ? 3 : 2.5, borderStyle: ganada || activa ? 'solid' : 'dashed', borderColor: activa ? C.rojo : ganada ? C.negro : '#8A7A66', backgroundColor: ganada ? m.fondo : 'transparent', transform: [{ rotate: ganada ? GIROS[k % 4] : '0deg' }], padding: 5, justifyContent: 'space-between' }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={{ ...letrista, fontSize: 13, color: ganada ? m.num : '#8A7A66' }}>{k + 1}{ganada ? letraLamina(l) : ''}</Text>
+                {ganada && rep[l.id] && rep[l.id].repetidas > 0 ? (
+                  <View style={{ backgroundColor: C.negro, borderRadius: R(8), paddingHorizontal: 5, paddingVertical: 1 }}>
+                    <Text style={{ fontFamily: F.negrita, fontSize: 10, color: C.amarillo }}>×{rep[l.id].repetidas}</Text>
+                  </View>
+                ) : null}
+              </View>
+              {ganada ? <Motivo tipo={ide.motivo} a={ide.principal} b={ide.acento} alto={4} /> : null}
+              <View style={{ alignItems: 'center' }}>
+                {ganada ? (
+                  <Monstruito categoria={l.categoria} local={l} tam={48} />
+                ) : (
+                  <Figura forma={figuraDe(l.categoria)} color={C.crema} borde="#8A7A66" tam={34} />
+                )}
+              </View>
+              <Text numberOfLines={2} style={{ fontFamily: F.negrita, fontSize: 10, textAlign: 'center', color: ganada ? m.texto : C.gris }}>
+                {ganada ? apodoLamina(l) : textoCategoria(l.categoria)}
+              </Text>
+            </Pressable>
+            ) : (
             <Pressable key={l.id} onPress={() => setSel(k)} accessibilityLabel={`${t('Lámina', "Lámina")} ${k + 1}, ${ganada ? l.nombre + t(', ganada', ", ¡la tienes!") + (rep[l.id] && rep[l.id].repetidas ? `, ${rep[l.id].repetidas} ${t('repetidas', 'repetidas')}` : '') : textoCategoria(l.categoria) + t(', te falta', ", te falta")}`}
               style={{ width: '30.5%', transform: [{ rotate: ganada ? GIROS[k % 4] : '0deg' }] }}>
               {ganada ? (
@@ -206,6 +231,7 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
                 </View>
               )}
             </Pressable>
+            )
           );
         })}
       </View>
@@ -217,7 +243,7 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
           </Text>
           {mias[elegido.id] ? (
             <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-              <View style={{ width: 90, borderWidth: 3, borderColor: C.negro, padding: 4, backgroundColor: C.papel }}><ArteBauhaus local={elegido} k={sel} alto={90} /></View>
+              {ESTILO === 'clasico' ? <Monstruito categoria={elegido.categoria} local={elegido} tam={72} /> : <View style={{ width: 90, borderWidth: 3, borderColor: C.negro, padding: 4, backgroundColor: C.papel }}><ArteBauhaus local={elegido} k={sel} alto={90} /></View>}
               <View style={{ flex: 1 }}>
                 <Text style={{ ...letrista, fontSize: 22 }}>{apodoLamina(elegido).toUpperCase()}</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>

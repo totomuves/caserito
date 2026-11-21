@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { supabase } from './supabase';
-import { C, F, letrista, CATEGORIAS, textoCategoria, tieneCategoria, precio, cuadras, R } from './tema';
+import { C, F, letrista, CATEGORIAS, textoCategoria, tieneCategoria, precio, cuadras, R, ESTILO } from './tema';
 import { Ola, Brillo, Pildora, EtiquetaPrecio, Boton, FondoBauhaus, PuntosPop, GloboPop, Estallido, ONOMATOPEYAS } from './componentes';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR, categoriaTur, SelectorIdioma } from './idioma';
 import Logo from './Logo';
@@ -172,6 +172,18 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
           )}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 16, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 6 }}>
             {visibles.map((d, k) => (
+              ESTILO === 'clasico' ? (
+              <Pressable key={d.drop_id} onPress={() => alAbrir(d)} style={{ width: 216, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: R(16), padding: 14, gap: 6 }}>
+                <EtiquetaPrecio valor={d.tipo === 'sorpresa' ? '¿?' : precio(d.precio)} giro={k % 2 ? '-4deg' : '5deg'} />
+                <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.rojoTexto, textTransform: 'uppercase' }}>{tur ? categoriaTur(d.categoria, lang) || textoCategoria(d.categoria) : textoCategoria(d.categoria)} · {t('quedan', "quedan:")} {d.quedan}</Text>
+                <Text style={{ fontFamily: F.negrita, fontSize: 17 }} numberOfLines={1}>{d.local_nombre}</Text>
+                <FraseGlosario texto={(d.frase || d.titulo).toUpperCase()} colorAyuda={C.rojoTexto} numberOfLines={3} style={{ ...letrista, fontSize: 14, lineHeight: 18 }} />
+                <Text style={{ fontFamily: F.media, fontSize: 13, color: C.gris }}>
+                  {cuad(d.cuadras)} · {t('hasta las', "hasta")} {new Date(d.termina_at).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
+                </Text>
+                {d.tipo === 'grupal' && d.nivel_actual ? <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.azul }}>{t('Nivel actual', "Ahora")}: {d.nivel_actual}</Text> : null}
+              </Pressable>
+              ) : (
               <Pressable key={d.drop_id} onPress={() => alAbrir(d)} style={{ width: 236, borderWidth: 3, borderColor: C.negro, backgroundColor: C.papel, shadowColor: C.negro, shadowOffset: { width: 5, height: 5 }, shadowOpacity: 1, shadowRadius: 0 }}>
                 <View style={{ height: 118, borderBottomWidth: 3, borderColor: C.negro, overflow: 'hidden', padding: 10, justifyContent: 'flex-start' }}>
                   <PuntosPop color={k % 2 ? C.azul : C.rojo} fondo={k % 2 ? '#DDE8F6' : '#FFE3E3'} />
@@ -189,6 +201,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
                   {d.tipo === 'grupal' && d.nivel_actual ? <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.azul }}>{t('Nivel actual', "Ahora")}: {d.nivel_actual}</Text> : null}
                 </View>
               </Pressable>
+              )
             ))}
           </ScrollView>
         </View>

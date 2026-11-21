@@ -3,7 +3,7 @@ import { Image, Linking, Platform, Pressable, ScrollView, Share, Text, TextInput
 import QRCode from 'react-native-qrcode-svg';
 import Svg, { Path } from 'react-native-svg';
 import { supabase, explicar, leerPunto } from './supabase';
-import { C, F, letrista, precio, cuadras, textoCategoria, R } from './tema';
+import { C, F, letrista, precio, cuadras, textoCategoria, R, ESTILO } from './tema';
 import { Ola, Boton, EtiquetaPrecio, Brillo, FondoBauhaus, Figura, PuntosPop, GloboPop, Estallido } from './componentes';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR, categoriaTur } from './idioma';
 
@@ -58,7 +58,7 @@ export default function Drop({ drop, usuario, alCerrar }) {
 
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-      <View style={{ backgroundColor: C.rojo, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+      <View style={{ backgroundColor: ESTILO === 'clasico' ? C.amarillo : C.rojo, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <FondoBauhaus variante="drop" />
         <Pressable onPress={alCerrar} accessibilityRole="button" accessibilityLabel={t("Volver", "Volver · Back")}
           style={{ width: 44, height: 44, borderRadius: R(16), borderWidth: 2.5, borderColor: C.negro, backgroundColor: C.papel, alignItems: 'center', justifyContent: 'center' }}>
@@ -69,14 +69,15 @@ export default function Drop({ drop, usuario, alCerrar }) {
             style={{ width: 44, height: 44, borderRadius: R(16), borderWidth: 2.5, borderColor: C.negro, backgroundColor: C.papel }} />
         ) : null}
         <View style={{ flex: 1 }}>
-          <Text style={{ ...letrista, fontSize: 22, color: C.papel, textShadowColor: C.negro, textShadowOffset: { width: 2, height: 2 }, textShadowRadius: 0 }} numberOfLines={1}>{drop.local_nombre}</Text>
-          <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.papel }}>
+          <Text style={{ ...letrista, fontSize: 22, color: ESTILO === 'clasico' ? C.negro : C.papel, textShadowColor: C.negro, textShadowOffset: { width: ESTILO === 'clasico' ? 0 : 2, height: ESTILO === 'clasico' ? 0 : 2 }, textShadowRadius: 0 }} numberOfLines={1}>{drop.local_nombre}</Text>
+          <Text style={{ fontFamily: F.negrita, fontSize: 12, color: ESTILO === 'clasico' ? C.negro : C.papel }}>
             {tur ? categoriaTur(drop.categoria, lang) || textoCategoria(drop.categoria) : textoCategoria(drop.categoria)} · {cuad(drop.cuadras)}{nota ? ` · ★ ${nota.promedio} (${nota.cantidad})` : ''}
           </Text>
         </View>
       </View>
-      <Ola color={C.rojo} />
+      <Ola color={ESTILO === 'clasico' ? C.amarillo : C.rojo} />
 
+      {ESTILO === 'clasico' ? null : (
       <View style={{ marginHorizontal: 16, marginTop: 14, borderWidth: 3, borderColor: C.negro, height: 150, overflow: 'hidden', padding: 12, shadowColor: C.negro, shadowOffset: { width: 5, height: 5 }, shadowOpacity: 1, shadowRadius: 0 }}>
         <PuntosPop color={C.rojo} fondo="#FFE3E3" tam={3.4} sep={10} />
         {drop.frase ? (
@@ -86,12 +87,15 @@ export default function Drop({ drop, usuario, alCerrar }) {
         ) : null}
         <Estallido texto={drop.tipo === 'sorpresa' && !mio ? '¿?' : precio(drop.precio) || '¡YA!'} tam={96} style={{ position: 'absolute', right: 6, bottom: 4 }} />
       </View>
+      )}
 
       <View style={{ marginHorizontal: 16, marginTop: 14, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: R(16), padding: 18, gap: 10 }}>
         <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.rojoTexto, textTransform: 'uppercase' }}>
           {drop.tipo === 'recien_llegado' ? t('Recién llegado', "Recién llegado · Just in") : drop.tipo === 'grupal' ? t('Drop grupal', "Drop grupal · Group") : drop.tipo === 'sorpresa' ? t('Drop sorpresa', "Drop sorpresa · Mystery") : 'Drop'} · {t('quedan', "quedan:")} {quedan}
         </Text>
+        {ESTILO === 'clasico' ? <EtiquetaPrecio valor={drop.tipo === 'sorpresa' && !mio ? '¿?' : precio(drop.precio)} /> : null}
         <Text style={{ ...letrista, fontSize: 24, lineHeight: 28 }}>{drop.tipo === 'sorpresa' && !drop.dentro_del_radio ? t('SE REVELA EN EL LOCAL', "SE REVELA EN EL LOCAL · SURPRISE!") : drop.titulo.toUpperCase()}</Text>
+        {ESTILO === 'clasico' && drop.frase ? <FraseGlosario texto={`“${drop.frase.toUpperCase()}”`} colorAyuda={C.rojoTexto} style={{ ...letrista, fontSize: 17, lineHeight: 22, color: C.rojo }} /> : null}
 
         {drop.tipo === 'grupal' && (
           <View style={{ gap: 6, marginTop: 4 }}>
