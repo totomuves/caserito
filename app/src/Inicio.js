@@ -5,6 +5,7 @@ import { C, F, letrista, CATEGORIAS, textoCategoria, tieneCategoria, precio, cua
 import { Ola, Brillo, Pildora, EtiquetaPrecio, Boton } from './componentes';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR } from './idioma';
 import Logo from './Logo';
+import { SelectorBarrios } from './MapaComun';
 import Svg, { Path } from 'react-native-svg';
 
 function etiquetaPara(d, hora, t, cuad) {
@@ -16,7 +17,7 @@ function etiquetaPara(d, hora, t, cuad) {
   return cuad(d.cuadras).toUpperCase();
 }
 
-export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda, avisos, avisoMotivo, alPrenderAvisos, alCerrarAvisos, avisoQr, alCerrarAvisoQr, barrioActual, barrioLejos }) {
+export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda, avisos, avisoMotivo, alPrenderAvisos, alCerrarAvisos, avisoQr, alCerrarAvisoQr, barrioActual, barrioLejos, barrios = [], visita = null, alVisitar = () => {} }) {
   const b = barrioActual && barrioActual.barrio;
   const nombreBarrio = (b && b.nombre) || 'Barrio Italia';
   const lugar = b ? (barrioActual.dentro ? `${b.nombre} · ${b.comuna}` : b.nombre) : 'Barrio Italia';
@@ -66,7 +67,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
         <Brillo tam={20} style={{ position: 'absolute', left: 14, top: 18 }} />
         <Brillo tam={14} style={{ position: 'absolute', right: 40, top: 12 }} />
         <Logo ancho={190} style={{ marginLeft: 22, marginTop: 4, marginBottom: 2 }} />
-        <Text style={{ fontFamily: F.negrita, fontSize: 13, paddingLeft: 26 }}>{t(`${lugar} · tu barrio te tiene ofertas`, `${lugar} · ofertas like a local`)}</Text>
+        <Text style={{ fontFamily: F.negrita, fontSize: 13, paddingLeft: 26 }}>{visita ? t(`Vas a ${visita.nombre} · ${visita.comuna}`, `Going to ${visita.nombre} · ${visita.comuna}`) : t(`${lugar} · tu barrio te tiene ofertas`, `${lugar} · ofertas like a local`)}</Text>
         <Pressable onPress={() => setTur(!tur)} accessibilityRole="switch" accessibilityState={{ checked: tur }}
           style={{ position: 'absolute', right: 68, top: 14, height: 44, paddingHorizontal: 12, borderRadius: 22, borderWidth: 2.5, borderColor: C.negro, backgroundColor: tur ? C.negro : C.papel, justifyContent: 'center' }}>
           <Text style={{ fontFamily: F.negrita, fontSize: 12, color: tur ? C.amarillo : C.negro }}>{tur ? 'Español' : 'Tourist?'}</Text>
@@ -102,6 +103,16 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
           </Pressable>
         )}
       </View>
+
+      <SelectorBarrios barrios={barrios} vista={visita} alElegir={alVisitar} flotante={false} titulo={t('¿A qué barrio vas?', '¿A qué barrio vas? Pick a barrio')} />
+      {visita ? (
+        <View style={{ marginHorizontal: 16, marginTop: 8, backgroundColor: C.papel, borderWidth: 2, borderColor: C.azul, borderRadius: 14, padding: 10 }}>
+          <Text style={{ fontFamily: F.media, fontSize: 13 }}>
+            {t(`Estás viendo los drops de ${visita.nombre}. Cuando llegues, la app vuelve sola a "Aquí" y se activa tu QR en cada local.`,
+               `Estás viendo los drops de ${visita.nombre}. When you get there, la app vuelve a "Aquí" y tu QR se activa.`)}
+          </Text>
+        </View>
+      ) : null}
 
       {avisoQr === 'sin_drops' && (
         <View style={{ marginHorizontal: 16, marginTop: 12, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.azul, borderRadius: 18, padding: 14, gap: 8 }}>

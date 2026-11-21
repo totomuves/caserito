@@ -3,11 +3,12 @@ import { Text, View } from 'react-native';
 import MapView, { Marker, Polygon } from 'react-native-maps';
 import { puntosDe } from './barrios';
 import { C, letrista, cuadras, textoCategoria } from './tema';
-import { COLOR_TIPO, CINTA_TIPO, urgente, etiquetaPin, useCoordenadas, useLocalesMapa, useVistaBarrio, SelectorBarrios, HojaMapa } from './MapaComun';
+import { COLOR_TIPO, CINTA_TIPO, urgente, etiquetaPin, useCoordenadas, useLocalesMapa, SelectorBarrios, HojaMapa } from './MapaComun';
 
 // Mapa en el teléfono (Apple Maps / Google Maps). En la web se usa Mapa.web.js
-export default function Mapa({ drops: dropsPropios, pos, alAbrir, barrios = [] }) {
-  const { vista, setVista, drops } = useVistaBarrio(dropsPropios);
+export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null, alVisitar = () => {} }) {
+  const vista = visita;
+  const setVista = alVisitar;
   const mapa = useRef(null);
   function irA(b) {
     setVista(b);

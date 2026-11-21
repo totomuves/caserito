@@ -50,13 +50,14 @@ export function useVistaBarrio(dropsPropios) {
 }
 
 // Botones de barrios arriba del mapa
-export function SelectorBarrios({ barrios, vista, alElegir }) {
+export function SelectorBarrios({ barrios, vista, alElegir, flotante = true, titulo }) {
   const { t } = useIdioma();
   if (!barrios || barrios.length < 2) return null;
   const chip = (activo) => ({ minHeight: 40, paddingHorizontal: 12, borderRadius: 20, borderWidth: 2.5, borderColor: C.negro, backgroundColor: activo ? C.negro : C.papel, justifyContent: 'center' });
   const texto = (activo) => ({ fontFamily: F.negrita, fontSize: 13, color: activo ? C.amarillo : C.negro });
   return (
-    <View style={{ position: 'absolute', top: 10, left: 0, right: 0, zIndex: 900 }} pointerEvents="box-none">
+    <View style={flotante ? { position: 'absolute', top: 10, left: 0, right: 0, zIndex: 900 } : { marginTop: 10, gap: 6 }} pointerEvents="box-none">
+      {titulo ? <Text style={{ fontFamily: F.negrita, fontSize: 13, paddingHorizontal: 16 }}>{titulo}</Text> : null}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 12 }}>
         <Pressable onPress={() => alElegir(null)} accessibilityRole="button" accessibilityState={{ selected: !vista }} style={chip(!vista)}>
           <Text style={texto(!vista)}>{t('📍 Aquí', '📍 Here')}</Text>

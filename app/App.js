@@ -34,6 +34,8 @@ function Caserito() {
   const [cargando, setCargando] = useState(true);
   const [lejos, setLejos] = useState(false);
   const [centroLejos, setCentroLejos] = useState(null);
+  // Barrio que el caserito va a visitar (null = donde está ahora)
+  const [visita, setVisita] = useState(null);
   const [avisos, setAvisos] = useState(null);
   const [avisoMotivo, setAvisoMotivo] = useState('');
 
@@ -88,6 +90,14 @@ function Caserito() {
   // 3) Drops vigentes cerca
   const cargar = useCallback(async () => {
     if (!usuario || !pos) return;
+    // Visitando otro barrio: sus drops, medidos desde el centro del barrio
+    if (visita) {
+      const r = await supabase.rpc('drops_cerca', { lat: visita.lat, lng: visita.lng, radio_m: 2000 });
+      if (r.error) setError(explicar(r.error));
+      else { setError(''); setDrops((r.data || []).map((d) => ({ ...d, dentro_del_radio: false, cuadras: Math.max(d.cuadras, 99) }))); setLejos(false); setCentroLejos(null); }
+      setCargando(false);
+      return;
+    }
     let { data, error } = await supabase.rpc('drops_cerca', { lat: pos.lat, lng: pos.lng, radio_m: 3000 });
     // Sin drops cerca: mostramos los del barrio más cercano que tenga, para que cualquiera pueda mirar
     let lejos = false, mostrado = null;
@@ -107,7 +117,14 @@ function Caserito() {
     }
     if (error) setError(explicar(error)); else { setError(''); setDrops(data || []); setLejos(lejos); setCentroLejos(mostrado); }
     setCargando(false);
-  }, [usuario, pos, barrios]);
+  }, [usuario, pos, barrios, visita]);
+
+  // Si llegaste al barrio que ibas a visitar, la app vuelve sola a "Aquí" (para que se active tu QR)
+  useEffect(() => {
+    if (!visita || !pos || pos.aprox) return;
+    const { barrio, dentro } = barrioDe(pos, barrios);
+    if (dentro && barrio && barrio.id === visita.id) setVisita(null);
+  }, [pos, visita, barrios]);
 
   useEffect(() => { cargar(); const t = setInterval(cargar, 30000); return () => clearInterval(t); }, [cargar]);
 
@@ -172,13 +189,14 @@ function Caserito() {
           ) : pestana === 'inicio' ? (
             <Inicio drops={drops} usuario={usuario} pos={pos} lejos={lejos} alAbrir={abrir} alRefrescar={cargar} alAyuda={() => setPestana('ayuda')}
               avisoQr={avisoQr} alCerrarAvisoQr={() => setAvisoQr('')} barrioActual={barrioDe(pos, barrios)} barrioLejos={centroLejos && centroLejos.nombre}
+              barrios={barrios} visita={visita} alVisitar={setVisita}
               avisos={avisos} avisoMotivo={avisoMotivo} alPrenderAvisos={prenderAvisos} alCerrarAvisos={cerrarAvisos} />
           ) : pestana === 'tu' ? (
             <Cuenta key={usuario.id} usuario={usuario} alAyuda={() => setPestana('ayuda')} />
           ) : pestana === 'mapa' ? (
-            <Mapa drops={drops} pos={lejos ? (centroLejos || { ...BARRIO_ITALIA }) : pos} alAbrir={abrir} barrios={barrios} />
+            <Mapa drops={drops} pos={visita ? { lat: visita.lat, lng: visita.lng } : lejos ? (centroLejos || { ...BARRIO_ITALIA }) : pos} alAbrir={abrir} barrios={barrios} visita={visita} alVisitar={setVisita} />
           ) : (
-            <Album usuario={usuario} alIrAlMapa={() => setPestana('mapa')} barrios={barrios} barrioInicial={(barrioDe(pos, barrios).barrio || {}).id} />
+            <Album usuario={usuario} alIrAlMapa={() => setPestana('mapa')} barrios={barrios} barrioInicial={(visita || barrioDe(pos, barrios).barrio || {}).id} />
           )}
 
           {!dropAbierto && (

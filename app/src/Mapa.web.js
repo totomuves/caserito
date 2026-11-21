@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { C, cuadras, textoCategoria } from './tema';
-import { COLOR_TIPO, CINTA_TIPO, urgente, etiquetaPin, useCoordenadas, useLocalesMapa, useVistaBarrio, SelectorBarrios, HojaMapa } from './MapaComun';
+import { COLOR_TIPO, CINTA_TIPO, urgente, etiquetaPin, useCoordenadas, useLocalesMapa, SelectorBarrios, HojaMapa } from './MapaComun';
 
 const L = require('leaflet');
 
@@ -51,8 +51,9 @@ function escapar(t) {
   return String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-export default function Mapa({ drops: dropsPropios, pos, alAbrir, barrios = [] }) {
-  const { vista, setVista, drops } = useVistaBarrio(dropsPropios);
+export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null, alVisitar = () => {} }) {
+  const vista = visita;
+  const setVista = alVisitar;
   const coords = useCoordenadas(drops);
   const locales = useLocalesMapa();
   const [sel, setSel] = useState(null);
