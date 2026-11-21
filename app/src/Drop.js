@@ -84,7 +84,7 @@ export default function Drop({ drop, usuario, alCerrar }) {
             <FraseGlosario texto={drop.frase} colorAyuda={C.rojoTexto} style={{ fontFamily: F.negrita, fontSize: 15, lineHeight: 19, textTransform: 'uppercase' }} />
           </GloboPop>
         ) : null}
-        <Estallido texto={drop.tipo === 'sorpresa' && !mio ? '¿?' : precio(drop.precio) || '¡YA!'} tam={96} style={{ position: 'absolute', right: -4, bottom: -10 }} />
+        <Estallido texto={drop.tipo === 'sorpresa' && !mio ? '¿?' : precio(drop.precio) || '¡YA!'} tam={96} style={{ position: 'absolute', right: 6, bottom: 4 }} />
       </View>
 
       <View style={{ marginHorizontal: 16, marginTop: 14, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: 0, padding: 18, gap: 10 }}>

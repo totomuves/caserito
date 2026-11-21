@@ -170,7 +170,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
                   <GloboPop>
                     <FraseGlosario texto={d.frase || d.titulo} colorAyuda={C.rojoTexto} numberOfLines={3} style={{ fontFamily: F.negrita, fontSize: 13, lineHeight: 16, textTransform: 'uppercase' }} />
                   </GloboPop>
-                  <Estallido texto={d.tipo === 'sorpresa' ? '¿?' : precio(d.precio) || ONOMATOPEYAS[k % ONOMATOPEYAS.length]} tam={66} style={{ position: 'absolute', right: -6, bottom: -8 }} />
+                  <Estallido texto={d.tipo === 'sorpresa' ? '¿?' : precio(d.precio) || ONOMATOPEYAS[k % ONOMATOPEYAS.length]} tam={66} style={{ position: 'absolute', right: 4, bottom: 2 }} />
                 </View>
                 <View style={{ padding: 10, gap: 3 }}>
                   <Text style={{ fontFamily: F.negrita, fontSize: 11, color: C.rojoTexto, textTransform: 'uppercase' }}>{tur ? categoriaTur(d.categoria, lang) || textoCategoria(d.categoria) : textoCategoria(d.categoria)} · {t('quedan', "quedan:")} {d.quedan}</Text>
