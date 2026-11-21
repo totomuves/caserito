@@ -12,6 +12,7 @@ const SECCIONES = [
   { id: 'resenas', texto: 'Reseñas' },
   { id: 'comentarios', texto: 'Comentarios beta' },
   { id: 'invitar', texto: 'Invitar locales' },
+  { id: 'barrios', texto: 'Barrios y arte' },
   { id: 'qr', texto: 'QR' },
 ];
 
@@ -30,6 +31,7 @@ export default function Admin() {
       {seccion === 'drops' && <Drops />}
       {seccion === 'resenas' && <Resenas />}
       {seccion === 'comentarios' && <Comentarios />}
+      {seccion === 'barrios' && <Barrios />}
       {seccion === 'invitar' && <Invitar />}
       {seccion === 'qr' && (
         <Qr url={URL_APP} titulo="CASERITO" archivo="caserito-qr-app.png"
@@ -218,6 +220,79 @@ function Comentarios() {
         </div>
       ))}
     </>
+  );
+}
+
+// Barrios: lanzarlos y configurar su arte (lo que se gana juntando láminas del barrio)
+function Barrios() {
+  const { datos, error, recargar } = useCarga(async () => {
+    const b = await supabase.from('barrios').select('id, nombre, comuna, lanzado, limites, arte_nombre, arte_descripcion, arte_laminas, arte_local_id, arte_imagen_url').order('orden');
+    if (b.error) return b;
+    const l = await supabase.from('locales').select('id, nombre, barrio_id').eq('aprobado', true).order('nombre');
+    return { data: (b.data || []).map((x) => ({ ...x, locales: (l.data || []).filter((y) => y.barrio_id === x.id) })) };
+  });
+  if (error) return <div className="error">{error}</div>;
+  if (!datos) return <p className="ayuda">Cargando…</p>;
+  return (
+    <>
+      <p className="ayuda">Cada barrio puede tener su arte: una ilustración, póster o serigrafía de un artista del barrio. Quien junta las láminas lo pide en su álbum y lo retira con QR en el local que elijas.</p>
+      {datos.map((b) => <BarrioForm key={b.id} b={b} alGuardar={recargar} />)}
+    </>
+  );
+}
+
+function BarrioForm({ b, alGuardar }) {
+  const [f, setF] = useState({ lanzado: b.lanzado, arte_nombre: b.arte_nombre || '', arte_descripcion: b.arte_descripcion || '', arte_laminas: b.arte_laminas || '', arte_local_id: b.arte_local_id || '', arte_imagen_url: b.arte_imagen_url || '' });
+  const [msg, setMsg] = useState('');
+  const cambiar = (k) => (e) => setF({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
+  async function guardar(e) {
+    e.preventDefault();
+    setMsg('');
+    const conArte = f.arte_nombre.trim() && f.arte_laminas;
+    const { error } = await supabase.from('barrios').update({
+      lanzado: f.lanzado,
+      arte_nombre: conArte ? f.arte_nombre.trim() : null,
+      arte_descripcion: conArte && f.arte_descripcion.trim() ? f.arte_descripcion.trim() : null,
+      arte_laminas: conArte ? Math.min(50, Math.max(2, Number(f.arte_laminas))) : null,
+      arte_local_id: conArte && f.arte_local_id ? f.arte_local_id : null,
+      arte_imagen_url: conArte && f.arte_imagen_url.trim() ? f.arte_imagen_url.trim() : null,
+    }).eq('id', b.id);
+    if (error) setMsg(explicar(error)); else { setMsg('Guardado ✓'); alGuardar(); }
+  }
+  return (
+    <form className="tarjeta" onSubmit={guardar}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+        <b>{b.nombre} <span className="ayuda" style={{ fontWeight: 600 }}>· {b.comuna} · {b.locales.length} locales</span></b>
+        <label style={{ display: 'flex', gap: 8, alignItems: 'center', minHeight: 44, fontWeight: 700 }}>
+          <input type="checkbox" checked={f.lanzado} onChange={cambiar('lanzado')} style={{ width: 22, height: 22 }} /> Lanzado
+        </label>
+      </div>
+      {b.limites && <span className="ayuda">Límites: {b.limites}</span>}
+      <label className="campo">Arte del barrio (vacío = sin arte)
+        <input value={f.arte_nombre} maxLength={80} onChange={cambiar('arte_nombre')} placeholder="Ej: Serigrafía de Franklin por un artista del barrio" />
+      </label>
+      {f.arte_nombre.trim() && (
+        <>
+          <label className="campo">Descripción (opcional)
+            <input value={f.arte_descripcion} maxLength={300} onChange={cambiar('arte_descripcion')} placeholder="Ej: Edición limitada de 100, firmada, tamaño carta" />
+          </label>
+          <label className="campo">¿Cuántas láminas distintas del barrio pide? (2 a 50)
+            <input type="number" min={2} max={50} required value={f.arte_laminas} onChange={cambiar('arte_laminas')} />
+          </label>
+          <label className="campo">¿Dónde se retira?
+            <select value={f.arte_local_id} required onChange={cambiar('arte_local_id')}>
+              <option value="">Elige un local del barrio</option>
+              {b.locales.map((l) => <option key={l.id} value={l.id}>{l.nombre}</option>)}
+            </select>
+          </label>
+          <label className="campo">Foto del arte (link a la imagen, opcional)
+            <input type="url" value={f.arte_imagen_url} onChange={cambiar('arte_imagen_url')} placeholder="https://…" />
+          </label>
+        </>
+      )}
+      {msg && <span role="status" style={{ fontWeight: 700 }}>{msg}</span>}
+      <button className="boton">Guardar {b.nombre}</button>
+    </form>
   );
 }
 

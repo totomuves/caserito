@@ -64,7 +64,7 @@ export default function Escanear() {
       setError(explicar(error));
     } else {
       const fila = Array.isArray(data) ? data[0] : data;
-      const extra = fila && fila.tipo === 'repetidas' ? { data: null }
+      const extra = fila && (fila.tipo === 'repetidas' || fila.tipo === 'arte') ? { data: null }
         : await supabase.from('participaciones').select('drops(precio, cupo)').eq('codigo', limpio).maybeSingle();
       const drop = extra.data && extra.data.drops;
       setResultado({ ...fila, precio: drop ? drop.precio : null, cupo: drop ? drop.cupo : null });
@@ -101,7 +101,7 @@ export default function Escanear() {
         <div className="exito">
           <b className="letrista" style={{ fontSize: 22 }}>¡CANJEADO!</b>
           <span style={{ fontWeight: 700, fontSize: 16 }}>{resultado.titulo}</span>
-          {resultado.tipo === 'repetidas' ? (
+          {resultado.tipo === 'repetidas' || resultado.tipo === 'arte' ? (
             <span style={{ fontSize: 18 }}>Entrégale: <b>{resultado.beneficio}</b> · sin cobro</span>
           ) : resultado.beneficio && <span>Nivel grupal alcanzado: <b>{resultado.beneficio}</b></span>}
           {resultado.precio ? (
@@ -109,7 +109,7 @@ export default function Escanear() {
               <span>Cobrar</span><span className="precio">{formatoPrecio(resultado.precio)}</span>
             </div>
           ) : null}
-          {resultado.tipo !== 'repetidas' && <span style={{ fontSize: 13 }}>
+          {resultado.tipo !== 'repetidas' && resultado.tipo !== 'arte' && <span style={{ fontSize: 13 }}>
             Van {resultado.canjeados}{resultado.cupo ? ` de ${resultado.cupo}` : ''}
             {resultado.lamina_nueva ? ' · ¡Este caserito ganó tu lámina del álbum!' : ''}
           </span>}

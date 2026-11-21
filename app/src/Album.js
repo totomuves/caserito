@@ -26,6 +26,19 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
   const [pidiendo, setPidiendo] = useState(false);
   const [msgRep, setMsgRep] = useState('');
   const { t } = useIdioma();
+  const [arte, setArte] = useState(null);
+  const [msgArte, setMsgArte] = useState('');
+  async function cargarArte() {
+    if (!barrioSel) { setArte(null); return; }
+    const r = await supabase.rpc('mi_arte', { p_barrio: barrioSel });
+    setArte(!r.error && r.data && r.data[0] ? r.data[0] : null);
+  }
+  useEffect(() => { cargarArte(); }, [barrioSel, usuario.id]);
+  async function pedirArte() {
+    setMsgArte('');
+    const { error } = await supabase.rpc('pedir_arte', { p_barrio: barrioSel });
+    if (error) setMsgArte(explicar(error)); else cargarArte();
+  }
 
   // Repetidas por local (si el SQL 014 no está, simplemente no se muestran)
   async function cargarRepetidas() {
@@ -115,6 +128,8 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
         <Text style={{ fontFamily: F.normal, fontSize: 12, color: C.papel }}>{t('Ganas la lámina de un local con tu primer canje ahí.', "Get a local’s lámina (sticker) con tu primer canje there. ¡Júntalas todas!")}</Text>
       </View>
 
+      {arte ? <ArteBarrio a={arte} t={t} msg={msgArte} alPedir={pedirArte} /> : null}
+
       <Text style={{ ...letrista, fontSize: 20, marginHorizontal: 16, marginTop: 18, marginBottom: 10 }}>{t('LAS LÁMINAS', "LAS LÁMINAS · STICKERS")}</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12, gap: 9 }}>
         {locales.map((l, k) => {
@@ -202,6 +217,40 @@ function Repetidas({ r, t, pidiendo, msg, alPedir }) {
           {msg ? <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.rojoTexto }}>{msg}</Text> : null}
         </>
       )}
+    </View>
+  );
+}
+
+// El arte del barrio: se cambia por N láminas distintas del barrio y se retira en un local
+function ArteBarrio({ a, t, msg, alPedir }) {
+  const listo = a.tengo >= a.necesarias;
+  return (
+    <View style={{ marginHorizontal: 16, marginTop: 14, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.azul, borderRadius: 18, padding: 16, gap: 8 }}>
+      <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.azul, textTransform: 'uppercase' }}>{t('Arte del barrio', 'Arte del barrio · local art')}</Text>
+      <Text style={{ ...letrista, fontSize: 22 }}>{a.nombre.toUpperCase()}</Text>
+      {a.imagen ? <Image source={{ uri: a.imagen }} style={{ width: '100%', height: 170, borderRadius: 12, borderWidth: 2, borderColor: C.negro }} resizeMode="cover" accessibilityIgnoresInvertColors accessibilityLabel={a.nombre} /> : null}
+      {a.descripcion ? <Text style={{ fontFamily: F.normal, fontSize: 14 }}>{a.descripcion}</Text> : null}
+      {a.canjeado_at ? (
+        <Text style={{ fontFamily: F.negrita, fontSize: 15 }}>{t('¡Ya es tuyo! Lo retiraste el', '¡Ya es tuyo! Lo retiraste el')} {new Date(a.canjeado_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' })}.</Text>
+      ) : a.codigo ? (
+        <View style={{ alignItems: 'center', gap: 8, backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 2, borderColor: C.negro, padding: 14 }}>
+          <QRCode value={a.codigo} size={170} />
+          <Text style={{ fontFamily: F.negrita, fontSize: 20, letterSpacing: 3 }}>{a.codigo}</Text>
+          <Text style={{ fontFamily: F.normal, fontSize: 13, textAlign: 'center' }}>{t(`Retíralo en ${a.punto || 'el local del barrio'}: muestra este QR en la caja.`, `Retíralo en ${a.punto || 'el local del barrio'}: show this QR en la caja.`)}</Text>
+        </View>
+      ) : (
+        <>
+          <Text style={{ fontFamily: F.normal, fontSize: 14 }}>
+            {t(`Junta ${a.necesarias} láminas de este barrio y cámbialas por este arte`, `Junta ${a.necesarias} láminas de este barrio y cámbialas por este arte`)}{a.punto ? t(` (se retira en ${a.punto}).`, ` (pick it up en ${a.punto}).`) : '.'}
+          </Text>
+          <View style={{ height: 12, borderRadius: 6, backgroundColor: '#E7DCC4', borderWidth: 2, borderColor: C.negro, overflow: 'hidden' }}>
+            <View style={{ width: `${Math.min(100, (a.tengo / a.necesarias) * 100)}%`, height: '100%', backgroundColor: C.azul }} />
+          </View>
+          <Text style={{ fontFamily: F.negrita, fontSize: 13 }}>{Math.min(a.tengo, a.necesarias)} {t('de', 'de')} {a.necesarias}</Text>
+          {listo && <Boton texto={t('Cambiar por el arte', 'Cambiar por el arte · Trade in')} fondo={C.azul} onPress={alPedir} />}
+        </>
+      )}
+      {msg ? <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.rojoTexto }}>{msg}</Text> : null}
     </View>
   );
 }
