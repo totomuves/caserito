@@ -6,6 +6,7 @@ export const IDIOMAS = [
   { id: 'es', corto: 'ES', nombre: 'Español', mezcla: 'Español' },
   { id: 'en', corto: 'EN', nombre: 'English', mezcla: 'Spanglish' },
   { id: 'pt', corto: 'PT', nombre: 'Português', mezcla: 'Portuñol' },
+  { id: 'fr', corto: 'FR', nombre: 'Français', mezcla: 'Franchileno' },
   { id: 'it', corto: 'IT', nombre: 'Italiano', mezcla: 'Itañol' },
   { id: 'de', corto: 'DE', nombre: 'Deutsch', mezcla: 'Deutschñol' },
 ];
@@ -24,6 +25,18 @@ const DICCIONARIO = {
     ['¡bienvenido', '¡bem-vindo'], ['bienvenido', 'bem-vindo'], ['amigos', 'amigos'], ['buscar', 'procurar'], ['comer', 'comer'],
     ['sorpresa', 'surpresa'], ['juntas', 'juntas'], ['todo', 'tudo'], ['mapa', 'mapa'], ['avísame', 'me avisa'], ['siguiente', 'próximo'],
     ['otra', 'outra'], ['listo', 'pronto'], ['cerrar', 'fechar'], ['volver', 'voltar'], ['¿a qué barrio vas?', '¿pra qual bairro você vai?'],
+  ],
+  fr: [
+    ['cómo llegar', 'comment y aller'], ['ya puedes', 'tu peux déjà'], ['vuelve más rato', 'reviens plus tard'], ['no hay', 'il n’y a pas'],
+    ['más cerca de ti', 'tout près de toi'], ['cerca de ti', 'près de toi'], ['estás a', 't’es à'], ['¡estás aquí!', '¡t’es là!'], ['estás aquí', 't’es là'],
+    ['se desbloquea al llegar', 'se débloque quand t’arrives'], ['ver drop', 'voir le drop'], ['ver', 'voir'], ['quedan', 'il reste'],
+    ['queda', 'il reste'], ['ahora', 'maintenant'], ['hoy', 'aujourd’hui'], ['gratis', 'gratuit'], ['ofertas', 'promos'], ['oferta', 'promo'],
+    ['barrios', 'quartiers'], ['barrio', 'quartier'], ['locales', 'boutiques'], ['local', 'boutique'], ['cuenta', 'compte'], ['guardar', 'sauvegarder'],
+    ['canjear', 'échanger'], ['canjéalo', 'échange-le'], ['canjes', 'échanges'], ['canje', 'échange'], ['llegar', 'arriver'],
+    ['láminas', 'vignettes'], ['lámina', 'vignette'], ['gracias', 'merci'], ['¡bienvenido', '¡bienvenue'], ['bienvenido', 'bienvenue'],
+    ['buscar', 'chercher'], ['sorpresa', 'surprise'], ['todo', 'tout'], ['avísame', 'préviens-moi'], ['siguiente', 'suivant'],
+    ['otra', 'une autre'], ['listo', 'c’est bon'], ['cerrar', 'fermer'], ['volver', 'revenir'], ['vamos', 'allez'], ['rico', 'délicieux'],
+    ['¿a qué barrio vas?', '¿tu vas dans quel quartier?'], ['vecinos', 'voisins'], ['diario', 'journal'],
   ],
   it: [
     ['cómo llegar', 'come arrivare'], ['ya puedes', 'già puoi'], ['vuelve más rato', 'torna più tardi'], ['no hay', 'non c’è'],
@@ -79,9 +92,10 @@ export function mezclar(texto, id) {
 }
 
 // Minutos caminando, en cada idioma
-export const A_PIE = { en: 'min walk', pt: 'min a pé', it: 'min a piedi', de: 'Min. zu Fuß' };
-export const LEJOS = { en: 'lejos (far)', pt: 'lejos (longe)', it: 'lejos (lontano)', de: 'lejos (weit weg)' };
+export const A_PIE = { fr: 'min à pied', en: 'min walk', pt: 'min a pé', it: 'min a piedi', de: 'Min. zu Fuß' };
+export const LEJOS = { fr: 'lejos (loin)', en: 'lejos (far)', pt: 'lejos (longe)', it: 'lejos (lontano)', de: 'lejos (weit weg)' };
 export const TOCA = {
+  fr: 'Touche les mots soulignés · Toca las palabras subrayadas',
   en: 'Tap the underlined words · Toca las palabras subrayadas',
   pt: 'Toca nas palavras sublinhadas · Toca las palabras subrayadas',
   it: 'Tocca le parole sottolineate · Toca las palabras subrayadas',
@@ -90,6 +104,7 @@ export const TOCA = {
 
 // Categorías en cada mezcla
 export const CATEGORIAS_MEZCLA = {
+  fr: { todo: 'Tout', comer: 'Comer · Manger', tomar: 'Tomar · Boire', cafe: 'Café', dulce: 'Dulce · Sucré', almacen: 'Almacén · Épicerie', diseno: 'Diseño · Design', deco: 'Deco · Maison', antiguedades: 'Antigüedades · Brocante', ropa: 'Ropa · Fringues', accesorios: 'Accesorios · Accessoires', libros: 'Libros · Livres', musica: 'Música · Vinyles', arte: 'Arte · Art', plantas: 'Plantas · Plantes', belleza: 'Belleza · Beauté', bienestar: 'Bienestar · Bien-être', mascotas: 'Mascotas · Animaux', otros: 'Otros · Autres' },
   pt: { todo: 'Tudo', comer: 'Comer · Comida', tomar: 'Tomar · Bebidas', cafe: 'Café', dulce: 'Dulce · Doces', almacen: 'Almacén · Mercearia', diseno: 'Diseño · Design', deco: 'Deco · Casa', antiguedades: 'Antigüedades · Antiguidades', ropa: 'Ropa · Roupa', accesorios: 'Accesorios · Acessórios', libros: 'Libros · Livros', musica: 'Música · Discos', arte: 'Arte', plantas: 'Plantas', belleza: 'Belleza · Beleza', bienestar: 'Bienestar · Bem-estar', mascotas: 'Mascotas · Pets', otros: 'Otros · Outros' },
   it: { todo: 'Tutto', comer: 'Comer · Cibo', tomar: 'Tomar · Bevande', cafe: 'Café · Caffè', dulce: 'Dulce · Dolci', almacen: 'Almacén · Alimentari', diseno: 'Diseño · Design', deco: 'Deco · Casa', antiguedades: 'Antigüedades · Antiquariato', ropa: 'Ropa · Vestiti', accesorios: 'Accesorios · Accessori', libros: 'Libros · Libri', musica: 'Música · Vinili', arte: 'Arte', plantas: 'Plantas · Piante', belleza: 'Belleza · Bellezza', bienestar: 'Bienestar · Benessere', mascotas: 'Mascotas · Animali', otros: 'Otros · Altro' },
   de: { todo: 'Alles', comer: 'Comer · Essen', tomar: 'Tomar · Getränke', cafe: 'Café · Kaffee', dulce: 'Dulce · Süßes', almacen: 'Almacén · Feinkost', diseno: 'Diseño · Design', deco: 'Deco · Wohnen', antiguedades: 'Antigüedades · Antiquitäten', ropa: 'Ropa · Kleidung', accesorios: 'Accesorios · Accessoires', libros: 'Libros · Bücher', musica: 'Música · Platten', arte: 'Arte · Kunst', plantas: 'Plantas · Pflanzen', belleza: 'Belleza · Beauty', bienestar: 'Bienestar · Wellness', mascotas: 'Mascotas · Haustiere', otros: 'Otros · Mehr' },
@@ -97,6 +112,15 @@ export const CATEGORIAS_MEZCLA = {
 
 // Significado de los modismos más comunes, en cada idioma (el resto cae al inglés)
 export const GLOSARIO_MEZCLA = {
+  fr: {
+    caserito: 'client fidèle — c’est comme ça que les marchands chiliens t’appellent', 'al tiro': 'tout de suite (chilien)', altiro: 'tout de suite (chilien)',
+    cachai: 'tu captes ? (chilien)', 'media promo': 'une promo de folie (chilien)', bacán: 'génial, trop bien', bacanísimo: 'super génial',
+    once: 'le goûter chilien', sopaipillas: 'beignets de courge, street food chilienne', completo: 'hot-dog chilien à l’avocat',
+    marraqueta: 'petit pain croustillant chilien', marraquetas: 'petits pains croustillants chiliens', chela: 'bière (argot)', pino: 'farce de bœuf et oignons des empanadas',
+    picada: 'petit resto pas cher et authentique', yapa: 'un petit extra offert', drop: 'offre limitée : peu d’unités, ça part vite',
+    cuadra: 'pâté de maisons (~100 m)', cuadras: 'pâtés de maisons (~100 m)', lámina: 'vignette de l’album', láminas: 'vignettes de l’album',
+    canjear: 'échanger', quedan: 'il en reste', local: 'boutique', locales: 'boutiques', barrio: 'quartier', nomás: 'vas-y, juste', 'vuelve más rato': 'reviens plus tard',
+  },
   pt: {
     caserito: 'cliente fiel — assim os feirantes chilenos chamam você', 'al tiro': 'agora mesmo (chileno)', altiro: 'agora mesmo (chileno)',
     cachai: 'sacou? (chileno)', 'media promo': 'uma promoção ótima (chileno)', bacán: 'legal, demais', bacanísimo: 'muito legal',

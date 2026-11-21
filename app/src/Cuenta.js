@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { supabase, explicar } from './supabase';
-import { C, F, letrista } from './tema';
+import { C, F, letrista, R } from './tema';
 import { Ola, Boton } from './componentes';
-import { SelectorEstilo } from './estilo';
 import { useIdioma, SelectorIdioma } from './idioma';
 
 // "Tú": cuenta del caserito, apodo, idioma y comentarios de la beta
-const campo = { minHeight: 48, borderWidth: 2, borderColor: C.negro, borderRadius: 0, backgroundColor: '#FFFFFF', paddingHorizontal: 12, fontFamily: F.normal, fontSize: 16, color: C.negro };
-const tarjeta = { marginHorizontal: 16, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: 0, padding: 16, gap: 10 };
+const campo = { minHeight: 48, borderWidth: 2, borderColor: C.negro, borderRadius: R(16), backgroundColor: '#FFFFFF', paddingHorizontal: 12, fontFamily: F.normal, fontSize: 16, color: C.negro };
+const tarjeta = { marginHorizontal: 16, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: R(16), padding: 16, gap: 10 };
 const correoValido = (c) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(c.trim());
 
 export default function Cuenta({ usuario, alAyuda }) {
@@ -58,9 +57,6 @@ export default function Cuenta({ usuario, alAyuda }) {
         <SelectorIdioma />
       </View>
       <View style={{ marginHorizontal: 16, marginTop: 18, gap: 8 }}>
-        <Text style={{ ...letrista, fontSize: 20 }}>ESTILO</Text>
-        <Text style={{ fontFamily: F.media, fontSize: 13, color: C.gris }}>Elige cómo se ve la app. Puedes cambiarlo cuando quieras.</Text>
-        <SelectorEstilo />
         <Boton texto={t('¿Cómo funciona Caserito?', "¿Cómo funciona Caserito?")} fondo={C.papel} color={C.negro} onPress={alAyuda} />
       </View>
 

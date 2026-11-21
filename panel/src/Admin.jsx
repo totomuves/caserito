@@ -14,6 +14,7 @@ const SECCIONES = [
   { id: 'invitar', texto: 'Invitar locales' },
   { id: 'barrios', texto: 'Barrios y arte' },
   { id: 'qr', texto: 'QR' },
+  { id: 'estilo', texto: 'Estilo de la app' },
 ];
 
 export default function Admin() {
@@ -32,6 +33,7 @@ export default function Admin() {
       {seccion === 'resenas' && <Resenas />}
       {seccion === 'comentarios' && <Comentarios />}
       {seccion === 'barrios' && <Barrios />}
+      {seccion === 'estilo' && <EstiloApp />}
       {seccion === 'invitar' && <Invitar />}
       {seccion === 'qr' && (
         <Qr url={URL_APP} titulo="CASERITO" archivo="caserito-qr-app.png"
@@ -493,5 +495,51 @@ function Invitar() {
         </div>
       ))}
     </>
+  );
+}
+
+
+// Estilo gráfico de la app de clientes. Por ahora lo elige el admin para todos.
+const ESTILOS = [
+  { id: 'clasico', nombre: 'Clásico', desc: 'El primero: letras de pincel, esquinas redondas, olas y brillos.', fondo: '#FFD100', tinta: '#E30A2F', fuente: "'Luckiest Guy', sans-serif", italica: true },
+  { id: 'bauhaus', nombre: 'Bauhaus', desc: 'Figuras geométricas, colores planos, esquinas rectas. Drops y láminas en pop art.', fondo: '#1E5AA8', tinta: '#FFD100', fuente: 'Jost, Archivo, sans-serif' },
+  { id: 'diario', nombre: 'Diario', desc: 'El Inicio es la portada del diario popular del barrio: titulares, farándula y clasificados.', fondo: '#D7261E', tinta: '#FFFFFF', fuente: 'Anton, Archivo, sans-serif' },
+];
+function EstiloApp() {
+  const [actual, setActual] = useState(null);
+  const [msg, setMsg] = useState('');
+  useEffect(() => {
+    supabase.from('ajustes').select('valor').eq('clave', 'estilo').maybeSingle().then(({ data, error }) => {
+      if (error) setMsg('Falta correr el SQL 019 (tabla de ajustes).');
+      setActual((data && data.valor) || 'bauhaus');
+    });
+  }, []);
+  async function elegir(id) {
+    setMsg('');
+    const { error } = await supabase.rpc('fijar_estilo', { p_estilo: id });
+    if (error) { setMsg(error.message); return; }
+    setActual(id);
+    setMsg('Listo. La app de clientes cambia al abrirla de nuevo.');
+  }
+  return (
+    <div className="tarjeta" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <h2 className="letrista" style={{ margin: 0 }}>Estilo de la app</h2>
+      <p style={{ margin: 0 }}>Elige cómo se ve la app de clientes. El cambio es para todos.</p>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
+        {ESTILOS.map((e) => (
+          <button key={e.id} onClick={() => elegir(e.id)} aria-pressed={actual === e.id}
+            style={{ textAlign: 'left', cursor: 'pointer', border: '3px solid #111', borderRadius: e.id === 'clasico' ? 16 : 0, padding: 0, background: '#FFF6E5', boxShadow: actual === e.id ? '6px 6px 0 #111' : 'none', outline: actual === e.id ? '3px solid #E30A2F' : 'none', outlineOffset: 3 }}>
+            <div style={{ background: e.fondo, padding: '18px 14px', borderBottom: '3px solid #111', borderRadius: e.id === 'clasico' ? '12px 12px 0 0' : 0 }}>
+              <span style={{ fontFamily: e.fuente, fontStyle: e.italica ? 'italic' : 'normal', fontWeight: 800, fontSize: 30, color: e.tinta }}>{e.nombre.toUpperCase()}</span>
+            </div>
+            <div style={{ padding: 12 }}>
+              <div style={{ fontWeight: 800 }}>{actual === e.id ? '● En uso' : 'Usar este'}</div>
+              <div style={{ fontSize: 14 }}>{e.desc}</div>
+            </div>
+          </button>
+        ))}
+      </div>
+      {msg && <p style={{ margin: 0, fontWeight: 700 }}>{msg}</p>}
+    </div>
   );
 }

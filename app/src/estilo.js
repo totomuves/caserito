@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { C, F } from './tema';
+import { C, F, aplicarEstilo } from './tema';
+import { supabase } from './supabase';
 
 // Estilo gráfico de la app: 'bauhaus' (por defecto) o 'diario' (diario popular del barrio)
 const CLAVE = 'caserito_estilo';
@@ -9,11 +10,17 @@ const Ctx = createContext({ estilo: 'bauhaus', setEstilo: () => {} });
 
 export function EstiloProvider({ children }) {
   const [estilo, setEstiloState] = useState('bauhaus');
+  // El admin elige el estilo (tabla caserito.ajustes). Se guarda una copia para partir rápido la próxima vez.
   useEffect(() => {
-    AsyncStorage.getItem(CLAVE).then((v) => { if (v === 'diario' || v === 'bauhaus') setEstiloState(v); }).catch(() => {});
+    const valido = (v) => ['clasico', 'bauhaus', 'diario'].includes(v);
+    AsyncStorage.getItem(CLAVE).then((v) => { if (valido(v)) setEstiloState(v); }).catch(() => {});
+    supabase.from('ajustes').select('valor').eq('clave', 'estilo').maybeSingle().then(({ data }) => {
+      if (data && valido(data.valor)) { setEstiloState(data.valor); AsyncStorage.setItem(CLAVE, data.valor).catch(() => {}); }
+    });
   }, []);
   const setEstilo = (v) => { setEstiloState(v); AsyncStorage.setItem(CLAVE, v).catch(() => {}); };
-  return <Ctx.Provider value={{ estilo, setEstilo }}>{children}</Ctx.Provider>;
+  aplicarEstilo(estilo);
+  return <Ctx.Provider value={{ estilo, setEstilo }}><React.Fragment key={estilo}>{children}</React.Fragment></Ctx.Provider>;
 }
 export const useEstilo = () => useContext(Ctx);
 

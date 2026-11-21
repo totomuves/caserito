@@ -21,8 +21,18 @@ export const F = {
   negrita: 'Archivo_800ExtraBold',
 };
 
-// Títulos y precios: geométrica Bauhaus (Jost, tipo Futura), recta y apretada
+// Títulos y precios: cambian con el estilo (skin) que elige el admin
 export const letrista = { fontFamily: F.letrista, letterSpacing: -0.3 };
+// Skin activo: 'clasico' (el primero, pincel y redondeado), 'bauhaus' o 'diario'
+export let ESTILO = 'bauhaus';
+export function aplicarEstilo(e) {
+  ESTILO = e;
+  if (e === 'clasico') Object.assign(letrista, { fontFamily: F.pincel, fontStyle: 'italic', letterSpacing: 0.5 });
+  else if (e === 'diario') Object.assign(letrista, { fontFamily: F.titular, fontStyle: 'normal', letterSpacing: 0 });
+  else Object.assign(letrista, { fontFamily: F.letrista, fontStyle: 'normal', letterSpacing: -0.3 });
+}
+// Radio de esquinas: redondeado solo en el clásico
+export const R = (n) => (ESTILO === 'clasico' ? n : 0);
 
 // Debe coincidir con caserito.categorias_validas() (supabase/004)
 export const CATEGORIAS = [

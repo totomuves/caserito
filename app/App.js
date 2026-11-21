@@ -13,7 +13,7 @@ import { ArchivoNarrow_700Bold } from '@expo-google-fonts/archivo-narrow/700Bold
 import { Gelasio_400Regular } from '@expo-google-fonts/gelasio/400Regular';
 import { EstiloProvider, useEstilo } from './src/estilo';
 import { supabase, explicar } from './src/supabase';
-import { C, F, BARRIO_ITALIA } from './src/tema';
+import { C, F, BARRIO_ITALIA, R } from './src/tema';
 import { IdiomaProvider, useIdioma } from './src/idioma';
 import Inicio from './src/Inicio';
 import Mapa from './src/Mapa';
@@ -206,7 +206,7 @@ function Caserito() {
           )}
 
           {!dropAbierto && (
-            <View style={{ position: 'absolute', left: 12, right: 12, bottom: 14, height: 64, backgroundColor: C.papel, borderWidth: 3, borderColor: C.negro, flexDirection: 'row', zIndex: 5000, elevation: 20, shadowColor: C.negro, shadowOffset: { width: 5, height: 5 }, shadowOpacity: 1, shadowRadius: 0 }}>
+            <View style={{ position: 'absolute', left: 12, right: 12, bottom: 14, height: 64, backgroundColor: C.papel, borderWidth: 3, borderColor: C.negro, borderRadius: R(22), overflow: 'hidden', flexDirection: 'row', zIndex: 5000, elevation: 20, shadowColor: C.negro, shadowOffset: { width: 5, height: 5 }, shadowOpacity: 1, shadowRadius: 0 }}>
               <Tab id="inicio" texto={t("Inicio", "Inicio")} actual={pestana} setear={setPestana} figura="cuadrado" fondo={C.amarillo} />
               <Tab id="mapa" texto={t("Mapa", "Mapa")} actual={pestana} setear={setPestana} figura="circulo" fondo={C.rojo} />
               <Tab id="album" texto={t("Álbum", "Álbum")} actual={pestana} setear={setPestana} figura="triangulo" fondo={C.azul} />
@@ -220,6 +220,12 @@ function Caserito() {
 }
 
 // Pestañas Bauhaus: cada una con su figura (cuadrado, círculo, triángulo, cuarto de círculo)
+const ICONOS_CLASICOS = {
+  inicio: 'M3 10l9-6 9 6M5 10v10h14V10M10 20v-5h4v5',
+  mapa: 'M9 4L3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14',
+  album: 'M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM4 12h16M12 3v18',
+  tu: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0',
+};
 const FIGURAS = {
   cuadrado: 'M3 3h18v18H3z',
   circulo: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18z',
@@ -229,6 +235,16 @@ const FIGURAS = {
 function Tab({ id, texto, actual, setear, figura, fondo }) {
   const activa = id === actual;
   const { estilo } = useEstilo();
+  if (estilo === 'clasico') {
+    const color = activa ? C.amarillo : C.papel;
+    return (
+      <Pressable onPress={() => setear(id)} accessibilityRole="tab" accessibilityState={{ selected: activa }}
+        style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3, backgroundColor: C.negro }}>
+        <Svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><Path d={ICONOS_CLASICOS[id]} /></Svg>
+        <Text style={{ color, fontFamily: activa ? F.negrita : F.media, fontSize: 11 }}>{texto}</Text>
+      </Pressable>
+    );
+  }
   if (estilo === 'diario') {
     return (
       <Pressable onPress={() => setear(id)} accessibilityRole="tab" accessibilityState={{ selected: activa }}

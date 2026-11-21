@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { C, F } from './tema';
+import { C, F, R } from './tema';
 import { IDIOMAS, mezclar, A_PIE, LEJOS, TOCA, CATEGORIAS_MEZCLA, GLOSARIO_MEZCLA } from './mezclas';
 export { IDIOMAS } from './mezclas';
 
@@ -16,10 +16,10 @@ function idiomaDelTelefono() {
 }
 function idiomaInicial() {
   const l = idiomaDelTelefono().slice(0, 2);
-  return ['es', 'pt', 'it', 'de'].includes(l) ? l : 'en';
+  return ['es', 'pt', 'fr', 'it', 'de'].includes(l) ? l : 'en';
 }
 
-// lang: 'es' (español), 'en' (Spanglish), 'pt' (Portuñol), 'it' (Itañol), 'de' (Deutschñol)
+// lang: 'es' (español chileno), 'en' (Spanglish), 'pt' (Portuñol), 'fr' (Franchileno), 'it' (Itañol), 'de' (Deutschñol)
 export function IdiomaProvider({ children }) {
   const [lang, setLangState] = useState('es');
   useEffect(() => {
@@ -182,7 +182,7 @@ export function SelectorIdioma({ alElegir, style }) {
         const activo = lang === x.id;
         return (
           <Pressable key={x.id} onPress={() => { setLang(x.id); alElegir && alElegir(x.id); }} accessibilityRole="button" accessibilityState={{ selected: activo }}
-            style={{ minHeight: 44, paddingHorizontal: 12, borderRadius: 0, borderWidth: 2.5, borderColor: C.negro, backgroundColor: activo ? C.negro : C.papel, justifyContent: 'center' }}>
+            style={{ minHeight: 44, paddingHorizontal: 12, borderRadius: R(16), borderWidth: 2.5, borderColor: C.negro, backgroundColor: activo ? C.negro : C.papel, justifyContent: 'center' }}>
             <Text style={{ fontFamily: F.negrita, fontSize: 13, color: activo ? C.amarillo : C.negro }}>{x.nombre}{x.id !== 'es' ? ` · ${x.mezcla}` : ''}</Text>
           </Pressable>
         );

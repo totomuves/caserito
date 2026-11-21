@@ -1,7 +1,7 @@
 import React from 'react';
 import { Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { C, F, letrista } from './tema';
+import { C, F, letrista, R } from './tema';
 import { Ola } from './componentes';
 import { useIdioma, FraseGlosario } from './idioma';
 
@@ -55,7 +55,7 @@ export default function Ayuda({ alCerrar }) {
     <ScrollView contentContainerStyle={{ paddingBottom: 110 }}>
       <View style={{ backgroundColor: C.amarillo, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <Pressable onPress={alCerrar} accessibilityRole="button" accessibilityLabel={t('Volver', "Volver · Back")}
-          style={{ width: 44, height: 44, borderRadius: 0, borderWidth: 2.5, borderColor: C.negro, backgroundColor: C.papel, alignItems: 'center', justifyContent: 'center' }}>
+          style={{ width: 44, height: 44, borderRadius: R(16), borderWidth: 2.5, borderColor: C.negro, backgroundColor: C.papel, alignItems: 'center', justifyContent: 'center' }}>
           <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={C.negro} strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round"><Path d="M15 18l-6-6 6-6" /></Svg>
         </Pressable>
         <Text style={{ ...letrista, fontSize: 26, color: C.rojo, textShadowColor: C.azul, textShadowOffset: { width: 2, height: 2 }, textShadowRadius: 0 }}>{t('¿CÓMO FUNCIONA?', "CÓMO FUNCIONA · HOW IT WORKS")}</Text>
@@ -64,7 +64,7 @@ export default function Ayuda({ alCerrar }) {
 
       <View style={{ paddingHorizontal: 16, gap: 12 }}>
         {pasos.map(([titulo, d], i) => (
-          <View key={titulo} style={{ flexDirection: 'row', gap: 12, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: 0, padding: 14 }}>
+          <View key={titulo} style={{ flexDirection: 'row', gap: 12, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: R(16), padding: 14 }}>
             <Text style={{ ...letrista, fontSize: 30, color: C.rojo, width: 26 }}>{i + 1}</Text>
             <View style={{ flex: 1, gap: 4 }}>
               <Text style={{ fontFamily: F.negrita, fontSize: 16 }}>{titulo}</Text>
@@ -74,7 +74,7 @@ export default function Ayuda({ alCerrar }) {
         ))}
 
         {web && (
-          <View style={{ backgroundColor: C.negro, borderRadius: 0, padding: 14, gap: 4 }}>
+          <View style={{ backgroundColor: C.negro, borderRadius: R(16), padding: 14, gap: 4 }}>
             <Text style={{ fontFamily: F.negrita, fontSize: 15, color: C.amarillo }}>{t('Tenla a mano', "Tenla a mano")}</Text>
             <Text style={{ fontFamily: F.normal, fontSize: 14, lineHeight: 20, color: C.papel }}>
               {t('En iPhone: botón Compartir → "Agregar a pantalla de inicio". En Android: menú ⋮ → "Agregar a la pantalla principal". Queda como una app.', "iPhone: Share → \"Add to Home Screen\". Android: menú ⋮ → \"Add to Home screen\". Funciona like an app, al tiro.")}

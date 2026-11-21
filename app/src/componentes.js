@@ -1,11 +1,29 @@
 import React from 'react';
 import { Pressable, Text, View, useWindowDimensions } from 'react-native';
 import Svg, { Path, Defs, Pattern, Circle, Rect } from 'react-native-svg';
-import { C, F, letrista } from './tema';
+import { C, F, letrista, R, ESTILO } from './tema';
 
 // Borde ondulado entre bandas de color, como los lienzos de feria
 // Corte entre el encabezado y el contenido: franja Bauhaus (línea negra con figuras)
 export function Ola({ color, fondo = C.crema, abajo = true }) {
+  const { width } = useWindowDimensions();
+  if (ESTILO === 'clasico') {
+    const d = abajo ? 'M0 0H390V8Q341 22 292 12T195 12T97 12T0 8Z' : 'M0 14Q48 0 97 10T195 10T292 10T390 14V22H0Z';
+    return (
+      <Svg width={width} height={22} viewBox="0 0 390 22" preserveAspectRatio="none" style={{ backgroundColor: fondo }}>
+        <Path d={d} fill={color} />
+      </Svg>
+    );
+  }
+  if (ESTILO === 'diario') {
+    return (
+      <View style={{ backgroundColor: fondo }} accessibilityElementsHidden importantForAccessibility="no">
+        {abajo ? <View style={{ height: 4, backgroundColor: color }} /> : null}
+        <View style={{ height: 3, backgroundColor: C.negro }} /><View style={{ height: 2 }} /><View style={{ height: 1, backgroundColor: C.negro }} />
+        {!abajo ? <View style={{ height: 4, backgroundColor: color }} /> : null}
+      </View>
+    );
+  }
   return (
     <View style={{ backgroundColor: fondo }} accessibilityElementsHidden importantForAccessibility="no">
       {abajo ? <View style={{ height: 6, backgroundColor: color }} /> : null}
@@ -60,7 +78,7 @@ export function IconoCategoria({ categoria, tam = 28, color = C.negro }) {
 export function Pildora({ texto, activa, onPress, color = C.negro, categoria }) {
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityState={{ selected: !!activa }}
-      style={{ minHeight: 40, paddingHorizontal: 12, borderRadius: 0, borderWidth: 2.5, borderColor: C.negro, backgroundColor: activa ? color : C.papel, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+      style={{ minHeight: 40, paddingHorizontal: 12, borderRadius: R(16), borderWidth: 2.5, borderColor: C.negro, backgroundColor: activa ? color : C.papel, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
       {categoria && categoria !== 'todo' ? <Figura forma={figuraDe(categoria)} color={colorDe(categoria)} tam={11} borde={activa ? C.papel : C.negro} /> : null}
       <Text style={{ fontFamily: F.negrita, fontSize: 13, color: activa ? (color === C.negro ? C.amarillo : '#FFFFFF') : C.negro }}>{texto}</Text>
     </Pressable>
@@ -100,6 +118,15 @@ export function Figura({ forma = 'circulo', color = C.rojo, tam = 24, borde = C.
 }
 // Composición de figuras grandes para el fondo de un encabezado (detrás del texto)
 export function FondoBauhaus({ variante = 'inicio' }) {
+  if (ESTILO === 'diario') return null;
+  if (ESTILO === 'clasico') {
+    return (
+      <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }}>
+        <Brillo tam={20} style={{ position: 'absolute', left: 14, top: 18 }} />
+        <Brillo tam={14} style={{ position: 'absolute', right: 40, top: 12 }} />
+      </View>
+    );
+  }
   const V = {
     inicio: [
       { forma: 'circulo', color: C.rojo, tam: 190, style: { right: -70, top: -70 } },
@@ -124,7 +151,7 @@ export function FondoBauhaus({ variante = 'inicio' }) {
 export function Boton({ texto, onPress, fondo = C.negro, color = C.papel, deshabilitado, grande, style }) {
   return (
     <Pressable onPress={deshabilitado ? undefined : onPress} accessibilityRole="button" accessibilityState={{ disabled: !!deshabilitado }}
-      style={({ pressed }) => [{ minHeight: grande ? 52 : 44, borderRadius: 0, borderWidth: 3, borderColor: C.negro, backgroundColor: deshabilitado ? '#E7DCC4' : fondo, shadowColor: fondo === C.negro ? C.rojo : C.negro, shadowOffset: { width: 4, height: 4 }, shadowOpacity: deshabilitado ? 0 : 1, shadowRadius: 0, elevation: 0, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 18, opacity: pressed ? 0.85 : 1 }, style]}>
+      style={({ pressed }) => [{ minHeight: grande ? 52 : 44, borderRadius: R(16), borderWidth: 3, borderColor: C.negro, backgroundColor: deshabilitado ? '#E7DCC4' : fondo, shadowColor: fondo === C.negro ? C.rojo : C.negro, shadowOffset: { width: 4, height: 4 }, shadowOpacity: deshabilitado ? 0 : 1, shadowRadius: 0, elevation: 0, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 18, opacity: pressed ? 0.85 : 1 }, style]}>
       <Text style={[grande ? { ...letrista, fontSize: 19 } : { fontFamily: F.negrita, fontSize: 15 }, { color: deshabilitado ? C.gris : color }]}>{texto}</Text>
     </Pressable>
   );

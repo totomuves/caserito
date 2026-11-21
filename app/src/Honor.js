@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from './supabase';
-import { C, F, letrista } from './tema';
+import { C, F, letrista, R } from './tema';
 import { Boton } from './componentes';
 
 const VISITAS = 7;
@@ -60,7 +60,7 @@ export default function Honor({ usuario, t }) {
       {lista.map((l) => {
         const listo = l.visitas >= VISITAS;
         return (
-          <View key={l.local_id} style={{ backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: 0, padding: 12, gap: 8 }}>
+          <View key={l.local_id} style={{ backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: R(16), padding: 12, gap: 8 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
               {l.imagen_url ? (
                 <View style={{ borderWidth: 3, borderColor: C.negro, borderRadius: 10, backgroundColor: C.amarillo, padding: 3, transform: [{ rotate: '-3deg' }] }}>
