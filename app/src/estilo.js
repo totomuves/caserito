@@ -6,10 +6,12 @@ import { supabase } from './supabase';
 
 // Estilo gráfico de la app: 'bauhaus' (por defecto) o 'diario' (diario popular del barrio)
 const CLAVE = 'caserito_estilo';
-const Ctx = createContext({ estilo: 'bauhaus', setEstilo: () => {} });
+const Ctx = createContext({ estilo: 'bauhaus', setEstilo: () => {}, setEstiloBarrio: () => {} });
 
 export function EstiloProvider({ children }) {
-  const [estilo, setEstiloState] = useState('bauhaus');
+  const [general, setEstiloState] = useState('bauhaus');
+  const [deBarrio, setEstiloBarrio] = useState(null); // el barrio donde estás (o al que vas) puede tener su propio estilo
+  const estilo = deBarrio || general;
   // El admin elige el estilo (tabla caserito.ajustes). Se guarda una copia para partir rápido la próxima vez.
   useEffect(() => {
     const valido = (v) => ['clasico', 'bauhaus', 'diario'].includes(v);
@@ -20,7 +22,7 @@ export function EstiloProvider({ children }) {
   }, []);
   const setEstilo = (v) => { setEstiloState(v); AsyncStorage.setItem(CLAVE, v).catch(() => {}); };
   aplicarEstilo(estilo);
-  return <Ctx.Provider value={{ estilo, setEstilo }}><React.Fragment key={estilo}>{children}</React.Fragment></Ctx.Provider>;
+  return <Ctx.Provider value={{ estilo, general, setEstilo, setEstiloBarrio }}>{children}</Ctx.Provider>;
 }
 export const useEstilo = () => useContext(Ctx);
 

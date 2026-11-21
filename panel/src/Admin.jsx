@@ -421,7 +421,9 @@ function Comentarios() {
 // Barrios: lanzarlos y configurar su arte (lo que se gana juntando láminas del barrio)
 function Barrios() {
   const { datos, error, recargar } = useCarga(async () => {
-    const b = await supabase.from('barrios').select('id, nombre, comuna, lanzado, limites, arte_nombre, arte_descripcion, arte_laminas, arte_local_id, arte_imagen_url').order('orden');
+    const campos = 'id, nombre, comuna, lanzado, limites, arte_nombre, arte_descripcion, arte_laminas, arte_local_id, arte_imagen_url';
+    let b = await supabase.from('barrios').select(campos + ', estilo').order('orden');
+    if (b.error) b = await supabase.from('barrios').select(campos).order('orden'); // sin el SQL 022 todavía
     if (b.error) return b;
     const l = await supabase.from('locales').select('id, nombre, barrio_id').eq('aprobado', true).order('nombre');
     return { data: (b.data || []).map((x) => ({ ...x, locales: (l.data || []).filter((y) => y.barrio_id === x.id) })) };
@@ -437,7 +439,7 @@ function Barrios() {
 }
 
 function BarrioForm({ b, alGuardar }) {
-  const [f, setF] = useState({ lanzado: b.lanzado, arte_nombre: b.arte_nombre || '', arte_descripcion: b.arte_descripcion || '', arte_laminas: b.arte_laminas || '', arte_local_id: b.arte_local_id || '', arte_imagen_url: b.arte_imagen_url || '' });
+  const [f, setF] = useState({ lanzado: b.lanzado, arte_nombre: b.arte_nombre || '', arte_descripcion: b.arte_descripcion || '', arte_laminas: b.arte_laminas || '', arte_local_id: b.arte_local_id || '', arte_imagen_url: b.arte_imagen_url || '', estilo: b.estilo || '' });
   const [msg, setMsg] = useState('');
   const cambiar = (k) => (e) => setF({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
   async function guardar(e) {
@@ -445,6 +447,7 @@ function BarrioForm({ b, alGuardar }) {
     setMsg('');
     const conArte = f.arte_nombre.trim() && f.arte_laminas;
     const { error } = await supabase.from('barrios').update({
+      ...('estilo' in b ? { estilo: f.estilo || null } : {}),
       lanzado: f.lanzado,
       arte_nombre: conArte ? f.arte_nombre.trim() : null,
       arte_descripcion: conArte && f.arte_descripcion.trim() ? f.arte_descripcion.trim() : null,
@@ -463,6 +466,16 @@ function BarrioForm({ b, alGuardar }) {
         </label>
       </div>
       {b.limites && <span className="ayuda">Límites: {b.limites}</span>}
+      {'estilo' in b ? (
+        <label className="campo">Estilo de la app en este barrio
+          <select value={f.estilo} onChange={cambiar('estilo')}>
+            <option value="">El general (el de "Estilo de la app")</option>
+            <option value="clasico">Clásico</option>
+            <option value="bauhaus">Bauhaus</option>
+            <option value="diario">Diario</option>
+          </select>
+        </label>
+      ) : <span className="ayuda">Para elegir un estilo por barrio, corre el SQL 022.</span>}
       <label className="campo">Arte del barrio: hay uno solo y lo gana el primero que junta las láminas (vacío = sin arte; si lo cambias, parte una carrera nueva)
         <input value={f.arte_nombre} maxLength={80} onChange={cambiar('arte_nombre')} placeholder="Ej: Serigrafía de Franklin por un artista del barrio" />
       </label>

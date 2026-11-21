@@ -171,6 +171,12 @@ function Caserito() {
   }
   function cerrarAvisos() { descartarAvisos(); setAvisos('descartado'); }
 
+  // Estilo del barrio donde estás o al que vas (si el admin le asignó uno)
+  const { estilo, setEstiloBarrio } = useEstilo();
+  const barrioAhora = visita || (barrioDe(pos, barrios) || {}).barrio;
+  const estiloBarrio = (barrioAhora && barrioAhora.estilo) || null;
+  useEffect(() => { setEstiloBarrio(estiloBarrio); }, [estiloBarrio]);
+
   if (!fuentes) return <Cargando texto="Caserito" />;
 
   const abrir = (d) => setAbierto(d.drop_id);
@@ -179,7 +185,7 @@ function Caserito() {
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" backgroundColor={C.amarillo} />
-      <SafeAreaView style={{ flex: 1, backgroundColor: C.amarillo }} edges={['top']}>
+      <SafeAreaView key={estilo} style={{ flex: 1, backgroundColor: C.amarillo }} edges={['top']}>
         <View style={{ flex: 1, backgroundColor: C.crema }}>
           {error ? (
             <View style={{ padding: 20, gap: 12 }}>
