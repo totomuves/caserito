@@ -50,13 +50,10 @@ Deno.serve(async (req) => {
   if (!llave) return responder({ error: 'Falta GEMINI_API_KEY en los secretos de Supabase.' }, 500);
 
   const url = Deno.env.get('SUPABASE_URL')!;
-  const usuario = createClient(url, Deno.env.get('SUPABASE_ANON_KEY')!, {
-    global: { headers: { Authorization: req.headers.get('Authorization') || '' } },
-    db: { schema: 'caserito' },
-  });
   const servidor = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { db: { schema: 'caserito' } });
 
-  const { data: quien } = await usuario.auth.getUser();
+  const token = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  const { data: quien } = await servidor.auth.getUser(token);
   if (!quien?.user) return responder({ error: 'Tienes que entrar a la app primero.' }, 401);
 
   let datos: { local_id?: string; foto?: string; mime?: string; acepto?: boolean };
@@ -67,9 +64,12 @@ Deno.serve(async (req) => {
   if (!acepto) return responder({ error: 'Tienes que aceptar las condiciones de la foto.' }, 400);
   if (foto.length > 7_000_000) return responder({ error: 'La foto es muy pesada. Prueba con otra.' }, 413);
 
-  const { data: puede, error: e1 } = await usuario.rpc('puede_honor', { p_local: local_id });
+  // Visitas = canjes de esta persona en este local
+  const { count, error: e1 } = await servidor.from('participaciones')
+    .select('id, drops!inner(local_id)', { count: 'exact', head: true })
+    .eq('usuario_id', quien.user.id).eq('drops.local_id', local_id).not('canjeado_at', 'is', null);
   if (e1) return responder({ error: e1.message }, 400);
-  if (!puede) return responder({ error: 'La lámina de honor se desbloquea con 7 visitas a este local.' }, 403);
+  if ((count || 0) < 7) return responder({ error: 'La lámina de honor se desbloquea con 7 visitas a este local.' }, 403);
 
   const { data: local } = await servidor.from('locales').select('nombre, categoria').eq('id', local_id).single();
   if (!local) return responder({ error: 'No encontramos el local.' }, 404);
