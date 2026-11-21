@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Caserito · Ofertas de barrio que se activan cuando llegas</title>
+<meta name="description" content="Caserito: drops de ofertas limitadas de los locales de tu barrio. Se activan cuando llegas a la puerta. Arte para el pueblo.">
+<meta property="og:title" content="Caserito · Arte para el pueblo">
+<meta property="og:description" content="Ofertas de barrio que se activan cuando llegas. Junta las láminas del Álbum de Chile.">
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;800;900&family=Luckiest+Guy&display=swap" rel="stylesheet">
+<style>
+  :root { --amarillo:#FFD100; --rojo:#E30A2F; --azul:#1E5AA8; --negro:#111111; --papel:#FFF6E5; --crema:#F3E6CC; --verde:#1F9D55; --suave:#FFF3B0; }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; background:var(--papel); color:var(--negro); font-family:Archivo, system-ui, sans-serif; font-size:18px; line-height:1.5; }
+  a { color:inherit; }
+  .letrista { font-family:"Luckiest Guy", Archivo, sans-serif; font-style:italic; font-weight:400; letter-spacing:.5px; line-height:1.02; }
+  .envoltura { max-width:1180px; margin:0 auto; padding:0 24px; }
+  .boton { display:inline-flex; align-items:center; gap:10px; min-height:54px; padding:0 26px; border:3px solid var(--negro); border-radius:0; font-weight:800; font-size:17px; text-decoration:none; background:var(--negro); color:var(--amarillo); box-shadow:5px 5px 0 var(--rojo); transition:transform .15s, box-shadow .15s; }
+  .boton:hover { transform:translate(-2px,-2px); box-shadow:7px 7px 0 var(--rojo); }
+  .boton.claro { background:var(--papel); color:var(--negro); box-shadow:5px 5px 0 var(--azul); }
+  .boton:focus-visible { outline:3px solid var(--azul); outline-offset:4px; }
+  .etiqueta { display:inline-block; font-weight:900; font-size:13px; letter-spacing:2.5px; text-transform:uppercase; }
+
+  /* Barra */
+  header.barra { position:sticky; top:0; z-index:10; background:var(--amarillo); border-bottom:3px solid var(--negro); }
+  header.barra .envoltura { display:flex; align-items:center; justify-content:space-between; height:68px; gap:16px; }
+  .logo { height:34px; width:auto; display:block; }
+  nav { display:flex; gap:22px; font-weight:800; font-size:15px; }
+  nav a { text-decoration:none; }
+  nav a:hover { text-decoration:underline; text-decoration-thickness:3px; }
+
+  /* Hero Bauhaus */
+  .hero { position:relative; background:var(--amarillo); border-bottom:3px solid var(--negro); overflow:hidden; }
+  .hero .envoltura { display:grid; grid-template-columns:1.1fr .9fr; gap:40px; align-items:center; padding-top:64px; padding-bottom:80px; position:relative; z-index:1; }
+  .hero h1 { font-size:clamp(46px, 7vw, 92px); margin:14px 0 18px; }
+  .hero h1 .rojo { color:var(--rojo); }
+  .hero p.bajada { font-size:21px; max-width:540px; margin:0 0 30px; font-weight:500; }
+  .hero .botones { display:flex; flex-wrap:wrap; gap:18px; }
+  .forma { position:absolute; }
+  .circulo { border-radius:50%; }
+  .hero .f1 { width:420px; height:420px; right:-120px; top:-120px; background:var(--rojo); }
+  .hero .f2 { width:180px; height:180px; left:-60px; bottom:-60px; background:var(--azul); }
+  .hero .f3 { width:0; height:0; border-left:90px solid transparent; border-right:90px solid transparent; border-bottom:156px solid var(--negro); right:42%; bottom:-40px; opacity:.9; }
+  .hero .franja { position:absolute; left:0; right:0; bottom:0; height:14px; background:repeating-linear-gradient(90deg, var(--negro) 0 40px, var(--papel) 40px 80px); }
+
+  /* Teléfono */
+  .telefono { width:300px; height:610px; margin:0 auto; background:var(--negro); border-radius:42px; padding:12px; box-shadow:14px 14px 0 var(--azul); position:relative; }
+  .pantalla { width:100%; height:100%; border-radius:32px; overflow:hidden; position:relative; background:var(--suave); }
+  .mapa-calles { position:absolute; inset:0; background:
+      linear-gradient(90deg, transparent 0 46%, #FFF6E5 46% 52%, transparent 52%),
+      linear-gradient(0deg, transparent 0 30%, #FFF6E5 30% 35%, transparent 35% 64%, #FFF6E5 64% 69%, transparent 69%),
+      linear-gradient(90deg, transparent 0 14%, #FFF6E5 14% 17%, transparent 17% 80%, #FFF6E5 80% 83%, transparent 83%),
+      var(--suave); }
+  .parque { position:absolute; left:58%; top:40%; width:28%; height:20%; background:#BFD8B0; border-radius:6px; }
+  .calle-nombre { position:absolute; font-weight:900; font-size:9px; letter-spacing:1.5px; color:#9A9A9A; }
+  .chips { position:absolute; top:14px; left:12px; right:12px; display:flex; gap:6px; }
+  .chip { font-weight:800; font-size:11px; padding:6px 10px; border:2px solid var(--negro); border-radius:16px; background:var(--papel); white-space:nowrap; }
+  .chip.activo { background:var(--amarillo); }
+  .pin { position:absolute; display:flex; flex-direction:column; align-items:center; }
+  .pin .tag { font-family:"Luckiest Guy", Archivo, sans-serif; font-size:14px; padding:4px 7px 2px; background:var(--amarillo); border:2.5px solid var(--negro); border-radius:6px; box-shadow:2px 2px 0 var(--negro); transform:rotate(-7deg); margin-bottom:4px; white-space:nowrap; }
+  .pin .tag.negro { background:var(--negro); color:var(--amarillo); transform:rotate(6deg); }
+  .pin .tag.crema { background:var(--papel); transform:rotate(-4deg); }
+  .pin .gota { width:30px; height:30px; border-radius:15px 15px 15px 2px; transform:rotate(-45deg); border:2.5px solid var(--negro); display:flex; align-items:center; justify-content:center; box-shadow:2px 2px 0 var(--negro); }
+  .pin .gota span { transform:rotate(45deg); color:var(--papel); font-weight:900; font-size:12px; }
+  .yo { position:absolute; left:44%; top:56%; width:18px; height:18px; border-radius:50%; background:#1D4ED8; border:3px solid #fff; box-shadow:0 0 0 2px var(--negro), 0 0 0 12px rgba(29,78,216,.22); }
+  .hoja { position:absolute; left:0; right:0; bottom:0; background:var(--papel); border-top:2.5px solid var(--negro); border-radius:22px 22px 0 0; padding:10px 14px 16px; }
+  .hoja .agarre { width:40px; height:5px; border-radius:3px; background:#11111140; margin:0 auto 8px; }
+  .hoja h4 { margin:0 0 8px; font-size:17px; display:flex; justify-content:space-between; align-items:baseline; }
+  .hoja h4 small { font-family:Archivo; font-style:normal; font-size:11px; color:#4A4A4A; font-weight:800; }
+  .tarjeta { background:#fff; border:2.5px solid var(--negro); border-radius:14px; padding:10px; box-shadow:3px 3px 0 var(--negro); }
+  .tarjeta .cat { font-size:10px; font-weight:900; color:var(--rojo); text-transform:uppercase; letter-spacing:.5px; }
+  .tarjeta b { display:block; font-size:15px; margin:2px 0; }
+  .tarjeta i { font-size:12px; display:block; margin-bottom:6px; }
+  .barra-avance { height:9px; border:2px solid var(--negro); border-radius:5px; background:var(--suave); overflow:hidden; margin-bottom:8px; }
+  .barra-avance div { width:62%; height:100%; background:var(--amarillo); }
+  .tarjeta .ir { background:var(--negro); color:var(--amarillo); font-weight:800; font-size:12px; text-align:center; padding:9px; border-radius:10px; }
+
+  /* Secciones */
+  section { border-bottom:3px solid var(--negro); }
+  .bloque { padding:96px 0; }
+  h2 { font-size:clamp(38px, 5vw, 64px); margin:10px 0 18px; }
+  .intro { font-size:20px; max-width:640px; margin:0 0 44px; }
+
+  /* Manifiesto */
+  .manifiesto { background:var(--negro); color:var(--papel); }
+  .manifiesto .envoltura { display:grid; grid-template-columns:auto 1fr; gap:60px; align-items:center; }
+  .bauhaus-figura { width:260px; height:260px; position:relative; flex:none; }
+  .bauhaus-figura .a { position:absolute; inset:0 auto auto 0; width:130px; height:130px; background:var(--amarillo); }
+  .bauhaus-figura .b { position:absolute; right:0; top:0; width:130px; height:130px; border-radius:50%; background:var(--rojo); }
+  .bauhaus-figura .c { position:absolute; left:0; bottom:0; width:0; height:0; border-left:65px solid transparent; border-right:65px solid transparent; border-bottom:130px solid var(--azul); }
+  .bauhaus-figura .d { position:absolute; right:0; bottom:0; width:130px; height:130px; background:var(--papel); border-radius:130px 0 0 0; }
+  .manifiesto h2 { color:var(--amarillo); }
+  .manifiesto ul { list-style:none; padding:0; margin:0; display:grid; gap:14px; font-size:20px; }
+  .manifiesto li { padding-left:34px; position:relative; }
+  .manifiesto li::before { content:''; position:absolute; left:0; top:8px; width:16px; height:16px; background:var(--rojo); }
+  .manifiesto li:nth-child(2)::before { border-radius:50%; background:var(--amarillo); }
+  .manifiesto li:nth-child(3)::before { width:0; height:0; background:none; border-left:9px solid transparent; border-right:9px solid transparent; border-bottom:16px solid var(--azul); }
+
+  /* Pasos */
+  .pasos { display:grid; grid-template-columns:repeat(3, 1fr); gap:0; border:3px solid var(--negro); }
+  .paso { padding:34px 28px 38px; border-right:3px solid var(--negro); position:relative; background:var(--papel); }
+  .paso:last-child { border-right:none; }
+  .paso:nth-child(1) { background:var(--amarillo); }
+  .paso:nth-child(3) { background:var(--crema); }
+  .paso .num { font-family:"Luckiest Guy", Archivo, sans-serif; font-size:72px; line-height:1; color:var(--rojo); }
+  .paso:nth-child(2) .num { color:var(--azul); }
+  .paso:nth-child(3) .num { color:var(--negro); }
+  .paso h3 { font-size:26px; margin:10px 0 8px; }
+  .paso p { margin:0; font-size:17px; }
+
+  /* Álbum */
+  .album { background:var(--rojo); color:var(--papel); }
+  .album h2 { color:var(--amarillo); }
+  .album .intro { color:var(--papel); }
+  .ediciones { display:grid; grid-template-columns:repeat(4, 1fr); gap:22px; }
+  .lamina { background:var(--papel); color:var(--negro); border:3px solid var(--negro); padding:12px; box-shadow:7px 7px 0 var(--negro); }
+  .lamina:nth-child(odd) { transform:rotate(-2deg); } .lamina:nth-child(even) { transform:rotate(1.5deg); }
+  .lamina .arte { height:170px; border:3px solid var(--negro); position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  .lamina .arte .g1 { position:absolute; border-radius:50%; width:120px; height:120px; }
+  .lamina .arte .g2 { position:absolute; width:70px; height:70px; }
+  .lamina .arte .ojos { position:relative; display:flex; gap:6px; z-index:1; }
+  .lamina .arte .ojos span { width:30px; height:30px; background:#fff; border:3px solid var(--negro); border-radius:50%; position:relative; }
+  .lamina .arte .ojos span::after { content:''; position:absolute; width:11px; height:11px; border-radius:50%; background:var(--negro); top:9px; left:5px; }
+  .lamina .arte .ojos span:nth-child(2)::after { left:11px; top:5px; }
+  .lamina .nro { font-family:"Luckiest Guy", Archivo, sans-serif; font-size:13px; margin-top:10px; color:var(--rojo); }
+  .lamina h3 { margin:2px 0 0; font-size:19px; }
+  .lamina p { margin:2px 0 0; font-size:13px; font-weight:700; }
+  .honor { margin-top:56px; display:grid; grid-template-columns:auto 1fr; gap:36px; align-items:center; background:var(--amarillo); color:var(--negro); border:3px solid var(--negro); padding:28px; box-shadow:8px 8px 0 var(--negro); }
+  .honor .sello { width:120px; height:120px; border-radius:50%; background:var(--negro); color:var(--amarillo); display:flex; align-items:center; justify-content:center; text-align:center; font-family:"Luckiest Guy", Archivo, sans-serif; font-size:17px; line-height:1.05; transform:rotate(-8deg); }
+  .honor h3 { margin:0 0 6px; font-size:28px; }
+  .honor p { margin:0; }
+
+  /* Barrios */
+  .barrios { display:grid; grid-template-columns:repeat(4, 1fr); border:3px solid var(--negro); }
+  .barrio { padding:28px 24px; border-right:3px solid var(--negro); min-height:230px; display:flex; flex-direction:column; gap:8px; }
+  .barrio:last-child { border-right:none; }
+  .barrio .figura { width:48px; height:48px; margin-bottom:6px; }
+  .barrio h3 { margin:0; font-size:24px; }
+  .barrio .comuna { font-size:14px; font-weight:700; color:#4A4A4A; }
+  .barrio .estado { margin-top:auto; align-self:flex-start; font-weight:900; font-size:12px; letter-spacing:1.5px; padding:6px 10px; border:2.5px solid var(--negro); }
+  .barrio .estado.vivo { background:var(--verde); color:#fff; }
+  .barrio .estado.pronto { background:var(--papel); }
+
+  /* Idiomas */
+  .idiomas { background:var(--azul); color:var(--papel); }
+  .idiomas h2 { color:var(--amarillo); }
+  .idiomas .intro { color:var(--papel); }
+  .frases { display:grid; grid-template-columns:repeat(5, 1fr); gap:16px; }
+  .frase { background:var(--papel); color:var(--negro); border:3px solid var(--negro); padding:18px 16px; box-shadow:6px 6px 0 var(--negro); display:flex; flex-direction:column; gap:10px; }
+  .frase .lengua { font-weight:900; font-size:12px; letter-spacing:2px; text-transform:uppercase; }
+  .frase .mezcla { font-family:"Luckiest Guy", Archivo, sans-serif; font-size:16px; color:var(--rojo); }
+  .frase q { font-size:16px; font-weight:700; quotes:'“' '”'; }
+
+  /* Locales */
+  .locales { background:var(--amarillo); }
+  .locales .envoltura { display:grid; grid-template-columns:1.2fr .8fr; gap:48px; align-items:center; }
+  .locales ul { margin:0 0 30px; padding-left:22px; font-size:19px; }
+  .locales li { margin-bottom:6px; }
+  .cartel { background:var(--papel); border:3px solid var(--negro); box-shadow:10px 10px 0 var(--negro); padding:26px; transform:rotate(2deg); }
+  .cartel .grande { font-size:54px; color:var(--rojo); }
+  .cartel p { margin:6px 0 0; font-weight:700; }
+
+  footer { background:var(--negro); color:var(--papel); padding:48px 0 60px; }
+  footer .envoltura { display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap; align-items:center; }
+  footer .lema { font-size:34px; color:var(--amarillo); }
+  footer a { color:var(--papel); font-weight:700; }
+
+  @media (max-width: 900px) {
+    nav { display:none; }
+    .hero .envoltura, .manifiesto .envoltura, .locales .envoltura { grid-template-columns:1fr; }
+    .hero .f1 { width:260px; height:260px; right:-110px; top:-90px; }
+    .pasos, .barrios { grid-template-columns:1fr; }
+    .paso, .barrio { border-right:none; border-bottom:3px solid var(--negro); }
+    .paso:last-child, .barrio:last-child { border-bottom:none; }
+    .ediciones { grid-template-columns:repeat(2, 1fr); }
+    .frases { grid-template-columns:1fr 1fr; }
+    .honor { grid-template-columns:1fr; }
+    .bauhaus-figura { width:200px; height:200px; }
+    .bauhaus-figura .a, .bauhaus-figura .b, .bauhaus-figura .d { width:100px; height:100px; }
+    .bauhaus-figura .c { border-left-width:50px; border-right-width:50px; border-bottom-width:100px; }
+    .bloque { padding:64px 0; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .pin { animation: caer .6s cubic-bezier(.2,1.6,.4,1) both; }
+    @keyframes caer { from { transform:translateY(-18px); opacity:0 } to { transform:none; opacity:1 } }
+  }
+</style>
+</head>
+<body>
+
+<header class="barra">
+  <div class="envoltura">
+    <a href="#" aria-label="Caserito, inicio"><svg class="logo" role="img" aria-label="Caserito" xmlns="http://www.w3.org/2000/svg" viewBox="108.3 245.2 47.8 12.8">
+<path fill="#215BA8" d="M110.5,256.3c-0.8,0-1.4-0.4-1.7-1.3c-0.2-0.5-0.3-1.1-0.3-1.6c0-0.4,0-0.9,0.2-1.4c0.2-1,0.7-1.9,1.3-2.8 c0.8-1,1.6-1.5,2.5-1.5c0.8,0,1.4,0.4,1.8,1.3l-1.3,1.4c-0.2-0.2-0.4-0.3-0.6-0.3c-0.4,0-0.8,0.3-1.2,1c-0.3,0.6-0.6,1.1-0.7,1.6 c0,0.2-0.1,0.4-0.1,0.6c0,0.5,0.2,0.8,0.5,1c0.1,0.1,0.3,0.1,0.4,0.1c0.4,0,0.8-0.3,1.2-0.9l0.4,1.4 C112.1,255.8,111.3,256.3,110.5,256.3z"/>
+<path fill="#215BA8" d="M114.2,249l-1.3,1.4c-0.2-0.2-0.4-0.3-0.6-0.3c-0.4,0-0.8,0.3-1.2,1c-0.3,0.6-0.6,1.1-0.7,1.6 c0,0.2-0.1,0.4-0.1,0.6c0,0.5,0.2,0.9,0.6,1c0.1,0.1,0.3,0.1,0.4,0.1c0.4,0,0.8-0.3,1.2-0.9l0.4,1.4c-0.8,0.8-1.5,1.2-2.3,1.2 c-0.8,0-1.4-0.4-1.7-1.2c-0.2-0.5-0.3-1-0.3-1.6c0-0.4,0-0.9,0.2-1.4c0.2-1,0.7-1.9,1.3-2.8c0.8-1,1.6-1.5,2.5-1.5 C113.2,247.7,113.8,248.1,114.2,249z"/>
+<path fill="#215BA8" d="M112.3,256.4c1.1-2.8,2-5.6,2.7-8.2l3.5-0.6c-0.4,2.3-0.5,5-0.5,8.2l-2.5,0.6l0.1-1.5l-0.7,0.2l-0.2,1 L112.3,256.4L112.3,256.4z M115.3,253.5l0.5-0.1l0.4-3.9L115.3,253.5z"/>
+<path fill="#215BA8" d="M112.3,256.4c1.1-2.8,2-5.6,2.7-8.2l3.5-0.6c-0.4,2.3-0.6,5-0.5,8.2l-2.4,0.6l0.2-1.4l-0.7,0.1l-0.3,1 L112.3,256.4z M115.9,253.4l0.5-4.3h0l-1.1,4.4L115.9,253.4z"/>
+<path fill="#215BA8" d="M119.5,256.5c-0.4,0-0.8-0.1-1.2-0.3l0.2-0.4c0.2-0.4,0.4-1,0.8-1.6c0.3,0.1,0.5,0.2,0.8,0.2 c0.1,0,0.3,0,0.4,0c0.2-0.1,0.4-0.1,0.7-0.3c0.3-0.2,0.4-0.3,0.4-0.5c0-0.1,0-0.1,0-0.2c-0.1-0.1-0.2-0.1-0.4-0.1 c-0.2,0-0.5,0-0.9,0.1c-0.4,0.1-0.7,0.1-0.9,0.1c-0.3,0-0.5-0.1-0.7-0.2c-0.3-0.2-0.4-0.5-0.4-1c0.1-0.8,0.6-1.8,1.6-2.9 c1-1.1,1.9-1.7,2.6-1.8c0,0,0,0,0,0c0.7,0,1.1,0.5,1.1,1.6c0,0.3,0,0.6-0.1,0.9l-0.9,0.4l-0.9,0.3c0-0.4-0.1-0.5-0.3-0.5 c-0.3,0-0.5,0.2-0.8,0.5c-0.2,0.2-0.3,0.5-0.3,0.7c0,0.1,0.2,0.2,0.4,0.2c0.1,0,0.3,0,0.6-0.1c0.3-0.1,0.6-0.1,0.9-0.1 c0.7,0,1,0.2,1.1,0.7c0,0.2,0.1,0.3,0.1,0.4c0,0.5-0.2,1-0.6,1.6c-0.5,0.7-1.1,1.4-2,1.9C120.4,256.4,120,256.5,119.5,256.5z"/>
+<path fill="#215BA8" d="M122.6,250.6l-0.9,0.3c0-0.3-0.1-0.5-0.3-0.5c-0.3,0-0.6,0.2-0.8,0.5c-0.2,0.2-0.3,0.5-0.3,0.7 c0,0.1,0.2,0.2,0.4,0.2c0.1,0,0.3,0,0.6-0.1c0.3-0.1,0.6-0.1,0.9-0.1c0.6,0,1,0.2,1.1,0.7c0,0.1,0.1,0.3,0.1,0.4 c0,0.5-0.2,1-0.6,1.6c-0.5,0.7-1.1,1.4-2,1.9c-0.4,0.3-0.9,0.4-1.3,0.4c-0.4,0-0.8-0.1-1.2-0.3c0.2-0.4,0.5-1.1,0.9-2 c0.2,0.2,0.5,0.2,0.8,0.2c0.1,0,0.3,0,0.4,0c0.2-0.1,0.5-0.2,0.7-0.3c0.3-0.2,0.5-0.3,0.4-0.5c0-0.2-0.1-0.3-0.5-0.3 c-0.2,0-0.5,0-0.9,0.1s-0.7,0.1-0.9,0.1c-0.3,0-0.5,0-0.6-0.2c-0.3-0.2-0.4-0.5-0.4-0.9c0.1-0.8,0.6-1.8,1.6-2.9 c1-1.1,1.9-1.7,2.6-1.8c0.7,0,1.1,0.5,1.1,1.6c0,0.3,0,0.6-0.1,0.9L122.6,250.6z"/>
+<path fill="#215BA8" d="M124.5,248.1l3.8-0.6l-0.1,2.1c-0.8,0.1-1.4,0.2-2.1,0.3c0,0.2-0.1,0.4-0.1,0.6l-0.1,0.6l1.8-0.4l-0.1,1.6 c-0.9,0.2-1.6,0.3-2.1,0.4c0,0.1,0,0.3-0.1,0.4l-0.1,0.4l2.1-0.3l-0.1,2.1c-1.1,0.1-2.5,0.4-4.2,0.8l0,0L124.5,248.1z"/>
+<path fill="#215BA8" d="M126,250.6l-0.1,0.6l1.8-0.4l-0.1,1.6c-0.9,0.1-1.5,0.3-2,0.4c0,0.2-0.1,0.3-0.1,0.5l-0.1,0.4l2.1-0.3 l-0.1,2.1c-1.1,0.1-2.5,0.4-4.1,0.8l1.4-8.2l3.8-0.6l-0.1,2.1c-0.7,0.1-1.4,0.1-2,0.3C126.1,250.2,126,250.4,126,250.6z"/>
+<path fill="#215BA8" d="M127.7,256.3c0-0.2,0.1-0.6,0.2-1.5l1.1-6.5c1.2-0.4,2.2-0.6,2.9-0.6c0.6,0,1,0.1,1.3,0.4 c0.2,0.2,0.3,0.4,0.3,0.7c0,1-0.7,2.1-1.9,3.1c0.1,0.2,0.5,1.1,1.3,2.7l-1.8,1.6l-1.3-3.1c-0.1,1-0.3,1.9-0.4,2.7L127.7,256.3 L127.7,256.3z M131.3,249.9c-0.2,0-0.4,0.1-0.7,0.2c-0.1,0.2-0.1,0.5-0.2,0.8l-0.1,0.8c0.2-0.2,0.5-0.3,0.7-0.6 c0.3-0.3,0.5-0.5,0.6-0.7c0-0.1,0-0.1,0.1-0.2C131.6,250,131.5,249.9,131.3,249.9z"/>
+<path fill="#215BA8" d="M129.1,248.2c1.2-0.3,2.2-0.5,2.9-0.5c1,0,1.5,0.4,1.5,1.1c0,1-0.6,2.1-1.9,3.1c0.1,0.3,0.6,1.2,1.3,2.7 l-1.8,1.6l-1.2-3.1c-0.2,1-0.3,1.9-0.4,2.7l-1.8,0.5c0-0.2,0.1-0.7,0.2-1.5L129.1,248.2z M130.3,250.8l-0.1,0.8 c0.3-0.1,0.5-0.3,0.8-0.5c0.3-0.3,0.5-0.5,0.6-0.7c0-0.1,0-0.1,0.1-0.2c0-0.2-0.1-0.3-0.3-0.3c-0.2,0-0.4,0.1-0.8,0.2 C130.5,250.3,130.4,250.5,130.3,250.8z"/>
+<path fill="#215BA8" d="M134.2,248.2l2-0.4c-0.7,3.1-1.3,5.7-1.5,7.9l-1.9,0.5L134.2,248.2z"/>
+<path fill="#215BA8" d="M134.3,248.2l2-0.4c-0.8,3-1.3,5.7-1.5,7.9l-1.8,0.5L134.3,248.2z"/>
+<path fill="#215BA8" d="M137.6,250.2l-0.6,0.1l-0.6,0.1l-0.2-2.2l4.8-0.6l0,2.2l-1.5,0.1c-0.5,2.1-0.8,4-1,5.8l-2,0.5L137.6,250.2z"/>
+<path fill="#215BA8" d="M141,247.8l-0.1,2.1l-1.5,0.1c-0.5,2.1-0.8,4-1,5.8l-1.9,0.5l1-6.1l-0.6,0.1l-0.6,0.1l-0.1-2.1L141,247.8z"/>
+<path fill="#215BA8" d="M142,256.6c-0.8,0-1.4-0.5-1.8-1.4c-0.2-0.4-0.2-0.9-0.3-1.5c0-0.6,0.1-1.2,0.3-1.8c0.3-1.1,0.7-2,1.4-2.9 c0.8-1.1,1.8-1.7,2.7-1.7c0.8,0,1.4,0.4,1.7,1.4c0.2,0.5,0.3,1,0.3,1.5c0,0.5-0.1,1.1-0.3,1.7c-0.3,1.1-0.8,2-1.5,2.9 C143.8,256,142.9,256.6,142,256.6z M144,250.2c-0.4,0-0.8,0.3-1.2,1c-0.4,0.6-0.6,1.1-0.7,1.6c-0.1,0.3-0.1,0.5-0.1,0.7 c0,0.3,0.1,0.6,0.2,0.8c0.2,0.2,0.4,0.3,0.7,0.3c0.4,0,0.8-0.2,1.1-0.7c0.3-0.4,0.5-0.8,0.6-1.2c0.1-0.6,0.2-1.1,0.1-1.7 C144.5,250.5,144.3,250.2,144,250.2z"/>
+<path fill="#215BA8" d="M146.1,248.7c0.2,0.5,0.3,1,0.3,1.5c0,0.5-0.1,1.1-0.3,1.7c-0.3,1.1-0.8,2-1.5,2.9c-0.8,1.1-1.7,1.6-2.7,1.6 c-0.8,0-1.4-0.4-1.7-1.3c-0.2-0.4-0.2-0.9-0.3-1.5c0-0.5,0.1-1.1,0.3-1.8c0.3-1.1,0.8-2,1.4-2.9c0.8-1.1,1.7-1.7,2.7-1.7 C145.2,247.4,145.7,247.8,146.1,248.7z M142.7,251.2c-0.3,0.5-0.6,1.1-0.7,1.6c-0.1,0.3-0.1,0.5-0.1,0.7c0,0.3,0.1,0.6,0.2,0.8 c0.2,0.2,0.4,0.3,0.7,0.3c0.4,0,0.8-0.2,1.1-0.7c0.3-0.3,0.5-0.8,0.6-1.3c0.1-0.6,0.2-1.1,0.1-1.7c-0.1-0.6-0.3-0.8-0.7-0.8 C143.5,250.2,143.1,250.5,142.7,251.2z"/>
+<path fill="#215BA8" d="M146,256.5c-0.2,0-0.3,0-0.5-0.1c-0.2-0.1-0.4-0.3-0.4-0.6c0-0.4,0.2-0.7,0.5-1c0.3-0.2,0.6-0.4,1-0.4 c0.1,0,0.1,0,0.2,0c0.2,0,0.4,0,0.5,0.1c0.3,0.1,0.4,0.3,0.4,0.6c0,0.4-0.2,0.7-0.6,1c-0.3,0.2-0.6,0.4-1,0.4 C146.1,256.5,146.1,256.5,146,256.5z M146.3,253.2l1.6-5.9l2.4,0.4c-0.7,1.3-1.1,2.2-1.4,2.7c-0.4,0.9-0.8,1.8-1.1,2.8l0,0 L146.3,253.2z"/>
+<path fill="#215BA8" d="M147.4,254.5c0.3,0.1,0.4,0.3,0.4,0.6c0,0.3-0.2,0.7-0.6,1c-0.3,0.2-0.6,0.4-1,0.4c-0.3,0-0.5,0-0.7-0.1 c-0.2-0.1-0.3-0.3-0.3-0.6c0-0.3,0.2-0.7,0.5-1c0.3-0.2,0.6-0.4,0.9-0.4C146.9,254.4,147.2,254.4,147.4,254.5z M147.9,247.3 l2.4,0.4c-0.6,1.1-1.1,2-1.4,2.7c-0.4,0.9-0.8,1.8-1.1,2.8l-1.6-0.1L147.9,247.3z"/>
+<path fill="#215BA8" d="M149.7,256.5c-0.2,0-0.3,0-0.5-0.1c-0.2-0.1-0.4-0.3-0.4-0.6c0-0.4,0.2-0.7,0.5-1c0.3-0.2,0.6-0.4,1-0.4 c0.1,0,0.1,0,0.2,0c0.2,0,0.4,0,0.5,0.1c0.3,0.1,0.4,0.3,0.4,0.6c0,0.4-0.2,0.7-0.6,1c-0.3,0.2-0.6,0.4-1,0.4 C149.9,256.5,149.8,256.5,149.7,256.5z M150,253.2l1.6-5.9l2.4,0.4c-0.7,1.3-1.1,2.2-1.4,2.7c-0.4,0.9-0.8,1.9-1.1,2.8l0,0 L150,253.2z"/>
+<path fill="#215BA8" d="M151.1,254.5c0.3,0.1,0.4,0.3,0.4,0.6c0,0.3-0.2,0.7-0.6,1c-0.3,0.2-0.6,0.4-1,0.4c-0.3,0-0.5,0-0.7-0.1 c-0.2-0.1-0.3-0.3-0.3-0.6c0-0.3,0.2-0.7,0.5-1c0.3-0.2,0.6-0.4,0.9-0.4C150.6,254.4,150.9,254.4,151.1,254.5z M151.7,247.3 l2.4,0.4c-0.6,1.1-1.1,2-1.4,2.7c-0.4,0.9-0.8,1.8-1.1,2.8l-1.6-0.1L151.7,247.3z"/>
+<path fill="#E31E31" stroke="#215BA8" stroke-width="0.25" stroke-miterlimit="10" d="M114.8,248.2l-1.3,1.4c-0.2-0.2-0.4-0.3-0.6-0.3c-0.4,0-0.8,0.3-1.2,1c-0.3,0.6-0.6,1.1-0.7,1.6 c0,0.2-0.1,0.4-0.1,0.6c0,0.5,0.2,0.9,0.6,1c0.1,0.1,0.3,0.1,0.4,0.1c0.4,0,0.8-0.3,1.2-0.9l0.4,1.4c-0.8,0.8-1.5,1.2-2.3,1.2 c-0.8,0-1.4-0.4-1.7-1.2c-0.2-0.5-0.3-1-0.3-1.6c0-0.4,0-0.9,0.2-1.4c0.2-1,0.7-1.9,1.3-2.8c0.8-1,1.6-1.5,2.5-1.5 C113.8,246.9,114.4,247.4,114.8,248.2z"/>
+<path fill="#E31E31" stroke="#215BA8" stroke-width="0.25" stroke-miterlimit="10" d="M113,255.7c1.1-2.8,2-5.6,2.7-8.2l3.5-0.6c-0.4,2.3-0.6,5-0.5,8.2l-2.4,0.6l0.2-1.4l-0.7,0.1l-0.3,1L113,255.7 z M116.5,252.6l0.5-4.3h0l-1.1,4.4L116.5,252.6z"/>
+<path fill="#E31E31" stroke="#215BA8" stroke-width="0.25" stroke-miterlimit="10" d="M123.2,249.8l-0.9,0.3c0-0.3-0.1-0.5-0.3-0.5c-0.3,0-0.6,0.2-0.8,0.5c-0.2,0.2-0.3,0.5-0.3,0.7 c0,0.1,0.2,0.2,0.4,0.2c0.1,0,0.3,0,0.6-0.1c0.3-0.1,0.6-0.1,0.9-0.1c0.6,0,1,0.2,1.1,0.7c0,0.1,0.1,0.3,0.1,0.4 c0,0.5-0.2,1-0.6,1.6c-0.5,0.7-1.1,1.4-2,1.9c-0.4,0.3-0.9,0.4-1.3,0.4c-0.4,0-0.8-0.1-1.2-0.3c0.2-0.4,0.5-1.1,0.9-2 c0.2,0.2,0.5,0.2,0.8,0.2c0.1,0,0.3,0,0.4,0c0.2-0.1,0.5-0.2,0.7-0.3c0.3-0.2,0.5-0.3,0.4-0.5c0-0.2-0.1-0.3-0.5-0.3 c-0.2,0-0.5,0-0.9,0.1s-0.7,0.1-0.9,0.1c-0.3,0-0.5,0-0.6-0.2c-0.3-0.2-0.4-0.5-0.4-0.9c0.1-0.8,0.6-1.8,1.6-2.9 c1-1.1,1.9-1.7,2.6-1.8c0.7,0,1.1,0.5,1.1,1.6c0,0.3,0,0.6-0.1,0.9L123.2,249.8z"/>
+<path fill="#E31E31" stroke="#215BA8" stroke-width="0.25" stroke-miterlimit="10" d="M126.6,249.8l-0.1,0.6l1.8-0.4l-0.1,1.6c-0.9,0.1-1.5,0.3-2,0.4c0,0.2-0.1,0.3-0.1,0.5l-0.1,0.4l2.1-0.3 l-0.1,2.1c-1.1,0.1-2.5,0.4-4.1,0.8l1.4-8.2l3.8-0.6l-0.1,2.1c-0.7,0.1-1.4,0.1-2,0.3C126.7,249.4,126.7,249.6,126.6,249.8z"/>
+<path fill="#E31E31" stroke="#215BA8" stroke-width="0.25" stroke-miterlimit="10" d="M129.7,247.5c1.2-0.3,2.2-0.5,2.9-0.5c1,0,1.5,0.4,1.5,1.1c0,1-0.6,2.1-1.9,3.1c0.1,0.3,0.6,1.2,1.3,2.7 l-1.8,1.6l-1.2-3.1c-0.2,1-0.3,1.9-0.4,2.7l-1.8,0.5c0-0.2,0.1-0.7,0.2-1.5L129.7,247.5z M131,250l-0.1,0.8 c0.3-0.1,0.5-0.3,0.8-0.5c0.3-0.3,0.5-0.5,0.6-0.7c0-0.1,0-0.1,0.1-0.2c0-0.2-0.1-0.3-0.3-0.3c-0.2,0-0.4,0.1-0.8,0.2 C131.1,249.5,131,249.8,131,250z"/>
+<path fill="#E31E31" stroke="#215BA8" stroke-width="0.25" stroke-miterlimit="10" d="M134.9,247.5l2-0.4c-0.8,3-1.3,5.7-1.5,7.9l-1.8,0.5L134.9,247.5z"/>
+<path fill="#E31E31" stroke="#215BA8" stroke-width="0.25" stroke-miterlimit="10" d="M141.7,247l-0.1,2.1l-1.5,0.1c-0.5,2.1-0.8,4-1,5.8l-1.9,0.5l1-6.1l-0.6,0.1l-0.6,0.1l-0.1-2.1L141.7,247z"/>
+<path fill="#E31E31" stroke="#215BA8" stroke-width="0.25" stroke-miterlimit="10" d="M146.7,248c0.2,0.5,0.3,1,0.3,1.5c0,0.5-0.1,1.1-0.3,1.7c-0.3,1.1-0.8,2-1.5,2.9c-0.8,1.1-1.7,1.6-2.7,1.6 c-0.8,0-1.4-0.4-1.7-1.3c-0.2-0.4-0.2-0.9-0.3-1.5c0-0.5,0.1-1.1,0.3-1.8c0.3-1.1,0.8-2,1.4-2.9c0.8-1.1,1.7-1.7,2.7-1.7 C145.8,246.6,146.4,247.1,146.7,248z M143.3,250.5c-0.3,0.5-0.6,1.1-0.7,1.6c-0.1,0.3-0.1,0.5-0.1,0.7c0,0.3,0.1,0.6,0.2,0.8 c0.2,0.2,0.4,0.3,0.7,0.3c0.4,0,0.8-0.2,1.1-0.7c0.3-0.3,0.5-0.8,0.6-1.3c0.1-0.6,0.2-1.1,0.1-1.7c-0.1-0.6-0.3-0.8-0.7-0.8 C144.2,249.4,143.8,249.8,143.3,250.5z"/>
+<path fill="#E31E31" stroke="#215BA8" stroke-width="0.25" stroke-miterlimit="10" d="M148,253.8c0.3,0.1,0.4,0.3,0.4,0.6c0,0.3-0.2,0.7-0.6,1c-0.3,0.2-0.6,0.4-1,0.4c-0.3,0-0.5,0-0.7-0.1 c-0.2-0.1-0.3-0.3-0.3-0.6c0-0.3,0.2-0.7,0.5-1c0.3-0.2,0.6-0.4,0.9-0.4C147.6,253.6,147.8,253.7,148,253.8z M148.6,246.6l2.4,0.4 c-0.6,1.1-1.1,2-1.4,2.7c-0.4,0.9-0.8,1.8-1.1,2.8l-1.6-0.1L148.6,246.6z"/>
+<path fill="#E31E31" stroke="#215BA8" stroke-width="0.25" stroke-miterlimit="10" d="M151.7,253.8c0.3,0.1,0.4,0.3,0.4,0.6c0,0.3-0.2,0.7-0.6,1c-0.3,0.2-0.6,0.4-1,0.4c-0.3,0-0.5,0-0.7-0.1 c-0.2-0.1-0.3-0.3-0.3-0.6c0-0.3,0.2-0.7,0.5-1c0.3-0.2,0.6-0.4,0.9-0.4C151.3,253.6,151.5,253.7,151.7,253.8z M152.3,246.6 l2.4,0.4c-0.6,1.1-1.1,2-1.4,2.7c-0.4,0.9-0.8,1.8-1.1,2.8l-1.6-0.1L152.3,246.6z"/>
+</svg></a>
+    <nav aria-label="Secciones">
+      <a href="#como">Cómo funciona</a>
+      <a href="#album">El Álbum</a>
+      <a href="#barrios">Barrios</a>
+      <a href="#idiomas">Idiomas</a>
+      <a href="#locales">Para locales</a>
+    </nav>
+    <a class="boton" style="min-height:44px;padding:0 18px;font-size:15px;box-shadow:4px 4px 0 var(--rojo)" href="/">Abrir la app</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="forma circulo f1" aria-hidden="true"></div>
+    <div class="forma circulo f2" aria-hidden="true"></div>
+    <div class="forma f3" aria-hidden="true"></div>
+    <div class="envoltura">
+      <div>
+        <span class="etiqueta">Santiago · Barrio Italia · Franklin · El Golf</span>
+        <h1 class="letrista">Ofertas de barrio<br>que se activan<br><span class="rojo">cuando llegas.</span></h1>
+        <p class="bajada">Los locales de tu cuadra sueltan <b>drops</b>: pocas unidades, poco rato. Camina, llega a la puerta, muestra tu QR y es tuyo. Sin descargar nada.</p>
+        <div class="botones">
+          <a class="boton" href="/">Ver drops cerca →</a>
+          <a class="boton claro" href="#locales">Tengo un local</a>
+        </div>
+      </div>
+      <div class="telefono" role="img" aria-label="La app Caserito mostrando el mapa con drops cerca">
+        <div class="pantalla">
+          <div class="mapa-calles"></div>
+          <div class="parque"></div>
+          <span class="calle-nombre" style="left:8px; top:33%">AV. ITALIA</span>
+          <span class="calle-nombre" style="left:47%; top:20%; transform:rotate(90deg); transform-origin:left">CONDELL</span>
+          <span class="calle-nombre" style="left:20px; top:67%">SANTA ISABEL</span>
+          <div class="chips"><span class="chip activo">Todo · 9</span><span class="chip">Comida</span><span class="chip">Café</span><span class="chip">Grupales</span></div>
+          <div class="pin" style="left:22px; top:92px"><span class="tag">$1.990</span><span class="gota" style="background:var(--rojo)"><span>4</span></span></div>
+          <div class="pin" style="left:170px; top:120px"><span class="tag negro">¿Sorpresa?</span><span class="gota" style="background:#B45309"><span>?</span></span></div>
+          <div class="pin" style="left:62px; top:190px"><span class="tag crema">Quedan 12</span><span class="gota" style="background:var(--azul)"><span>👥</span></span></div>
+          <div class="pin" style="left:186px; top:236px"><span class="tag">$990</span><span class="gota" style="background:var(--rojo)"><span>2</span></span></div>
+          <div class="yo" aria-hidden="true"></div>
+          <div class="hoja">
+            <div class="agarre"></div>
+            <h4 class="letrista">MÁS CERCA DE TI <small>9 drops activos</small></h4>
+            <div class="tarjeta">
+              <span class="cat">Café · quedan 4</span>
+              <b>Café del Barrio</b>
+              <i>“Cortado + medialuna a luca nueve, ¡al tiro que se acaba!”</i>
+              <div class="barra-avance"><div></div></div>
+              <div class="ir">Cómo llegar · 2 min</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="franja" aria-hidden="true"></div>
+  </section>
+
+  <section class="manifiesto bloque">
+    <div class="envoltura">
+      <div class="bauhaus-figura" aria-hidden="true"><div class="a"></div><div class="b"></div><div class="c"></div><div class="d"></div></div>
+      <div>
+        <span class="etiqueta" style="color:var(--amarillo)">Manifiesto</span>
+        <h2 class="letrista">Arte para el pueblo.</h2>
+        <ul>
+          <li><b>El barrio primero.</b> Caserito existe para que la gente vuelva a caminar su cuadra y a conocer al del local.</li>
+          <li><b>Para todos, no para unos pocos.</b> Ofertas, láminas y arte del barrio que cualquiera puede ganar llegando a pie.</li>
+          <li><b>Hablamos como la calle.</b> Chileno, con humor, sin gritar ni presionar. Y si vienes de lejos, te lo decimos en tu idioma.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="como" class="bloque">
+    <div class="envoltura">
+      <span class="etiqueta">Cómo funciona</span>
+      <h2 class="letrista">Tres pasos. Cero descarga.</h2>
+      <p class="intro">Abres Caserito en el navegador del celular, igual que una página. Si quieres, la agregas a tu pantalla de inicio.</p>
+      <div class="pasos">
+        <div class="paso"><div class="num">1</div><h3>Mira el mapa</h3><p>Los drops aparecen como etiquetas de precio sobre el mapa del barrio. Filtra por comida, café o grupales.</p></div>
+        <div class="paso"><div class="num">2</div><h3>Llega a la puerta</h3><p>El drop se desbloquea cuando estás a menos de media cuadra del local. Si quieres, te avisamos cuando sale uno cerca.</p></div>
+        <div class="paso"><div class="num">3</div><h3>Muestra tu QR</h3><p>El local escanea tu código y listo. Pagas en la caja como siempre y te llevas la lámina del local para tu álbum.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="album" class="album bloque">
+    <div class="envoltura">
+      <span class="etiqueta" style="color:var(--amarillo)">El Álbum de Chile</span>
+      <h2 class="letrista">Cada canje, una lámina.<br>Cada barrio, su edición.</h2>
+      <p class="intro">Con tu primer canje en un local ganas su lámina. Junta las del barrio para la Edición Especial y cambia las repetidas por premios del local o por arte del barrio.</p>
+      <div class="ediciones">
+        <div class="lamina"><div class="arte" style="background:var(--amarillo)"><div class="g1" style="background:var(--rojo); left:-30px; top:-30px"></div><div class="g2" style="background:var(--azul); right:10px; bottom:10px"></div><div class="ojos"><span></span><span></span></div></div><div class="nro">N° 01 · BARRIO ITALIA</div><h3>Edición Italiana</h3><p>Providencia y Ñuñoa</p></div>
+        <div class="lamina"><div class="arte" style="background:var(--azul)"><div class="g1" style="background:var(--amarillo); right:-40px; bottom:-40px"></div><div class="g2" style="background:var(--rojo); left:12px; top:12px; border-radius:50%"></div><div class="ojos"><span></span><span></span></div></div><div class="nro">N° 02 · FRANKLIN</div><h3>Edición Persa</h3><p>Santiago</p></div>
+        <div class="lamina"><div class="arte" style="background:var(--crema)"><div class="g1" style="background:var(--negro); left:-20px; bottom:-50px"></div><div class="g2" style="background:var(--amarillo); right:14px; top:14px"></div><div class="ojos"><span></span><span></span></div></div><div class="nro">N° 03 · MATTA SUR</div><h3>Edición Patrimonial</h3><p>Santiago</p></div>
+        <div class="lamina"><div class="arte" style="background:var(--rojo)"><div class="g1" style="background:var(--papel); right:-30px; top:-30px"></div><div class="g2" style="background:var(--negro); left:14px; bottom:14px"></div><div class="ojos"><span></span><span></span></div></div><div class="nro">N° 04 · EL GOLF</div><h3>Edición Ejecutiva</h3><p>Las Condes</p></div>
+      </div>
+      <div class="honor">
+        <div class="sello">CASERITO<br>DE HONOR</div>
+        <div>
+          <h3 class="letrista">7 visitas = tu propia lámina.</h3>
+          <p>Cuando vuelves 7 veces al mismo local, te sacas una selfie y la convertimos en caricatura de colección. Tu cara en el álbum del barrio, para siempre.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="barrios" class="bloque">
+    <div class="envoltura">
+      <span class="etiqueta">Barrios</span>
+      <h2 class="letrista">Partimos por Santiago.</h2>
+      <p class="intro">La app reconoce en qué barrio estás. Si vas a otro, elígelo antes de salir y mira qué drops te esperan.</p>
+      <div class="barrios">
+        <div class="barrio" style="background:var(--amarillo)"><svg class="figura" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#E30A2F" stroke="#111" stroke-width="3"/></svg><h3>Barrio Italia</h3><span class="comuna">Providencia · Ñuñoa</span><span class="estado vivo">EN VIVO</span></div>
+        <div class="barrio"><svg class="figura" viewBox="0 0 48 48" aria-hidden="true"><rect x="3" y="3" width="42" height="42" fill="#1E5AA8" stroke="#111" stroke-width="3"/></svg><h3>Barrio Franklin</h3><span class="comuna">Santiago</span><span class="estado pronto">PRONTO</span></div>
+        <div class="barrio" style="background:var(--crema)"><svg class="figura" viewBox="0 0 48 48" aria-hidden="true"><polygon points="24,3 45,45 3,45" fill="#FFD100" stroke="#111" stroke-width="3"/></svg><h3>Matta Sur</h3><span class="comuna">Santiago</span><span class="estado pronto">PRONTO</span></div>
+        <div class="barrio"><svg class="figura" viewBox="0 0 48 48" aria-hidden="true"><path d="M3 45 A42 42 0 0 1 45 3 L45 45 Z" fill="#111" stroke="#111" stroke-width="3"/></svg><h3>El Golf</h3><span class="comuna">Las Condes</span><span class="estado pronto">PRONTO</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="idiomas" class="idiomas bloque">
+    <div class="envoltura">
+      <span class="etiqueta" style="color:var(--amarillo)">Modo turista</span>
+      <h2 class="letrista">Chileno, pero en tu idioma.</h2>
+      <p class="intro">Caserito no se traduce: se mezcla. Si vienes de afuera, la app te habla en tu idioma con el chileno de la calle, y te explica cada modismo con un toque.</p>
+      <div class="frases">
+        <div class="frase"><span class="lengua">🇨🇱 Español</span><span class="mezcla">Chileno</span><q>Caserito, el cortado a luca, ¡al tiro que se acaba!</q></div>
+        <div class="frase"><span class="lengua">🇬🇧 English</span><span class="mezcla">Spanglish</span><q>Cortado a luca, grab it al tiro, caserito!</q></div>
+        <div class="frase"><span class="lengua">🇧🇷 Português</span><span class="mezcla">Portuñol</span><q>Você tá a 2 cuadras · o drop desbloqueia quando chegar.</q></div>
+        <div class="frase"><span class="lengua">🇮🇹 Italiano</span><span class="mezcla">Itañol</span><q>¡Mamma mia, caserito! Lasaña a $4.990, andiamo al tiro.</q></div>
+        <div class="frase"><span class="lengua">🇩🇪 Deutsch</span><span class="mezcla">Deutschñol</span><q>Noch 5 empanadas! Komm al tiro, caserito.</q></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="locales" class="locales bloque">
+    <div class="envoltura">
+      <div>
+        <span class="etiqueta">Para locales</span>
+        <h2 class="letrista">Tu vitrina en el celular de la cuadra.</h2>
+        <ul>
+          <li>Creas un drop en 30 segundos, desde el celular o el computador.</li>
+          <li>Te llegan personas que están a pasos de tu puerta, no likes.</li>
+          <li>Ves cuántos vinieron, cuántos volvieron y a qué hora.</li>
+          <li>Tu equipo escanea los QR con su propio rol.</li>
+        </ul>
+        <div class="botones" style="display:flex;gap:18px;flex-wrap:wrap">
+          <a class="boton" href="/locales/">Cómo funciona para locales →</a>
+        </div>
+      </div>
+      <div class="cartel">
+        <span class="etiqueta" style="color:var(--azul)">Durante la beta</span>
+        <div class="letrista grande">Gratis.</div>
+        <p>Te inscribimos en 10 minutos, en tu mismo local, y dejamos listo tu primer drop.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="envoltura">
+    <div>
+      <div class="letrista lema">Arte para el pueblo.</div>
+      <div style="margin-top:6px">Caserito · Santiago de Chile</div>
+    </div>
+    <div style="display:flex;gap:22px;flex-wrap:wrap">
+      <a href="/">Abrir la app</a>
+      <a href="/locales/">Para locales</a>
+      <a href="https://caserito-yc5f.vercel.app">Panel de locales</a>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
