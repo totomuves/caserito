@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { Text, View } from 'react-native';
 import MapView, { Marker, Polygon } from 'react-native-maps';
 import { puntosDe } from './barrios';
-import { C, letrista, cuadras } from './tema';
-import { COLOR_TIPO, etiquetaPin, useCoordenadas, HojaMapa } from './MapaComun';
+import { C, letrista, cuadras, textoCategoria } from './tema';
+import { COLOR_TIPO, etiquetaPin, useCoordenadas, useLocalesMapa, HojaMapa } from './MapaComun';
 
 // Mapa en el teléfono (Apple Maps / Google Maps). En la web se usa Mapa.web.js
 export default function Mapa({ drops, pos, alAbrir, barrios = [] }) {
   const coords = useCoordenadas(drops);
+  const locales = useLocalesMapa();
+  const conDrop = new Set(drops.map((d) => d.local_id));
   const [sel, setSel] = useState(null);
 
   return (
@@ -17,6 +19,12 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [] }) {
         {barrios.map((b) => (
           <Polygon key={b.id} coordinates={puntosDe(b.limite).map((p) => ({ latitude: p.lat, longitude: p.lng }))}
             strokeColor={C.azul} strokeWidth={2} lineDashPattern={[8, 6]} fillColor="rgba(255,209,0,0.10)" tappable={false} />
+        ))}
+        {locales.filter((l) => !conDrop.has(l.id)).map((l) => (
+          <Marker key={'l' + l.id} coordinate={{ latitude: l.punto.lat, longitude: l.punto.lng }} title={l.nombre}
+            description={`${textoCategoria(l.categoria)} · sin drop ahora`} tracksViewChanges={false}>
+            <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: C.papel, borderWidth: 3, borderColor: C.negro }} />
+          </Marker>
         ))}
         {drops.map((d) => coords[d.local_id] && (
           <Marker key={d.drop_id} coordinate={{ latitude: coords[d.local_id].lat, longitude: coords[d.local_id].lng }}

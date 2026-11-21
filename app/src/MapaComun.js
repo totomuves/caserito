@@ -26,6 +26,18 @@ export function useCoordenadas(drops) {
   return coords;
 }
 
+// Todos los locales de Caserito (aprobados y activos), tengan o no un drop ahora
+export function useLocalesMapa() {
+  const [locales, setLocales] = useState([]);
+  useEffect(() => {
+    supabase.from('locales').select('id, nombre, categoria, ubicacion').eq('activo', true).eq('aprobado', true)
+      .then(({ data }) => {
+        setLocales((data || []).map((l) => ({ ...l, punto: leerPunto(l.ubicacion) })).filter((l) => l.punto));
+      });
+  }, []);
+  return locales;
+}
+
 // Aviso sin ubicación + hoja de abajo con el drop elegido o el más cercano
 export function HojaMapa({ drops, pos, sel, alAbrir }) {
   const cercano = sel || [...drops].sort((a, b) => a.cuadras - b.cuadras)[0];

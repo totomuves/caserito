@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
-import { C, cuadras } from './tema';
-import { COLOR_TIPO, etiquetaPin, useCoordenadas, HojaMapa } from './MapaComun';
+import { C, cuadras, textoCategoria } from './tema';
+import { COLOR_TIPO, etiquetaPin, useCoordenadas, useLocalesMapa, HojaMapa } from './MapaComun';
 
 const L = require('leaflet');
 
@@ -25,6 +25,7 @@ function prepararEstilos() {
     .caserito-pin .tag.sorpresa { background:${C.negro}; color:${C.amarillo}; }
     .caserito-pin .punto { width:14px; height:14px; margin:2px auto 0; border-radius:7px; border:2px solid ${C.negro}; box-sizing:border-box; }
     .caserito-barrio { font: 700 12px Archivo, sans-serif; color: #1E5AA8; text-align: center; text-shadow: 0 0 3px #FFF6E5, 0 0 3px #FFF6E5; opacity: .85; white-space: nowrap; }
+    .local-sin-drop { width:18px; height:18px; border-radius:9px; background:#FFF6E5; border:3px solid #111; box-sizing:border-box; }
     .caserito-yo { width:18px; height:18px; border-radius:9px; background:#1D4ED8; border:3px solid #fff; box-shadow:0 0 0 6px rgba(29,78,216,.25); box-sizing:border-box; }
   `;
   document.head.appendChild(st);
@@ -36,6 +37,7 @@ function escapar(t) {
 
 export default function Mapa({ drops, pos, alAbrir, barrios = [] }) {
   const coords = useCoordenadas(drops);
+  const locales = useLocalesMapa();
   const [sel, setSel] = useState(null);
   const caja = useRef(null);
   const mapa = useRef(null);
@@ -83,10 +85,17 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [] }) {
     });
   }, [barrios]);
 
-  // Pines de los drops
+  // Pines: locales sin drop ahora (chicos, color papel) y drops en vivo encima
   useEffect(() => {
     if (!capa.current) return;
     capa.current.clearLayers();
+    const conDrop = new Set(drops.map((d) => d.local_id));
+    locales.filter((l) => !conDrop.has(l.id)).forEach((l) => {
+      const icono = L.divIcon({ className: 'caserito-pin', html: '<div class="local-sin-drop"></div>', iconSize: [18, 18], iconAnchor: [9, 9] });
+      L.marker([l.punto.lat, l.punto.lng], { icon: icono, title: l.nombre, keyboard: true, zIndexOffset: -100 })
+        .bindPopup(`<b>${escapar(l.nombre)}</b><br>${escapar(textoCategoria(l.categoria))}<br><span style="color:#4A4A4A">Sin drop ahora · vuelve más rato</span>`)
+        .addTo(capa.current);
+    });
     drops.forEach((d) => {
       const p = coords[d.local_id];
       if (!p) return;
@@ -97,7 +106,7 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [] }) {
         .on('click', () => setSel(d))
         .addTo(capa.current);
     });
-  }, [drops, coords]);
+  }, [drops, coords, locales]);
 
   return (
     <View style={{ flex: 1, zIndex: 0, isolation: 'isolate' }}>
