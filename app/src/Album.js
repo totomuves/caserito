@@ -7,6 +7,7 @@ import { Ola, Brillo, IconoCategoria, Boton } from './componentes';
 import { useIdioma } from './idioma';
 import { identidadDe, Motivo } from './identidad';
 import { Monstruito, apodoLamina, letraLamina } from './monstruito';
+import Honor from './Honor';
 
 const MARCOS = [
   { fondo: C.amarillo, num: C.negro, texto: C.negro },
@@ -134,6 +135,7 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
 
       {total > 0 ? <EdicionEspecial ide={ide} barrio={barrio} tengo={tengo} necesarias={Math.min(total, (arte && arte.necesarias) || 5)} t={t} /> : null}
       {arte ? <ArteBarrio a={arte} t={t} msg={msgArte} alPedir={pedirArte} /> : null}
+      <Honor usuario={usuario} t={t} />
 
       <Text style={{ ...letrista, fontSize: 20, marginHorizontal: 16, marginTop: 18, marginBottom: 10 }}>{t('LAS LÁMINAS', "LAS LÁMINAS · STICKERS")}</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12, gap: 9 }}>

@@ -30,6 +30,13 @@
         {
           "locationWhenInUsePermission": "Caserito usa tu ubicación para mostrarte los drops del barrio a pocas cuadras."
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Caserito usa la cámara para tu lámina de Caserito de Honor.",
+          "photosPermission": "Caserito usa una foto tuya para tu lámina de Caserito de Honor."
+        }
       ]
     ],
     "extra": {
