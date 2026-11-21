@@ -12,6 +12,7 @@ import { Anton_400Regular } from '@expo-google-fonts/anton/400Regular';
 import { ArchivoNarrow_700Bold } from '@expo-google-fonts/archivo-narrow/700Bold';
 import { Gelasio_400Regular } from '@expo-google-fonts/gelasio/400Regular';
 import { EstiloProvider, useEstilo } from './src/estilo';
+import Cargando from './src/Cargando';
 import { supabase, explicar } from './src/supabase';
 import { C, F, BARRIO_ITALIA, R } from './src/tema';
 import { IdiomaProvider, useIdioma } from './src/idioma';
@@ -170,7 +171,7 @@ function Caserito() {
   }
   function cerrarAvisos() { descartarAvisos(); setAvisos('descartado'); }
 
-  if (!fuentes) return <View style={{ flex: 1, backgroundColor: C.crema }} />;
+  if (!fuentes) return <Cargando texto="Caserito" />;
 
   const abrir = (d) => setAbierto(d.drop_id);
   const dropAbierto = drops.find((d) => d.drop_id === abierto);
@@ -187,7 +188,7 @@ function Caserito() {
               <Pressable onPress={cargar}><Text style={{ fontFamily: F.negrita, color: C.azul }}>{t('Reintentar', "Intenta de nuevo · Try again")}</Text></Pressable>
             </View>
           ) : cargando ? (
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}><ActivityIndicator color={C.rojo} size="large" /></View>
+            <Cargando fuente={F.negrita} texto={t('Buscando drops cerca…', 'Buscando drops cerca… · Finding drops')} />
           ) : dropAbierto ? (
             <Drop drop={dropAbierto} usuario={usuario} alCerrar={() => { setAbierto(null); cargar(); }} />
           ) : pestana === 'ayuda' ? (

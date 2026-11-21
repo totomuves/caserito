@@ -57,11 +57,16 @@
       "name": "Caserito",
       "shortName": "Caserito",
       "themeColor": "#FFD100",
-      "backgroundColor": "#F3E6CC",
+      "backgroundColor": "#FFD100",
       "lang": "es",
       "description": "Caserito — tu barrio te tiene ofertas. Drops de Barrio Italia.",
       "favicon": "./assets/favicon.png"
     },
-    "icon": "./assets/icon.png"
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFD100"
+    }
   }
 }
