@@ -23,7 +23,7 @@ function prepararEstilos() {
     .caserito-pin { background: none; border: none; }
     /* Pin del diseño "pantallas": etiqueta de precio girada sobre una gota del color del tipo */
     .pin-wrap { position:relative; width:110px; height:92px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; }
-    .tag { position:relative; font-family:LuckiestGuy_400Regular, 'Luckiest Guy', sans-serif; font-size:16px; line-height:1; padding:5px 8px 3px; white-space:nowrap;
+    .tag { position:relative; font-family:Jost_800ExtraBold, Jost, Archivo, sans-serif; font-size:16px; line-height:1; padding:5px 8px 3px; white-space:nowrap;
       background:${C.amarillo}; color:${C.negro}; border:3px solid ${C.negro}; border-radius:0; box-shadow:3px 3px 0 ${C.negro}; }
     .palito { width:3px; height:9px; background:${C.negro}; }
     .figura-pin { position:relative; width:36px; height:36px; }

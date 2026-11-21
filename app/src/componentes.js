@@ -133,8 +133,8 @@ export function Boton({ texto, onPress, fondo = C.negro, color = C.papel, deshab
 export function EtiquetaPrecio({ valor, giro = '4deg' }) {
   if (!valor) return null;
   return (
-    <View style={{ position: 'absolute', top: -12, right: 8, transform: [{ rotate: giro }], backgroundColor: C.amarillo, borderWidth: 2.5, borderColor: C.negro, borderRadius: 8, paddingHorizontal: 9, paddingTop: 4 }}>
-      <Text style={{ ...letrista, fontSize: 21, color: C.negro }}>{valor}</Text>
+    <View style={{ position: 'absolute', top: -14, right: 8, backgroundColor: C.amarillo, borderWidth: 3, borderColor: C.negro, paddingHorizontal: 10, paddingVertical: 2, shadowColor: C.negro, shadowOffset: { width: 3, height: 3 }, shadowOpacity: 1, shadowRadius: 0 }}>
+      <Text style={{ ...letrista, fontSize: 22, color: C.negro }}>{valor}</Text>
     </View>
   );
 }

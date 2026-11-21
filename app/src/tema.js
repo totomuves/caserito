@@ -11,14 +11,15 @@ export const C = {
 };
 
 export const F = {
-  letrista: 'LuckiestGuy_400Regular',
+  letrista: 'Jost_800ExtraBold',
+  pincel: 'LuckiestGuy_400Regular',
   normal: 'Archivo_400Regular',
   media: 'Archivo_600SemiBold',
   negrita: 'Archivo_800ExtraBold',
 };
 
-// Estilo de los títulos/precios: mayúsculas de cartel, inclinadas
-export const letrista = { fontFamily: F.letrista, fontStyle: 'italic', letterSpacing: 0.5 };
+// Títulos y precios: geométrica Bauhaus (Jost, tipo Futura), recta y apretada
+export const letrista = { fontFamily: F.letrista, letterSpacing: -0.3 };
 
 // Debe coincidir con caserito.categorias_validas() (supabase/004)
 export const CATEGORIAS = [

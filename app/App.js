@@ -6,6 +6,7 @@ import * as Location from 'expo-location';
 import Svg, { Path } from 'react-native-svg';
 import { useFonts, LuckiestGuy_400Regular } from '@expo-google-fonts/luckiest-guy';
 import { Archivo_400Regular, Archivo_600SemiBold, Archivo_800ExtraBold } from '@expo-google-fonts/archivo';
+import { Jost_700Bold, Jost_800ExtraBold } from '@expo-google-fonts/jost';
 import { supabase, explicar } from './src/supabase';
 import { C, F, BARRIO_ITALIA } from './src/tema';
 import { IdiomaProvider, useIdioma } from './src/idioma';
@@ -24,7 +25,7 @@ export default function App() {
 
 function Caserito() {
   const { t, tur } = useIdioma();
-  const [fuentes] = useFonts({ LuckiestGuy_400Regular, Archivo_400Regular, Archivo_600SemiBold, Archivo_800ExtraBold });
+  const [fuentes] = useFonts({ LuckiestGuy_400Regular, Jost_700Bold, Jost_800ExtraBold, Archivo_400Regular, Archivo_600SemiBold, Archivo_800ExtraBold });
   const [usuario, setUsuario] = useState(null);
   const [pos, setPos] = useState(null);
   const [drops, setDrops] = useState([]);

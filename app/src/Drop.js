@@ -4,7 +4,7 @@ import QRCode from 'react-native-qrcode-svg';
 import Svg, { Path } from 'react-native-svg';
 import { supabase, explicar, leerPunto } from './supabase';
 import { C, F, letrista, precio, cuadras, textoCategoria } from './tema';
-import { Ola, Boton, EtiquetaPrecio, Brillo, FondoBauhaus } from './componentes';
+import { Ola, Boton, EtiquetaPrecio, Brillo, FondoBauhaus, Figura } from './componentes';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR, categoriaTur } from './idioma';
 
 export default function Drop({ drop, usuario, alCerrar }) {
@@ -103,7 +103,7 @@ export default function Drop({ drop, usuario, alCerrar }) {
           <Boton texto={t("Me sumo", "Me sumo · Join")} grande fondo={C.amarillo} color={C.negro} onPress={sumarme} style={{ marginTop: 6 }} />
         ) : mio.canjeado_at ? (
           <View style={{ backgroundColor: C.azul, borderRadius: 0, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            <Brillo tam={22} color={C.amarillo} />
+            <Figura forma="circulo" color={C.amarillo} tam={22} />
             <Text style={{ fontFamily: F.negrita, color: '#FFFFFF', fontSize: 15, flex: 1 }}>{t('¡Canjeado! Ganaste la lámina de este local.', "¡Canjeado! Ganaste la lámina de este local for your álbum.")}</Text>
           </View>
         ) : drop.dentro_del_radio ? (
