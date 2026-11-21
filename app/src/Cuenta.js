@@ -3,7 +3,7 @@ import { Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-na
 import { supabase, explicar } from './supabase';
 import { C, F, letrista } from './tema';
 import { Ola, Boton } from './componentes';
-import { useIdioma } from './idioma';
+import { useIdioma, SelectorIdioma } from './idioma';
 
 // "Tú": cuenta del caserito, apodo, idioma y comentarios de la beta
 const campo = { minHeight: 48, borderWidth: 2, borderColor: C.negro, borderRadius: 12, backgroundColor: '#FFFFFF', paddingHorizontal: 12, fontFamily: F.normal, fontSize: 16, color: C.negro };
@@ -54,10 +54,7 @@ export default function Cuenta({ usuario, alAyuda }) {
 
       <View style={tarjeta}>
         <Text style={{ ...letrista, fontSize: 18 }}>{t('IDIOMA', "IDIOMA · LANGUAGE")}</Text>
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Boton texto="Español" fondo={tur ? C.papel : C.negro} color={tur ? C.negro : C.papel} onPress={() => setTur(false)} style={{ flex: 1 }} />
-          <Boton texto="Tourist (Spanglish)" fondo={tur ? C.negro : C.papel} color={tur ? C.papel : C.negro} onPress={() => setTur(true)} style={{ flex: 1 }} />
-        </View>
+        <SelectorIdioma />
         <Boton texto={t('¿Cómo funciona Caserito?', "¿Cómo funciona Caserito?")} fondo={C.papel} color={C.negro} onPress={alAyuda} />
       </View>
 

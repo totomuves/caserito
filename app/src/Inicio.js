@@ -3,7 +3,7 @@ import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native'
 import { supabase } from './supabase';
 import { C, F, letrista, CATEGORIAS, textoCategoria, tieneCategoria, precio, cuadras } from './tema';
 import { Ola, Brillo, Pildora, EtiquetaPrecio, Boton } from './componentes';
-import { useIdioma, FraseGlosario, CATEGORIA_TUR } from './idioma';
+import { useIdioma, FraseGlosario, CATEGORIA_TUR, categoriaTur, SelectorIdioma } from './idioma';
 import Logo from './Logo';
 import { SelectorBarrios } from './MapaComun';
 import Svg, { Path } from 'react-native-svg';
@@ -25,7 +25,8 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
   const [gustos, setGustos] = useState([]);
   const [i, setI] = useState(0);
   const [refrescando, setRefrescando] = useState(false);
-  const { tur, t, cuad, setTur } = useIdioma();
+  const { tur, lang, t, cuad, setTur } = useIdioma();
+  const [verIdiomas, setVerIdiomas] = useState(false);
 
   useEffect(() => {
     supabase.from('gustos').select('*').eq('usuario_id', usuario.id).order('creado_at')
@@ -68,10 +69,11 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
         <Brillo tam={14} style={{ position: 'absolute', right: 40, top: 12 }} />
         <Logo ancho={190} style={{ marginLeft: 22, marginTop: 4, marginBottom: 2 }} />
         <Text style={{ fontFamily: F.negrita, fontSize: 13, paddingLeft: 26 }}>{visita ? t(`Vas a ${visita.nombre} · ${visita.comuna}`, `Going to ${visita.nombre} · ${visita.comuna}`) : t(`${lugar} · tu barrio te tiene ofertas`, `${lugar} · ofertas like a local`)}</Text>
-        <Pressable onPress={() => setTur(!tur)} accessibilityRole="switch" accessibilityState={{ checked: tur }}
+        <Pressable onPress={() => setVerIdiomas(!verIdiomas)} accessibilityRole="button" accessibilityLabel="Idioma · Language"
           style={{ position: 'absolute', right: 68, top: 14, height: 44, paddingHorizontal: 12, borderRadius: 22, borderWidth: 2.5, borderColor: C.negro, backgroundColor: tur ? C.negro : C.papel, justifyContent: 'center' }}>
-          <Text style={{ fontFamily: F.negrita, fontSize: 12, color: tur ? C.amarillo : C.negro }}>{tur ? 'Español' : 'Tourist?'}</Text>
+          <Text style={{ fontFamily: F.negrita, fontSize: 12, color: tur ? C.amarillo : C.negro }}>{tur ? `🌍 ${lang.toUpperCase()}` : 'Tourist?'}</Text>
         </Pressable>
+        {verIdiomas ? <SelectorIdioma alElegir={() => setVerIdiomas(false)} style={{ paddingLeft: 26, paddingTop: 8, paddingBottom: 6 }} /> : null}
         <Pressable onPress={alAyuda} accessibilityRole="button" accessibilityLabel={t('¿Cómo funciona Caserito?', "¿Cómo funciona Caserito?")}
           style={{ position: 'absolute', right: 16, top: 14, minWidth: 44, height: 44, paddingHorizontal: 14, borderRadius: 22, borderWidth: 2.5, borderColor: C.negro, backgroundColor: C.papel, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ ...letrista, fontSize: 20 }}>?</Text>
@@ -151,7 +153,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingTop: 18 }}>
-        {CATEGORIAS.map((c) => <Pildora key={c.id} texto={tur ? CATEGORIA_TUR[c.id] || c.texto : c.texto} activa={filtro === c.id} onPress={() => setFiltro(c.id)} />)}
+        {CATEGORIAS.map((c) => <Pildora key={c.id} texto={tur ? categoriaTur(c.id, lang) || c.texto : c.texto} activa={filtro === c.id} onPress={() => setFiltro(c.id)} />)}
       </ScrollView>
 
       <View style={{ marginTop: 14 }}>
@@ -165,7 +167,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
             {visibles.map((d, k) => (
               <Pressable key={d.drop_id} onPress={() => alAbrir(d)} style={{ width: 216, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: 16, padding: 14, gap: 6 }}>
                 <EtiquetaPrecio valor={d.tipo === 'sorpresa' ? '¿?' : precio(d.precio)} giro={k % 2 ? '-4deg' : '5deg'} />
-                <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.rojoTexto, textTransform: 'uppercase' }}>{tur ? CATEGORIA_TUR[d.categoria] || textoCategoria(d.categoria) : textoCategoria(d.categoria)} · {t('quedan', "quedan:")} {d.quedan}</Text>
+                <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.rojoTexto, textTransform: 'uppercase' }}>{tur ? categoriaTur(d.categoria, lang) || textoCategoria(d.categoria) : textoCategoria(d.categoria)} · {t('quedan', "quedan:")} {d.quedan}</Text>
                 <Text style={{ fontFamily: F.negrita, fontSize: 17 }} numberOfLines={1}>{d.local_nombre}</Text>
                 <FraseGlosario texto={(d.frase || d.titulo).toUpperCase()} colorAyuda={C.rojoTexto} numberOfLines={3} style={{ ...letrista, fontSize: 14, lineHeight: 18 }} />
                 <Text style={{ fontFamily: F.media, fontSize: 13, color: C.gris }}>

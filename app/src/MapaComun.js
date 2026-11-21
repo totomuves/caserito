@@ -3,7 +3,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { supabase, leerPunto } from './supabase';
 import { C, F, letrista, precio, cuadras, textoCategoria } from './tema';
 import { caminar } from './Drop';
-import { useIdioma, FraseGlosario, CATEGORIA_TUR } from './idioma';
+import { useIdioma, FraseGlosario, CATEGORIA_TUR, categoriaTur } from './idioma';
 
 export const COLOR_TIPO = { normal: C.rojo, grupal: C.azul, sorpresa: '#B45309', recien_llegado: C.negro };
 
@@ -142,7 +142,7 @@ export function useLocalesMapa() {
 // Aviso sin ubicación + hoja de abajo con el drop elegido o el más cercano
 export function HojaMapa({ drops, pos, sel, alAbrir, coords = {} }) {
   const cercano = sel || [...drops].sort((a, b) => a.cuadras - b.cuadras)[0];
-  const { tur, t, cuad } = useIdioma();
+  const { tur, lang, t, cuad } = useIdioma();
   const destino = cercano && coords[cercano.local_id];
   return (
     <>
@@ -160,7 +160,7 @@ export function HojaMapa({ drops, pos, sel, alAbrir, coords = {} }) {
         {cercano ? (
           <Pressable onPress={() => alAbrir(cercano)} style={{ backgroundColor: '#FFFFFF', borderWidth: 2.5, borderColor: C.negro, borderRadius: 18, padding: 14, gap: 7, shadowColor: C.negro, shadowOffset: { width: 3, height: 3 }, shadowOpacity: 1, shadowRadius: 0, elevation: 3 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
-              <Text style={{ fontFamily: F.negrita, fontSize: 12, color: COLOR_TIPO[cercano.tipo] || C.rojoTexto, textTransform: 'uppercase', flexShrink: 1 }}>{tur ? CATEGORIA_TUR[cercano.categoria] || textoCategoria(cercano.categoria) : textoCategoria(cercano.categoria)} · {t('quedan', 'quedan')} {cercano.quedan}</Text>
+              <Text style={{ fontFamily: F.negrita, fontSize: 12, color: COLOR_TIPO[cercano.tipo] || C.rojoTexto, textTransform: 'uppercase', flexShrink: 1 }}>{tur ? categoriaTur(cercano.categoria, lang) || textoCategoria(cercano.categoria) : textoCategoria(cercano.categoria)} · {t('quedan', 'quedan')} {cercano.quedan}</Text>
               {cercano.precio ? <Text style={{ ...letrista, fontSize: 16, backgroundColor: C.amarillo, borderWidth: 2, borderColor: C.negro, borderRadius: 6, paddingHorizontal: 6, overflow: 'hidden', transform: [{ rotate: '-4deg' }] }}>{precio(cercano.precio)}</Text> : null}
             </View>
             <Text style={{ fontFamily: F.negrita, fontSize: 18 }}>{cercano.local_nombre}</Text>

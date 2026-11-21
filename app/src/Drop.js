@@ -5,7 +5,7 @@ import Svg, { Path } from 'react-native-svg';
 import { supabase, explicar, leerPunto } from './supabase';
 import { C, F, letrista, precio, cuadras, textoCategoria } from './tema';
 import { Ola, Boton, EtiquetaPrecio, Brillo } from './componentes';
-import { useIdioma, FraseGlosario, CATEGORIA_TUR } from './idioma';
+import { useIdioma, FraseGlosario, CATEGORIA_TUR, categoriaTur } from './idioma';
 
 export default function Drop({ drop, usuario, alCerrar }) {
   const [mio, setMio] = useState(undefined);
@@ -54,7 +54,7 @@ export default function Drop({ drop, usuario, alCerrar }) {
   const resta = Math.max(0, new Date(drop.termina_at).getTime() - ahora);
   const reloj = `${Math.floor(resta / 3600000)}:${String(Math.floor((resta % 3600000) / 60000)).padStart(2, '0')}:${String(Math.floor((resta % 60000) / 1000)).padStart(2, '0')}`;
   const maxNivel = niveles.length ? niveles[niveles.length - 1].umbral : 1;
-  const { tur, t, cuad } = useIdioma();
+  const { tur, lang, t, cuad } = useIdioma();
 
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
@@ -70,7 +70,7 @@ export default function Drop({ drop, usuario, alCerrar }) {
         <View style={{ flex: 1 }}>
           <Text style={{ fontFamily: F.negrita, fontSize: 17 }} numberOfLines={1}>{drop.local_nombre}</Text>
           <Text style={{ fontFamily: F.media, fontSize: 13 }}>
-            {tur ? CATEGORIA_TUR[drop.categoria] || textoCategoria(drop.categoria) : textoCategoria(drop.categoria)} · {cuad(drop.cuadras)}{nota ? ` · ★ ${nota.promedio} (${nota.cantidad})` : ''}
+            {tur ? categoriaTur(drop.categoria, lang) || textoCategoria(drop.categoria) : textoCategoria(drop.categoria)} · {cuad(drop.cuadras)}{nota ? ` · ★ ${nota.promedio} (${nota.cantidad})` : ''}
           </Text>
         </View>
       </View>
