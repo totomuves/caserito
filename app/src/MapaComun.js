@@ -3,6 +3,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { supabase, leerPunto } from './supabase';
 import { C, F, letrista, precio, cuadras, textoCategoria } from './tema';
 import { caminar } from './Drop';
+import { figuraDe, colorDe, Figura } from './componentes';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR, categoriaTur } from './idioma';
 
 export const COLOR_TIPO = { normal: C.rojo, grupal: C.azul, sorpresa: '#B45309', recien_llegado: C.negro };
@@ -19,9 +20,9 @@ export function urgente(d) {
 const COMIDA = ['comer', 'tomar', 'dulce', 'almacen'];
 export const FILTROS = [
   { id: 'todo', es: 'Todo', en: 'All', pasa: () => true },
-  { id: 'comida', es: 'Comida', en: 'Food', pasa: (d) => COMIDA.includes(d.categoria) || (d.categorias || []).some((c) => COMIDA.includes(c)) },
-  { id: 'cafe', es: 'Café', en: 'Coffee', pasa: (d) => d.categoria === 'cafe' || (d.categorias || []).includes('cafe') },
-  { id: 'grupal', es: 'Grupales', en: 'Group', pasa: (d) => d.tipo === 'grupal' },
+  { id: 'comida', es: 'Comida', en: 'Food', figura: 'circulo', color: C.rojo, pasa: (d) => COMIDA.includes(d.categoria) || (d.categorias || []).some((c) => COMIDA.includes(c)) },
+  { id: 'cafe', es: 'Café', en: 'Coffee', figura: 'cuadrado', color: C.azul, pasa: (d) => d.categoria === 'cafe' || (d.categorias || []).includes('cafe') },
+  { id: 'grupal', es: 'Grupales', en: 'Group', figura: 'triangulo', color: C.negro, pasa: (d) => d.tipo === 'grupal' },
 ];
 export function filtrar(drops, id) {
   const f = FILTROS.find((x) => x.id === id) || FILTROS[0];
@@ -40,7 +41,8 @@ export function FiltrosMapa({ drops, filtro, alElegir, arriba = 60 }) {
           if (f.id !== 'todo' && !n) return null;
           return (
             <Pressable key={f.id} onPress={() => alElegir(f.id)} accessibilityRole="button" accessibilityState={{ selected: activo }}
-              style={{ minHeight: 36, paddingHorizontal: 14, borderRadius: 0, borderWidth: 2.5, borderColor: C.negro, backgroundColor: activo ? C.amarillo : C.papel, justifyContent: 'center' }}>
+              style={{ minHeight: 36, paddingHorizontal: 12, borderRadius: 0, borderWidth: 2.5, borderColor: C.negro, backgroundColor: activo ? C.amarillo : C.papel, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              {f.figura ? <Figura forma={f.figura} color={f.color} tam={11} /> : null}
               <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.negro }}>{t(f.es, f.en)}{f.id === 'todo' ? ` · ${n}` : ''}</Text>
             </Pressable>
           );
@@ -59,9 +61,25 @@ export function etiquetaTag(d) {
 // Lo que va dentro de la gota
 export function centroPin(d) {
   if (d.tipo === 'sorpresa') return '?';
-  if (d.tipo === 'grupal') return '👥';
+  if (d.tipo === 'grupal') return String(d.quedan);
   return d.quedan != null && d.tipo !== 'recien_llegado' ? String(d.quedan) : '★';
 }
+// Figura y color del pin (Bauhaus): sorpresa = rombo amarillo, grupal = triángulo negro, el resto según el rubro
+export function figuraPin(d) {
+  if (d.tipo === 'sorpresa') return { forma: 'rombo', color: C.amarillo, texto: C.negro };
+  if (d.tipo === 'grupal') return { forma: 'triangulo', color: C.negro, texto: C.amarillo };
+  const forma = figuraDe(d.categoria);
+  const color = colorDe(d.categoria);
+  return { forma, color, texto: color === C.amarillo ? C.negro : C.papel };
+}
+export const RUTA_PIN = {
+  circulo: 'M18 3a15 15 0 1 0 0 30a15 15 0 1 0 0-30z',
+  cuadrado: 'M4 4h28v28H4z',
+  triangulo: 'M18 2L34 33H2z',
+  cuarto: 'M3 33A30 30 0 0 1 33 3V33z',
+  rombo: 'M18 1L35 18L18 35L1 18z',
+};
+
 // Minutos caminando (cuadras de 100 m a 80 m/min)
 export function minutos(d) { return Math.max(1, Math.round((d.cuadras || 1) * 1.25)); }
 // Qué tan cerca estás de desbloquearlo (0 a 1)

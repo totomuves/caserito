@@ -3,7 +3,7 @@ import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { supabase, explicar } from './supabase';
 import { C, F, letrista, textoCategoria } from './tema';
-import { Ola, Brillo, IconoCategoria, Boton } from './componentes';
+import { Ola, Brillo, IconoCategoria, Boton, FondoBauhaus, Figura, figuraDe, colorDe } from './componentes';
 import { useIdioma } from './idioma';
 import { identidadDe, Motivo } from './identidad';
 import { Monstruito, apodoLamina, letraLamina } from './monstruito';
@@ -89,14 +89,14 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
 
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 110 }}>
-      <View style={{ backgroundColor: C.amarillo, paddingHorizontal: 18, paddingTop: 10, paddingBottom: 4 }}>
-        <Brillo tam={22} style={{ position: 'absolute', right: 28, top: 16 }} />
-        <Text style={{ fontFamily: F.negrita, fontSize: 13 }}>{t('Álbum de Chile · ', 'Álbum de Chile · ')}{ide.edicion}</Text>
-        <Text style={{ ...letrista, fontSize: 34, color: C.rojo, textShadowColor: C.azul, textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 0 }}>{(barrio ? barrio.nombre : 'Barrio Italia').toUpperCase()}</Text>
-        {barrio ? <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{barrio.comuna} · {Object.keys(mias).length} {t('láminas en todo Chile', 'láminas en todo Chile')}</Text> : null}
+      <View style={{ backgroundColor: C.azul, paddingHorizontal: 18, paddingTop: 14, paddingBottom: 12 }}>
+        <FondoBauhaus variante="album" />
+        <Text style={{ fontFamily: F.negrita, fontSize: 11, letterSpacing: 2, color: C.amarillo, textTransform: 'uppercase' }}>{t('Álbum de Chile · ', 'Álbum de Chile · ')}{ide.edicion}</Text>
+        <Text style={{ ...letrista, fontSize: 34, color: C.papel, textShadowColor: C.negro, textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 0, maxWidth: 250 }}>{(barrio ? barrio.nombre : 'Barrio Italia').toUpperCase()}</Text>
+        {barrio ? <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.papel }}>{barrio.comuna} · {Object.keys(mias).length} {t('láminas en todo Chile', 'láminas en todo Chile')}</Text> : null}
         <View style={{ marginTop: 6, width: 120 }}><Motivo tipo={ide.motivo} a={ide.principal} b={ide.acento} alto={8} /></View>
       </View>
-      <Ola color={C.amarillo} />
+      <Ola color={C.azul} />
       {barrios.length > 1 && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingBottom: 10 }}>
           {barrios.map((x) => {
@@ -159,7 +159,7 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
                 {ganada ? (
                   <Monstruito categoria={l.categoria} local={l} tam={48} />
                 ) : (
-                  <Text style={{ ...letrista, fontSize: 30, color: '#8A7A66' }}>?</Text>
+                  <Figura forma={figuraDe(l.categoria)} color={C.crema} borde="#8A7A66" tam={34} />
                 )}
               </View>
               <Text numberOfLines={2} style={{ fontFamily: F.negrita, fontSize: 10, textAlign: 'center', color: ganada ? m.texto : C.gris }}>

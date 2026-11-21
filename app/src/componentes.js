@@ -57,12 +57,67 @@ export function IconoCategoria({ categoria, tam = 28, color = C.negro }) {
   );
 }
 
-export function Pildora({ texto, activa, onPress, color = C.negro }) {
+export function Pildora({ texto, activa, onPress, color = C.negro, categoria }) {
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityState={{ selected: !!activa }}
-      style={{ minHeight: 38, paddingHorizontal: 14, borderRadius: 19, borderWidth: 2.5, borderColor: C.negro, backgroundColor: activa ? color : C.papel, justifyContent: 'center' }}>
+      style={{ minHeight: 40, paddingHorizontal: 12, borderRadius: 0, borderWidth: 2.5, borderColor: C.negro, backgroundColor: activa ? color : C.papel, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+      {categoria && categoria !== 'todo' ? <Figura forma={figuraDe(categoria)} color={colorDe(categoria)} tam={11} borde={activa ? C.papel : C.negro} /> : null}
       <Text style={{ fontFamily: F.negrita, fontSize: 13, color: activa ? (color === C.negro ? C.amarillo : '#FFFFFF') : C.negro }}>{texto}</Text>
     </Pressable>
+  );
+}
+
+// ——— Recursos Bauhaus ———
+// Cada rubro tiene su figura: círculo = comer y tomar, cuadrado = café, triángulo = tiendas, cuarto = servicios
+const COMIDA = ['comer', 'tomar', 'dulce', 'almacen'];
+const SERVICIOS = ['belleza', 'bienestar', 'mascotas', 'otros'];
+export function figuraDe(cat) {
+  if (COMIDA.includes(cat)) return 'circulo';
+  if (cat === 'cafe') return 'cuadrado';
+  if (SERVICIOS.includes(cat)) return 'cuarto';
+  return 'triangulo';
+}
+export function colorDe(cat) {
+  if (COMIDA.includes(cat)) return C.rojo;
+  if (cat === 'cafe') return C.azul;
+  if (SERVICIOS.includes(cat)) return C.negro;
+  return C.amarillo;
+}
+const RUTAS = {
+  circulo: 'M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20z',
+  cuadrado: 'M2 2h20v20H2z',
+  triangulo: 'M12 2L22 22H2z',
+  cuarto: 'M2 22A20 20 0 0 1 22 2V22z',
+  rombo: 'M12 1L23 12L12 23L1 12z',
+  semi: 'M2 22A10 10 0 0 1 22 22z',
+};
+export function Figura({ forma = 'circulo', color = C.rojo, tam = 24, borde = C.negro, grosor = 2.5, style }) {
+  return (
+    <Svg width={tam} height={tam} viewBox="0 0 24 24" style={style} accessibilityElementsHidden importantForAccessibility="no">
+      <Path d={RUTAS[forma]} fill={color} stroke={borde} strokeWidth={grosor * (24 / Math.max(tam, 12))} strokeLinejoin="miter" />
+    </Svg>
+  );
+}
+// Composición de figuras grandes para el fondo de un encabezado (detrás del texto)
+export function FondoBauhaus({ variante = 'inicio' }) {
+  const V = {
+    inicio: [
+      { forma: 'circulo', color: C.rojo, tam: 190, style: { right: -70, top: -70 } },
+      { forma: 'triangulo', color: C.azul, tam: 70, style: { right: 64, bottom: -6 } },
+    ],
+    album: [
+      { forma: 'triangulo', color: C.amarillo, tam: 150, style: { right: -30, top: 30 } },
+      { forma: 'circulo', color: C.rojo, tam: 76, style: { right: 90, top: -30 } },
+    ],
+    drop: [
+      { forma: 'circulo', color: C.amarillo, tam: 150, style: { right: -46, top: -46 } },
+      { forma: 'cuadrado', color: C.azul, tam: 56, style: { right: 96, bottom: -8 } },
+    ],
+  }[variante] || [];
+  return (
+    <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, overflow: 'hidden' }}>
+      {V.map((f, i) => <Figura key={i} forma={f.forma} color={f.color} tam={f.tam} grosor={3} style={{ position: 'absolute', ...f.style }} />)}
+    </View>
   );
 }
 

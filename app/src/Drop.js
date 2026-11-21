@@ -4,7 +4,7 @@ import QRCode from 'react-native-qrcode-svg';
 import Svg, { Path } from 'react-native-svg';
 import { supabase, explicar, leerPunto } from './supabase';
 import { C, F, letrista, precio, cuadras, textoCategoria } from './tema';
-import { Ola, Boton, EtiquetaPrecio, Brillo } from './componentes';
+import { Ola, Boton, EtiquetaPrecio, Brillo, FondoBauhaus } from './componentes';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR, categoriaTur } from './idioma';
 
 export default function Drop({ drop, usuario, alCerrar }) {
@@ -58,7 +58,8 @@ export default function Drop({ drop, usuario, alCerrar }) {
 
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-      <View style={{ backgroundColor: C.amarillo, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+      <View style={{ backgroundColor: C.rojo, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <FondoBauhaus variante="drop" />
         <Pressable onPress={alCerrar} accessibilityRole="button" accessibilityLabel={t("Volver", "Volver · Back")}
           style={{ width: 44, height: 44, borderRadius: 0, borderWidth: 2.5, borderColor: C.negro, backgroundColor: C.papel, alignItems: 'center', justifyContent: 'center' }}>
           <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={C.negro} strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round"><Path d="M15 18l-6-6 6-6" /></Svg>
@@ -68,13 +69,13 @@ export default function Drop({ drop, usuario, alCerrar }) {
             style={{ width: 44, height: 44, borderRadius: 0, borderWidth: 2.5, borderColor: C.negro, backgroundColor: C.papel }} />
         ) : null}
         <View style={{ flex: 1 }}>
-          <Text style={{ fontFamily: F.negrita, fontSize: 17 }} numberOfLines={1}>{drop.local_nombre}</Text>
-          <Text style={{ fontFamily: F.media, fontSize: 13 }}>
+          <Text style={{ ...letrista, fontSize: 22, color: C.papel, textShadowColor: C.negro, textShadowOffset: { width: 2, height: 2 }, textShadowRadius: 0 }} numberOfLines={1}>{drop.local_nombre}</Text>
+          <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.papel }}>
             {tur ? categoriaTur(drop.categoria, lang) || textoCategoria(drop.categoria) : textoCategoria(drop.categoria)} · {cuad(drop.cuadras)}{nota ? ` · ★ ${nota.promedio} (${nota.cantidad})` : ''}
           </Text>
         </View>
       </View>
-      <Ola color={C.amarillo} />
+      <Ola color={C.rojo} />
 
       <View style={{ marginHorizontal: 16, marginTop: 14, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: 0, padding: 18, gap: 10 }}>
         <EtiquetaPrecio valor={drop.tipo === 'sorpresa' && !mio ? '¿?' : precio(drop.precio)} />

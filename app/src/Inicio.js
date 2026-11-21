@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { supabase } from './supabase';
 import { C, F, letrista, CATEGORIAS, textoCategoria, tieneCategoria, precio, cuadras } from './tema';
-import { Ola, Brillo, Pildora, EtiquetaPrecio, Boton } from './componentes';
+import { Ola, Brillo, Pildora, EtiquetaPrecio, Boton, FondoBauhaus } from './componentes';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR, categoriaTur, SelectorIdioma } from './idioma';
 import Logo from './Logo';
 import { SelectorBarrios } from './MapaComun';
@@ -65,8 +65,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
     <ScrollView contentContainerStyle={{ paddingBottom: 110 }}
       refreshControl={<RefreshControl refreshing={refrescando} onRefresh={async () => { setRefrescando(true); await alRefrescar(); setRefrescando(false); }} />}>
       <View style={{ backgroundColor: C.amarillo, paddingHorizontal: 18, paddingTop: 10, paddingBottom: 4 }}>
-        <Brillo tam={20} style={{ position: 'absolute', left: 14, top: 18 }} />
-        <Brillo tam={14} style={{ position: 'absolute', right: 40, top: 12 }} />
+        <FondoBauhaus variante="inicio" />
         <Logo ancho={190} style={{ marginLeft: 22, marginTop: 4, marginBottom: 2 }} />
         <Text style={{ fontFamily: F.negrita, fontSize: 13, paddingLeft: 26 }}>{visita ? t(`Vas a ${visita.nombre} · ${visita.comuna}`, `Going to ${visita.nombre} · ${visita.comuna}`) : t(`${lugar} · tu barrio te tiene ofertas`, `${lugar} · ofertas like a local`)}</Text>
         <Pressable onPress={() => setVerIdiomas(!verIdiomas)} accessibilityRole="button" accessibilityLabel="Idioma · Language"
@@ -153,7 +152,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingTop: 18 }}>
-        {CATEGORIAS.map((c) => <Pildora key={c.id} texto={tur ? categoriaTur(c.id, lang) || c.texto : c.texto} activa={filtro === c.id} onPress={() => setFiltro(c.id)} />)}
+        {CATEGORIAS.map((c) => <Pildora key={c.id} texto={tur ? categoriaTur(c.id, lang) || c.texto : c.texto} categoria={c.id} activa={filtro === c.id} onPress={() => setFiltro(c.id)} />)}
       </ScrollView>
 
       <View style={{ marginTop: 14 }}>

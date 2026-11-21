@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { C, cuadras, textoCategoria } from './tema';
-import { COLOR_TIPO, urgente, etiquetaTag, centroPin, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa } from './MapaComun';
+import { COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa } from './MapaComun';
 
 const L = require('leaflet');
 
@@ -24,9 +24,13 @@ function prepararEstilos() {
     /* Pin del diseño "pantallas": etiqueta de precio girada sobre una gota del color del tipo */
     .pin-wrap { position:relative; width:110px; height:92px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; }
     .tag { position:relative; font-family:LuckiestGuy_400Regular, 'Luckiest Guy', sans-serif; font-size:16px; line-height:1; padding:5px 8px 3px; white-space:nowrap;
-      background:${C.amarillo}; color:${C.negro}; border:2.5px solid ${C.negro}; border-radius:7px; box-shadow:2px 2px 0 ${C.negro}; transform:rotate(var(--giro,-6deg)); margin-bottom:5px; }
+      background:${C.amarillo}; color:${C.negro}; border:3px solid ${C.negro}; border-radius:0; box-shadow:3px 3px 0 ${C.negro}; }
+    .palito { width:3px; height:9px; background:${C.negro}; }
+    .figura-pin { position:relative; width:36px; height:36px; }
+    .figura-pin svg { position:absolute; inset:0; }
+    .figura-pin b { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font:900 12px Archivo, sans-serif; padding-top:var(--bajar,0); }
     .tag::before { content:''; position:absolute; left:6px; top:50%; width:5px; height:5px; margin-top:-2.5px; border-radius:50%; background:${C.negro}; opacity:.0; }
-    .tag.sorpresa { background:${C.negro}; color:${C.amarillo}; }
+    .tag.sorpresa { background:${C.negro}; color:${C.amarillo}; box-shadow:3px 3px 0 ${C.rojo}; }
     .tag.grupal { background:#FFF6E5; }
     .gota { width:34px; height:34px; border-radius:17px 17px 17px 2px; transform:rotate(-45deg); border:2.5px solid ${C.negro}; box-sizing:border-box;
       display:flex; align-items:center; justify-content:center; box-shadow:2px 2px 0 ${C.negro}; }
@@ -38,7 +42,7 @@ function prepararEstilos() {
       .pulso { position:absolute; bottom:-8px; left:50%; width:30px; height:30px; margin-left:-15px; border-radius:50%; border:3px solid var(--color); opacity:0; animation: pulso 2s ease-out infinite; }
     }
     @keyframes caer { from { transform: translateY(-14px); opacity:0 } to { transform:none; opacity:1 } }
-    @keyframes tiritar { 0%,80%,100% { transform:rotate(var(--giro,-6deg)) } 85% { transform:rotate(calc(var(--giro,-6deg) + 6deg)) } 90% { transform:rotate(calc(var(--giro,-6deg) - 6deg)) } 95% { transform:rotate(calc(var(--giro,-6deg) + 3deg)) } }
+    @keyframes tiritar { 0%,80%,100% { transform:rotate(var(--giro,0deg)) } 85% { transform:rotate(calc(var(--giro,0deg) + 6deg)) } 90% { transform:rotate(calc(var(--giro,0deg) - 6deg)) } 95% { transform:rotate(calc(var(--giro,0deg) + 3deg)) } }
     @keyframes pulso { 0% { transform:scale(.4); opacity:.8 } 100% { transform:scale(1.6); opacity:0 } }
     .caserito-barrio { font: 700 12px Archivo, sans-serif; color: #1E5AA8; text-align: center; text-shadow: 0 0 3px #FFF6E5, 0 0 3px #FFF6E5; opacity: .85; white-space: nowrap; }
     .local-sin-drop { width:18px; height:18px; border-radius:9px; background:#FFF6E5; border:3px solid #111; box-sizing:border-box; }
@@ -128,12 +132,13 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null,
       if (!p) return;
       const color = COLOR_TIPO[d.tipo] || C.rojo;
       const giro = [-7, 5, -4, 6][(d.drop_id || '').charCodeAt(0) % 4 || 0];
+      const fp = figuraPin(d);
       const clase = `tag${d.tipo === 'sorpresa' ? ' sorpresa' : ''}${d.tipo === 'grupal' ? ' grupal' : ''}${urgente(d) ? ' urgente' : ''}`;
       const html = `<div class="pin-wrap" style="--color:${color}">`
-        + `<div class="${clase}" style="--giro:${giro}deg">${escapar(etiquetaTag(d))}`
+        + `<div class="${clase}" >${escapar(etiquetaTag(d))}`
         + (d.dentro_del_radio ? '<div class="aqui-tag">¡AQUÍ!</div>' : '') + '</div>'
-        + `<div class="gota" style="background:${color}"><span>${escapar(centroPin(d))}</span></div><div class="pulso"></div></div>`;
-      const icono = L.divIcon({ className: 'caserito-pin', html, iconSize: [110, 92], iconAnchor: [55, 88] });
+        + `<div class="palito"></div><div class="figura-pin" style="--bajar:${fp.forma === 'triangulo' ? '10px' : fp.forma === 'cuarto' ? '8px' : '0'}"><svg viewBox="0 0 36 36"><path d="${RUTA_PIN[fp.forma]}" fill="${fp.color}" stroke="${C.negro}" stroke-width="3" stroke-linejoin="miter"/></svg><b style="color:${fp.texto}">${escapar(centroPin(d))}</b></div><div class="pulso"></div></div>`;
+      const icono = L.divIcon({ className: 'caserito-pin', html, iconSize: [110, 96], iconAnchor: [55, 96] });
       L.marker([p.lat, p.lng], { icon: icono, title: `${d.local_nombre}, ${cuadras(d.cuadras)}`, keyboard: true })
         .on('click', () => setSel(d))
         .addTo(capa.current);

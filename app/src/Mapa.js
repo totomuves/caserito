@@ -1,9 +1,10 @@
 import React, { useRef, useState } from 'react';
 import { Text, View } from 'react-native';
 import MapView, { Marker, Polygon } from 'react-native-maps';
+import Svg, { Path } from 'react-native-svg';
 import { puntosDe } from './barrios';
 import { C, letrista, cuadras, textoCategoria } from './tema';
-import { COLOR_TIPO, urgente, etiquetaTag, centroPin, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa } from './MapaComun';
+import { COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa } from './MapaComun';
 
 // Estilo amarillo pálido del diseño "pantallas" (Google Maps en Android)
 const ESTILO = [
@@ -68,25 +69,26 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null,
 
 // Pin del diseño "pantallas": etiqueta girada (precio / ¿Sorpresa? / quedan) sobre una gota del color del tipo
 function Pin({ d }) {
-  const color = COLOR_TIPO[d.tipo] || C.rojo;
   const sorpresa = d.tipo === 'sorpresa';
   const grupal = d.tipo === 'grupal';
-  const giro = [-7, 5, -4, 6][(d.drop_id || '').charCodeAt(0) % 4 || 0];
+  const fp = figuraPin(d);
   return (
     <View style={{ alignItems: 'center', padding: 4 }}>
-      <View style={{ transform: [{ rotate: `${giro}deg` }], marginBottom: 5 }}>
-        <View style={{ position: 'absolute', left: 2, top: 2, right: -2, bottom: -2, backgroundColor: C.negro, borderRadius: 7 }} />
-        <View style={{ backgroundColor: sorpresa ? C.negro : grupal ? C.papel : C.amarillo, borderWidth: 2.5, borderColor: urgente(d) ? '#B00020' : C.negro, borderRadius: 7, paddingHorizontal: 8, paddingTop: 4, paddingBottom: 1 }}>
+      <View>
+        <View style={{ position: 'absolute', left: 3, top: 3, right: -3, bottom: -3, backgroundColor: sorpresa ? C.rojo : C.negro }} />
+        <View style={{ backgroundColor: sorpresa ? C.negro : grupal ? C.papel : C.amarillo, borderWidth: 3, borderColor: urgente(d) ? '#B00020' : C.negro, paddingHorizontal: 8, paddingTop: 4, paddingBottom: 1 }}>
           <Text style={{ ...letrista, fontSize: 15, color: sorpresa ? C.amarillo : C.negro }}>{etiquetaTag(d)}</Text>
         </View>
         {d.dentro_del_radio ? (
-          <View style={{ position: 'absolute', top: -10, right: -12, backgroundColor: '#1F9D55', borderWidth: 2, borderColor: C.negro, borderRadius: 8, paddingHorizontal: 4, transform: [{ rotate: '8deg' }] }}>
+          <View style={{ position: 'absolute', top: -10, right: -12, backgroundColor: '#1F9D55', borderWidth: 2, borderColor: C.negro, paddingHorizontal: 4 }}>
             <Text style={{ fontSize: 9, fontWeight: '800', color: '#FFFFFF' }}>¡AQUÍ!</Text>
           </View>
         ) : null}
       </View>
-      <View style={{ width: 34, height: 34, borderTopLeftRadius: 17, borderTopRightRadius: 17, borderBottomRightRadius: 17, borderBottomLeftRadius: 2, transform: [{ rotate: '-45deg' }], backgroundColor: color, borderWidth: 2.5, borderColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ transform: [{ rotate: '45deg' }], fontSize: 14, fontWeight: '800', color: '#FFF6E5' }}>{centroPin(d)}</Text>
+      <View style={{ width: 3, height: 9, backgroundColor: C.negro }} />
+      <View style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
+        <Svg width={36} height={36} viewBox="0 0 36 36" style={{ position: 'absolute' }}><Path d={RUTA_PIN[fp.forma]} fill={fp.color} stroke={C.negro} strokeWidth={3} strokeLinejoin="miter" /></Svg>
+        <Text style={{ fontSize: 12, fontWeight: '900', color: fp.texto, paddingTop: fp.forma === 'triangulo' ? 10 : fp.forma === 'cuarto' ? 8 : 0 }}>{centroPin(d)}</Text>
       </View>
     </View>
   );
