@@ -58,20 +58,24 @@
   .parque { position:absolute; left:58%; top:40%; width:28%; height:20%; background:#BFD8B0; border-radius:6px; }
   .calle-nombre { position:absolute; font-weight:900; font-size:9px; letter-spacing:1.5px; color:#9A9A9A; }
   .chips { position:absolute; top:14px; left:12px; right:12px; display:flex; gap:6px; }
-  .chip { font-weight:800; font-size:11px; padding:6px 10px; border:2px solid var(--negro); border-radius:16px; background:var(--papel); white-space:nowrap; }
+  .chip { font-weight:800; font-size:11px; padding:6px 10px; border:2px solid var(--negro); border-radius:0; background:var(--papel); white-space:nowrap; }
   .chip.activo { background:var(--amarillo); }
   .pin { position:absolute; display:flex; flex-direction:column; align-items:center; }
-  .pin .tag { font-family:Jost, Archivo, sans-serif; font-weight:800; font-size:14px; padding:4px 7px 2px; background:var(--amarillo); border:2.5px solid var(--negro); border-radius:6px; box-shadow:2px 2px 0 var(--negro); transform:rotate(-7deg); margin-bottom:4px; white-space:nowrap; }
-  .pin .tag.negro { background:var(--negro); color:var(--amarillo); transform:rotate(6deg); }
-  .pin .tag.crema { background:var(--papel); transform:rotate(-4deg); }
-  .pin .gota { width:30px; height:30px; border-radius:15px 15px 15px 2px; transform:rotate(-45deg); border:2.5px solid var(--negro); display:flex; align-items:center; justify-content:center; box-shadow:2px 2px 0 var(--negro); }
-  .pin .gota span { transform:rotate(45deg); color:var(--papel); font-weight:900; font-size:12px; }
+  .pin .tag { font-family:Jost, Archivo, sans-serif; font-weight:800; font-size:14px; padding:4px 7px 2px; background:var(--amarillo); border:2.5px solid var(--negro); border-radius:6px; box-shadow:3px 3px 0 var(--negro); margin-bottom:0; white-space:nowrap; border-radius:0; }
+  .pin .tag.negro { background:var(--negro); color:var(--amarillo); box-shadow:3px 3px 0 var(--rojo); }
+  .pin .tag.crema { background:var(--papel); }
+  .pin .tag::after { content:''; position:absolute; left:50%; bottom:-11px; width:3px; height:9px; margin-left:-1.5px; background:var(--negro); }
+  .pin .tag { position:relative; margin-bottom:10px; }
+  .pin .gota { width:30px; height:30px; border:3px solid var(--negro); display:flex; align-items:center; justify-content:center; }
+  .pin .gota.circulo { border-radius:50%; } .pin .gota.rombo { transform:rotate(45deg); width:24px; height:24px; }
+  .pin .gota.tri { border:none; width:0; height:0; border-left:17px solid transparent; border-right:17px solid transparent; border-bottom:30px solid var(--negro) !important; background:none !important; }
+  .pin .gota span {  color:var(--papel); font-weight:900; font-size:12px; }
   .yo { position:absolute; left:44%; top:56%; width:18px; height:18px; border-radius:50%; background:#1D4ED8; border:3px solid #fff; box-shadow:0 0 0 2px var(--negro), 0 0 0 12px rgba(29,78,216,.22); }
-  .hoja { position:absolute; left:0; right:0; bottom:0; background:var(--papel); border-top:2.5px solid var(--negro); border-radius:22px 22px 0 0; padding:10px 14px 16px; }
+  .hoja { position:absolute; left:0; right:0; bottom:0; background:var(--papel); border-top:2.5px solid var(--negro); border-radius:0; padding:10px 14px 16px; }
   .hoja .agarre { width:40px; height:5px; border-radius:3px; background:#11111140; margin:0 auto 8px; }
   .hoja h4 { margin:0 0 8px; font-size:17px; display:flex; justify-content:space-between; align-items:baseline; }
   .hoja h4 small { font-family:Archivo; font-style:normal; font-size:11px; color:#4A4A4A; font-weight:800; }
-  .tarjeta { background:#fff; border:2.5px solid var(--negro); border-radius:14px; padding:10px; box-shadow:3px 3px 0 var(--negro); }
+  .tarjeta { background:#fff; border:2.5px solid var(--negro); border-radius:0; padding:10px; box-shadow:3px 3px 0 var(--negro); }
   .tarjeta .cat { font-size:10px; font-weight:900; color:var(--rojo); text-transform:uppercase; letter-spacing:.5px; }
   .tarjeta b { display:block; font-size:15px; margin:2px 0; }
   .pop { position:relative; height:74px; border:2.5px solid var(--negro); margin:4px 0 8px; padding:6px; overflow:hidden;
@@ -83,7 +87,7 @@
   .tarjeta i { font-size:12px; display:block; margin-bottom:6px; }
   .barra-avance { height:9px; border:2px solid var(--negro); border-radius:5px; background:var(--suave); overflow:hidden; margin-bottom:8px; }
   .barra-avance div { width:62%; height:100%; background:var(--amarillo); }
-  .tarjeta .ir { background:var(--negro); color:var(--amarillo); font-weight:800; font-size:12px; text-align:center; padding:9px; border-radius:10px; }
+  .tarjeta .ir { background:var(--negro); color:var(--amarillo); font-weight:800; font-size:12px; text-align:center; padding:9px; border-radius:0; }
 
   /* Secciones */
   section { border-bottom:3px solid var(--negro); }
@@ -236,10 +240,10 @@
           <span class="calle-nombre" style="left:47%; top:20%; transform:rotate(90deg); transform-origin:left">CONDELL</span>
           <span class="calle-nombre" style="left:20px; top:67%">SANTA ISABEL</span>
           <div class="chips"><span class="chip activo">Todo · 9</span><span class="chip">Comida</span><span class="chip">Café</span><span class="chip">Grupales</span></div>
-          <div class="pin" style="left:22px; top:92px"><span class="tag">$1.990</span><span class="gota" style="background:var(--rojo)"><span>4</span></span></div>
-          <div class="pin" style="left:170px; top:120px"><span class="tag negro">¿Sorpresa?</span><span class="gota" style="background:#B45309"><span>?</span></span></div>
-          <div class="pin" style="left:62px; top:190px"><span class="tag crema">Quedan 12</span><span class="gota" style="background:var(--azul)"><span>👥</span></span></div>
-          <div class="pin" style="left:186px; top:236px"><span class="tag">$990</span><span class="gota" style="background:var(--rojo)"><span>2</span></span></div>
+          <div class="pin" style="left:22px; top:92px"><span class="tag">$1.990</span><span class="gota circulo" style="background:var(--rojo)"><span>4</span></span></div>
+          <div class="pin" style="left:170px; top:120px"><span class="tag negro">¿Sorpresa?</span><span class="gota rombo" style="background:var(--amarillo)"><span style="color:var(--negro);transform:rotate(-45deg)">?</span></span></div>
+          <div class="pin" style="left:62px; top:190px"><span class="tag crema">Quedan 12</span><span class="gota tri"></span></div>
+          <div class="pin" style="left:186px; top:236px"><span class="tag">$990</span><span class="gota" style="background:var(--azul)"><span>2</span></span></div>
           <div class="yo" aria-hidden="true"></div>
           <div class="hoja">
             <div class="agarre"></div>
