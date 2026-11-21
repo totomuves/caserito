@@ -2,5 +2,6 @@
   "buildCommand": "npx expo export --platform web",
   "outputDirectory": "dist",
   "installCommand": "npm install --no-audit --no-fund",
-  "framework": null
+  "framework": null,
+  "ignoreCommand": "git diff HEAD^ HEAD --quiet -- ."
 }
