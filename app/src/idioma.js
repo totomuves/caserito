@@ -78,9 +78,41 @@ const GLOSARIO = [
 ];
 const LETRAS = 'A-Za-zÁÉÍÓÚÜÑáéíóúüñ';
 const escapar = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const RE = new RegExp(`(^|[^${LETRAS}])(${GLOSARIO.map(([p]) => escapar(p)).sort((a, b) => b.length - a.length).join('|')})(?=[^${LETRAS}]|$)`, 'gi');
-const significado = (p) => {
+// Expresiones de otros idiomas en las frases de los locales: se pueden tocar en español y en modo turista
+// [expresión, significado en español, en inglés]
+const EXTRANJERO = [
+  ['mamma mia', '¡madre mía!', 'oh my!'], ['andiamo', '¡vamos!', 'let’s go!'], ['che buono', '¡qué rico!', 'so good!'], ['ecco', '¡aquí está!', 'here it is!'],
+  ['avanti', '¡adelante!', 'go ahead!'], ['basta così', 'con eso basta', 'that’s enough'],
+  ['qué guay', '¡qué bacán! (España)', 'how cool! (Spain)'], ['mola', 'es bacán (España)', 'it’s cool (Spain)'], ['venga', '¡vamos! (España)', 'come on! (Spain)'],
+  ['oh là là', '¡guau!', 'wow!'], ['c’est magnifique', '¡es magnífico!', 'it’s wonderful!'], ['allez', '¡vamos!', 'let’s go!'], ['et voilà', '¡y listo!', 'and there you go!'],
+  ['lovely', '¡qué rico! / precioso', 'lovely'], ['cheers', 'salud / gracias', 'cheers'], ['brilliant', '¡genial!', 'brilliant'], ['fancy a', '¿se te antoja un…?', 'do you want a…?'],
+  ['awesome', '¡increíble!', 'awesome'], ['yummy', '¡qué rico!', 'yummy'], ['grab it', '¡agárralo!', 'grab it'],
+  ['wunderbar', '¡maravilloso!', 'wonderful!'], ['prost', '¡salud!', 'cheers!'], ['schnell', '¡rápido!', 'quick!'],
+  ['opa', '¡epa! (de celebración)', 'hooray!'], ['kalí órexi', '¡buen provecho!', 'enjoy your meal!'], ['éla', '¡ven!', 'come!'],
+  ['afiyet olsun', '¡buen provecho!', 'enjoy your meal!'], ['çok güzel', '¡muy bueno!', 'very good!'], ['hadi', '¡vamos!', 'come on!'],
+  ['yalla', '¡vamos!', 'let’s go!'], ['sahtein', '¡buen provecho!', 'enjoy!'], ['habibi', 'querido/a, amigo/a', 'my dear'],
+  ['bahut badhiya', '¡excelente!', 'excellent!'], ['chalo', '¡vamos!', 'let’s go!'], ['ekdum', 'totalmente', 'totally'],
+  ['hǎo chī', '¡qué rico!', 'delicious!'], ['jiāyóu', '¡vamos, ánimo!', 'go for it!'],
+  ['oishii', '¡qué rico!', 'delicious!'], ['hayaku', '¡rápido!', 'hurry!'], ['itadakimasu', 'a comer (se dice antes de comer)', 'let’s eat'], ['sugoi', '¡increíble!', 'amazing!'],
+  ['daebak', '¡increíble!', 'awesome!'], ['masisseoyo', '¡está rico!', 'it’s tasty!'], ['ppalli', '¡rápido!', 'quick!'],
+  ['aroi mak', '¡muy rico!', 'very tasty!'], ['sabai sabai', 'relajado, tranqui', 'relaxed, easy'], ['mai pen rai', 'no hay problema', 'no worries'],
+  ['ngon quá', '¡qué rico!', 'so tasty!'], ['đi nào', '¡vamos!', 'let’s go!'], ['ăn ngon nhé', '¡que lo disfrutes!', 'enjoy your meal!'],
+  ['que legal', '¡qué bacán! (Brasil)', 'how cool! (Brazil)'], ['tá demais', '¡está buenísimo!', 'it’s awesome'], ['bora', '¡vamos!', 'let’s go!'], ['nossa', '¡guau!', 'wow!'], ['vem logo', '¡ven luego!', 'come quick!'],
+  ['sak pase', '¿qué tal? (Haití)', 'what’s up? (Haiti)'], ['li bon anpil', '¡está muy bueno!', 'it’s really good'], ['vini vit', '¡ven rápido!', 'come quick!'],
+  ['asere', 'amigo (Cuba)', 'buddy (Cuba)'], ['qué volá', '¿qué tal? (Cuba)', 'what’s up? (Cuba)'], ['en talla', 'buenísimo (Cuba)', 'great (Cuba)'],
+  ['klk', '¿qué lo que?, ¿qué tal? (Rep. Dominicana)', 'what’s up? (Dominican)'], ['manito', 'amigo', 'buddy'],
+  ['ñaño', 'hermano, amigo (Ecuador)', 'bro (Ecuador)'], ['de ley', 'seguro, de verdad (Ecuador)', 'for sure (Ecuador)'],
+  ['jallalla', '¡que viva! (aymara, Bolivia)', 'cheers! (Aymara, Bolivia)'], ['cumpa', 'compadre, amigo', 'buddy'], ['macanudo', 'muy bueno', 'great'],
+  ['bo', 'oye, amigo (Uruguay)', 'hey, mate (Uruguay)'], ['vamo arriba', '¡vamos! (Uruguay)', 'come on! (Uruguay)'], ['está de más', 'está buenísimo (Uruguay)', 'it’s awesome (Uruguay)'],
+];
+
+const armarRE = (lista) => new RegExp(`(^|[^${LETRAS}])(${lista.map(([p]) => escapar(p)).sort((a, b) => b.length - a.length).join('|')})(?=[^${LETRAS}]|$)`, 'gi');
+const RE = armarRE([...GLOSARIO, ...EXTRANJERO]);
+const RE_LOCAL = armarRE(EXTRANJERO);
+const significado = (p, tur = true) => {
   const k = p.toLowerCase();
+  const x = EXTRANJERO.find(([w]) => w === k);
+  if (x) return tur ? x[2] : x[1];
   const e = GLOSARIO.find(([w]) => w === k);
   return e ? e[1] : '';
 };
@@ -89,10 +121,10 @@ const significado = (p) => {
 export function FraseGlosario({ texto, style, numberOfLines, colorAyuda = C.amarillo }) {
   const { tur } = useIdioma();
   const [abierta, setAbierta] = useState(null);
-  if (!tur || !texto) return <Text style={style} numberOfLines={numberOfLines}>{texto}</Text>;
+  if (!texto) return <Text style={style} numberOfLines={numberOfLines}>{texto}</Text>;
   const partes = [];
   let ultimo = 0;
-  texto.replace(RE, (m, antes, palabra, idx) => {
+  texto.replace(tur ? RE : RE_LOCAL, (m, antes, palabra, idx) => {
     const ini = idx + antes.length;
     if (ini > ultimo) partes.push(texto.slice(ultimo, ini));
     partes.push({ palabra });
@@ -113,10 +145,10 @@ export function FraseGlosario({ texto, style, numberOfLines, colorAyuda = C.amar
       </Text>
       {abierta ? (
         <Pressable onPress={() => setAbierta(null)} style={{ alignSelf: 'flex-start', backgroundColor: C.papel, borderWidth: 2, borderColor: C.negro, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6 }}>
-          <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.negro }}>“{abierta.toLowerCase()}” = {significado(abierta)}</Text>
+          <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.negro }}>“{abierta.toLowerCase()}” = {significado(abierta, tur)}</Text>
         </Pressable>
       ) : hay ? (
-        <Text style={{ fontFamily: F.media, fontSize: 11, color: colorAyuda }}>Tap the underlined words · Toca las palabras subrayadas</Text>
+        <Text style={{ fontFamily: F.media, fontSize: 11, color: colorAyuda }}>{tur ? 'Tap the underlined words · Toca las palabras subrayadas' : 'Toca las palabras subrayadas'}</Text>
       ) : null}
     </View>
   );
