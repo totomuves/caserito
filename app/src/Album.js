@@ -7,6 +7,7 @@ import { Ola, Brillo, IconoCategoria, Boton, FondoBauhaus, Figura, figuraDe, col
 import { useIdioma } from './idioma';
 import { identidadDe, Motivo } from './identidad';
 import { Monstruito, apodoLamina, letraLamina } from './monstruito';
+import { ArteLocal } from './arteLocal';
 import Honor from './Honor';
 
 const MARCOS = [
@@ -31,24 +32,11 @@ const POSICIONES = [
   { figura: { right: -10, top: -14 }, acento: { left: 6, bottom: 4 } },
   { figura: { left: -12, bottom: -20 }, acento: { right: 8, top: 8 } },
 ];
-function ArteBauhaus({ local, k, alto = 80 }) {
-  const pal = PALETAS[k % PALETAS.length];
-  const pos = POSICIONES[k % POSICIONES.length];
-  const forma = figuraDe(local.categoria);
-  const acento = ACENTOS[(k + 1) % ACENTOS.length] === forma ? ACENTOS[(k + 2) % ACENTOS.length] : ACENTOS[(k + 1) % ACENTOS.length];
-  const ojo = alto * 0.2;
+function ArteBauhaus({ local, alto = 80 }) {
+  // Arte único por local (composición Bauhaus generada desde su id)
   return (
-    <View style={{ height: alto, backgroundColor: pal.fondo, borderWidth: 2, borderColor: C.negro, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
-      <PuntosPop color={pal.puntos} fondo={pal.fondo} tam={alto / 40} sep={alto / 11} />
-      <Figura forma={forma} color={pal.figura} tam={alto * 0.85} grosor={0} borde={pal.figura} style={{ position: 'absolute', ...pos.figura }} />
-      <Figura forma={acento} color={pal.acento} tam={alto * 0.38} grosor={2} style={{ position: 'absolute', ...pos.acento }} />
-      <View style={{ flexDirection: 'row', gap: 3 }}>
-        {[0, 1].map((i) => (
-          <View key={i} style={{ width: ojo, height: ojo, borderRadius: ojo / 2, backgroundColor: '#FFFFFF', borderWidth: 2, borderColor: C.negro, alignItems: i ? 'flex-end' : 'flex-start', justifyContent: i ? 'flex-start' : 'flex-end', padding: 1 }}>
-            <View style={{ width: ojo * 0.42, height: ojo * 0.42, borderRadius: ojo, backgroundColor: C.negro }} />
-          </View>
-        ))}
-      </View>
+    <View style={{ height: alto, borderWidth: 2, borderColor: C.negro, overflow: 'hidden' }}>
+      <ArteLocal id={local.id} categoria={local.categoria} ancho="100%" alto={alto} borde={false} />
     </View>
   );
 }

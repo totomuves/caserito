@@ -5,6 +5,7 @@ import Svg, { Path } from 'react-native-svg';
 import { puntosDe } from './barrios';
 import { C, letrista, cuadras, textoCategoria } from './tema';
 import { figuraDe } from './componentes';
+import { ArteLocal } from './arteLocal';
 import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa } from './MapaComun';
 
 // Estilo amarillo pálido del diseño "pantallas" (Google Maps en Android)
@@ -74,11 +75,8 @@ function LaminaMapa({ l, k }) {
   const pal = paletaLocal(l.id);
   return (
     <View style={{ width: 88, padding: 3, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, transform: [{ rotate: `${[-3, 2, -1, 3][k % 4]}deg` }] }}>
-      <View style={{ height: 42, backgroundColor: pal.fondo, borderWidth: 2, borderColor: C.negro, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
-        <Svg width={46} height={46} viewBox="0 0 36 36" style={{ position: 'absolute', left: -10, top: -12 }}><Path d={RUTA_PIN[figuraDe(l.categoria)] || RUTA_PIN.circulo} fill={pal.figura} /></Svg>
-        <View style={{ flexDirection: 'row', gap: 2 }}>
-          {[0, 1].map((i) => <View key={i} style={{ width: 11, height: 11, borderRadius: 6, backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: C.negro, alignItems: i ? 'flex-end' : 'flex-start', justifyContent: i ? 'flex-start' : 'flex-end' }}><View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: C.negro }} /></View>)}
-        </View>
+      <View style={{ height: 44, borderWidth: 2, borderColor: C.negro, overflow: 'hidden' }}>
+        <ArteLocal id={l.id} categoria={l.categoria} ancho="100%" alto={44} borde={false} />
       </View>
       <Text numberOfLines={1} style={{ fontSize: 9.5, fontWeight: '800', marginTop: 2 }}>{l.nombre}</Text>
       <Text numberOfLines={2} style={{ fontSize: 8.5, lineHeight: 10, fontWeight: '800', color: C.rojo }}>★ {especialidad(l)}</Text>

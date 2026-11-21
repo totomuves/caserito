@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { C, cuadras, textoCategoria } from './tema';
 import { figuraDe } from './componentes';
+import { arteHtml } from './arteLocal';
 import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa } from './MapaComun';
 
 const L = require('leaflet');
@@ -136,11 +137,9 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null,
     capa.current.clearLayers();
     const conDrop = new Set(drops.map((d) => d.local_id));
     locales.filter((l) => !conDrop.has(l.id)).forEach((l, k) => {
-      const pal = paletaLocal(l.id);
-      const forma = RUTA_PIN[figuraDe(l.categoria)] || RUTA_PIN.circulo;
       const html = cerca
-        ? `<div class="lam-mapa" style="--rot:${[-3, 2, -1, 3][k % 4]}deg"><div class="lam-arte" style="background:${pal.fondo}"><svg class="f" viewBox="0 0 36 36"><path d="${forma}" fill="${pal.figura}"/></svg>`
-          + (l.logo_url ? `<img src="${escapar(l.logo_url)}" alt="">` : '<div class="ojos"><span></span><span></span></div>')
+        ? `<div class="lam-mapa" style="--rot:${[-3, 2, -1, 3][k % 4]}deg"><div class="lam-arte">${arteHtml(l.id, l.categoria)}`
+          + (l.logo_url ? `<img src="${escapar(l.logo_url)}" alt="" style="position:absolute;right:2px;bottom:2px;width:18px;height:18px">` : '')
           + `</div><b>${escapar(l.nombre)}</b><i>★ ${escapar(especialidad(l))}</i></div>`
         : '<div class="local-sin-drop"></div>';
       const icono = L.divIcon({ className: 'caserito-pin', html, iconSize: cerca ? [94, 92] : [18, 18], iconAnchor: cerca ? [47, 46] : [9, 9] });
