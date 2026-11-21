@@ -22,7 +22,7 @@ function prepararEstilos() {
     .caserito-mapa { background:#FFF3B0; }
     .caserito-mapa .leaflet-tile-pane { filter: sepia(.55) saturate(1.6) hue-rotate(-8deg) brightness(1.04) contrast(1.05); }
     .caserito-pin { background: none; border: none; }
-    .lam-mapa { width:74px; background:${C.papel}; border:2.5px solid ${C.negro}; padding:3px; box-shadow:3px 3px 0 ${C.negro}; transform:rotate(var(--rot,-2deg)); font-family:Archivo, sans-serif; cursor:pointer; }
+    .lam-mapa { width:88px; background:${C.papel}; border:2.5px solid ${C.negro}; padding:3px; box-shadow:3px 3px 0 ${C.negro}; transform:rotate(var(--rot,-2deg)); font-family:Archivo, sans-serif; cursor:pointer; }
     .lam-mapa:hover { transform:rotate(0deg) scale(1.08); z-index:1000; }
     .lam-arte { position:relative; height:44px; border:2px solid ${C.negro}; overflow:hidden; display:flex; align-items:center; justify-content:center; }
     .lam-arte svg.f { position:absolute; width:46px; height:46px; left:-10px; top:-12px; }
@@ -32,7 +32,7 @@ function prepararEstilos() {
     .ojos span::after { content:''; position:absolute; width:5px; height:5px; border-radius:50%; background:${C.negro}; left:1px; bottom:1px; }
     .ojos span + span::after { left:auto; right:1px; top:1px; bottom:auto; }
     .lam-mapa b { display:block; font-size:9.5px; line-height:1.1; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .lam-mapa i { display:block; font-style:normal; font-size:8.5px; font-weight:800; color:${C.rojo}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .lam-mapa i { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; font-style:normal; font-size:8.5px; line-height:1.15; font-weight:800; color:${C.rojo}; overflow:hidden; }
     /* Pin del diseño "pantallas": etiqueta de precio girada sobre una gota del color del tipo */
     .pin-wrap { position:relative; width:110px; height:92px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; }
     .tag { position:relative; font-family:Jost_800ExtraBold, Jost, Archivo, sans-serif; font-size:16px; line-height:1; padding:5px 8px 3px; white-space:nowrap;
@@ -143,7 +143,7 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null,
           + (l.logo_url ? `<img src="${escapar(l.logo_url)}" alt="">` : '<div class="ojos"><span></span><span></span></div>')
           + `</div><b>${escapar(l.nombre)}</b><i>★ ${escapar(especialidad(l))}</i></div>`
         : '<div class="local-sin-drop"></div>';
-      const icono = L.divIcon({ className: 'caserito-pin', html, iconSize: cerca ? [80, 84] : [18, 18], iconAnchor: cerca ? [40, 42] : [9, 9] });
+      const icono = L.divIcon({ className: 'caserito-pin', html, iconSize: cerca ? [94, 92] : [18, 18], iconAnchor: cerca ? [47, 46] : [9, 9] });
       L.marker([l.punto.lat, l.punto.lng], { icon: icono, title: l.nombre, keyboard: true, zIndexOffset: -100 })
         .bindPopup(`<b>${escapar(l.nombre)}</b><br>${escapar(textoCategoria(l.categoria))}${l.producto_estrella ? ' · ★ ' + escapar(l.producto_estrella) : ''}<br><span style="color:#4A4A4A">Sin drop ahora · gana su lámina con el próximo drop</span>`)
         .addTo(capa.current);
