@@ -88,32 +88,6 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
         </View>
       ) : null}
 
-      <View style={{ marginHorizontal: 16, marginTop: 8, backgroundColor: C.negro, borderRadius: 18, padding: 16, gap: 10 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <FraseGlosario texto={f.tag} style={{ ...letrista, fontSize: 16, color: C.amarillo }} />
-          <Pressable onPress={() => setI(i + 1)} accessibilityRole="button" accessibilityLabel="Otra sugerencia"
-            style={{ height: 32, paddingHorizontal: 12, borderRadius: 16, borderWidth: 1.5, borderColor: '#FFFFFF66', justifyContent: 'center' }}>
-            <Text style={{ fontFamily: F.negrita, fontSize: 12, color: '#FFFFFF' }}>{t('Otra', "Siguiente")}</Text>
-          </Pressable>
-        </View>
-        <FraseGlosario texto={f.texto} style={{ ...letrista, fontSize: 20, lineHeight: 26, color: '#FFFFFF', minHeight: 78 }} />
-        {f.drop && (
-          <Pressable onPress={() => alAbrir(f.drop)} style={{ alignSelf: 'flex-start', height: 40, paddingHorizontal: 16, borderRadius: 20, backgroundColor: C.amarillo, justifyContent: 'center' }}>
-            <Text style={{ fontFamily: F.negrita, fontSize: 14 }}>{t('Ir al drop →', "Ver drop →")}</Text>
-          </Pressable>
-        )}
-      </View>
-
-      <SelectorBarrios barrios={barrios} vista={visita} alElegir={alVisitar} flotante={false} titulo={t('¿A qué barrio vas?', '¿A qué barrio vas? Pick a barrio')} />
-      {visita ? (
-        <View style={{ marginHorizontal: 16, marginTop: 8, backgroundColor: C.papel, borderWidth: 2, borderColor: C.azul, borderRadius: 14, padding: 10 }}>
-          <Text style={{ fontFamily: F.media, fontSize: 13 }}>
-            {t(`Estás viendo los drops de ${visita.nombre}. Cuando llegues, la app vuelve sola a "Aquí" y se activa tu QR en cada local.`,
-               `Estás viendo los drops de ${visita.nombre}. When you get there, la app vuelve a "Aquí" y tu QR se activa.`)}
-          </Text>
-        </View>
-      ) : null}
-
       {avisoQr === 'sin_drops' && (
         <View style={{ marginHorizontal: 16, marginTop: 12, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.azul, borderRadius: 18, padding: 14, gap: 8 }}>
           <Text style={{ ...letrista, fontSize: 17 }}>{t('¡BIENVENIDO A CASERITO!', '¡BIENVENIDO! WELCOME TO CASERITO')}</Text>
@@ -149,6 +123,32 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
           </View>
         </View>
       )}
+
+      <SelectorBarrios barrios={barrios} vista={visita} alElegir={alVisitar} flotante={false} titulo={t('¿A qué barrio vas?', '¿A qué barrio vas? Pick a barrio')} />
+      {visita ? (
+        <View style={{ marginHorizontal: 16, marginTop: 8, backgroundColor: C.papel, borderWidth: 2, borderColor: C.azul, borderRadius: 14, padding: 10 }}>
+          <Text style={{ fontFamily: F.media, fontSize: 13 }}>
+            {t(`Estás viendo los drops de ${visita.nombre}. Cuando llegues, la app vuelve sola a "Aquí" y se activa tu QR en cada local.`,
+               `Estás viendo los drops de ${visita.nombre}. When you get there, la app vuelve a "Aquí" y tu QR se activa.`)}
+          </Text>
+        </View>
+      ) : null}
+
+      <View style={{ marginHorizontal: 16, marginTop: 14, backgroundColor: C.negro, borderRadius: 18, padding: 16, gap: 10 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <FraseGlosario texto={f.tag} style={{ ...letrista, fontSize: 16, color: C.amarillo }} />
+          <Pressable onPress={() => setI(i + 1)} accessibilityRole="button" accessibilityLabel="Otra sugerencia"
+            style={{ height: 32, paddingHorizontal: 12, borderRadius: 16, borderWidth: 1.5, borderColor: '#FFFFFF66', justifyContent: 'center' }}>
+            <Text style={{ fontFamily: F.negrita, fontSize: 12, color: '#FFFFFF' }}>{t('Otra', "Siguiente")}</Text>
+          </Pressable>
+        </View>
+        <FraseGlosario texto={f.texto} style={{ ...letrista, fontSize: 20, lineHeight: 26, color: '#FFFFFF', minHeight: 78 }} />
+        {f.drop && (
+          <Pressable onPress={() => alAbrir(f.drop)} style={{ alignSelf: 'flex-start', height: 40, paddingHorizontal: 16, borderRadius: 20, backgroundColor: C.amarillo, justifyContent: 'center' }}>
+            <Text style={{ fontFamily: F.negrita, fontSize: 14 }}>{t('Ir al drop →', "Ver drop →")}</Text>
+          </Pressable>
+        )}
+      </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingTop: 18 }}>
         {CATEGORIAS.map((c) => <Pildora key={c.id} texto={tur ? CATEGORIA_TUR[c.id] || c.texto : c.texto} activa={filtro === c.id} onPress={() => setFiltro(c.id)} />)}
