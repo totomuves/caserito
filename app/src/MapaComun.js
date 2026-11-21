@@ -7,6 +7,14 @@ import { useIdioma, FraseGlosario, CATEGORIA_TUR } from './idioma';
 
 export const COLOR_TIPO = { normal: C.rojo, grupal: C.azul, sorpresa: '#B45309', recien_llegado: C.negro };
 
+// Cinta de arriba del cartel según el tipo de drop
+export const CINTA_TIPO = { normal: 'DROP', grupal: 'ENTRE TODOS', sorpresa: '¿SORPRESA?', recien_llegado: 'RECIÉN LLEGÓ' };
+// Se está acabando: quedan pocos o termina pronto
+export function urgente(d) {
+  const min = d.termina_at ? (new Date(d.termina_at).getTime() - Date.now()) / 60000 : 999;
+  return (d.tipo !== 'recien_llegado' && d.quedan != null && d.quedan <= 3) || min < 20;
+}
+
 export function etiquetaPin(d) {
   return d.tipo === 'sorpresa' ? '¿?' : d.tipo === 'grupal' ? `${d.quedan}` : precio(d.precio) || '¡NUEVO!';
 }

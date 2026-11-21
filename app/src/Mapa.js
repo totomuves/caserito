@@ -3,7 +3,7 @@ import { Text, View } from 'react-native';
 import MapView, { Marker, Polygon } from 'react-native-maps';
 import { puntosDe } from './barrios';
 import { C, letrista, cuadras, textoCategoria } from './tema';
-import { COLOR_TIPO, etiquetaPin, useCoordenadas, useLocalesMapa, HojaMapa } from './MapaComun';
+import { COLOR_TIPO, CINTA_TIPO, urgente, etiquetaPin, useCoordenadas, useLocalesMapa, HojaMapa } from './MapaComun';
 
 // Mapa en el teléfono (Apple Maps / Google Maps). En la web se usa Mapa.web.js
 export default function Mapa({ drops, pos, alAbrir, barrios = [] }) {
@@ -29,12 +29,7 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [] }) {
         {drops.map((d) => coords[d.local_id] && (
           <Marker key={d.drop_id} coordinate={{ latitude: coords[d.local_id].lat, longitude: coords[d.local_id].lng }}
             onPress={() => setSel(d)} accessibilityLabel={`${d.local_nombre}, ${cuadras(d.cuadras)}`}>
-            <View style={{ alignItems: 'center' }}>
-              <View style={{ backgroundColor: d.tipo === 'sorpresa' ? C.negro : C.amarillo, borderWidth: 2, borderColor: C.negro, borderRadius: 6, paddingHorizontal: 6, paddingTop: 3 }}>
-                <Text style={{ ...letrista, fontSize: 14, color: d.tipo === 'sorpresa' ? C.amarillo : C.negro }}>{etiquetaPin(d)}</Text>
-              </View>
-              <View style={{ width: 14, height: 14, marginTop: 2, borderRadius: 7, backgroundColor: COLOR_TIPO[d.tipo] || C.rojo, borderWidth: 2, borderColor: C.negro }} />
-            </View>
+            <Cartel d={d} />
           </Marker>
         ))}
       </MapView>
@@ -42,3 +37,36 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [] }) {
     </View>
   );
 }
+
+// Cartel de feria para cada drop: cinta con el tipo, precio a pincel, sombra dura y palito
+function Cartel({ d }) {
+  const color = COLOR_TIPO[d.tipo] || C.rojo;
+  const sorpresa = d.tipo === 'sorpresa';
+  const giro = [-5, 3, -2, 4][(d.drop_id || '').charCodeAt(0) % 4 || 0];
+  return (
+    <View style={{ alignItems: 'center', paddingRight: 3, paddingBottom: 3 }}>
+      <View style={{ transform: [{ rotate: `${giro}deg` }] }}>
+        <View style={{ position: 'absolute', left: 3, top: 3, right: -3, bottom: -3, backgroundColor: C.negro, borderRadius: 8 }} />
+        <View style={{ backgroundColor: sorpresa ? C.negro : C.amarillo, borderWidth: 2.5, borderColor: C.negro, borderRadius: 8, overflow: 'hidden', alignItems: 'center', minWidth: 62 }}>
+          <View style={{ backgroundColor: color, alignSelf: 'stretch', paddingHorizontal: 5, paddingVertical: 1 }}>
+            <Text style={{ fontSize: 9, fontWeight: '800', color: '#FFF6E5', textAlign: 'center', letterSpacing: 0.6 }}>{CINTA_TIPO[d.tipo] || 'DROP'}</Text>
+          </View>
+          <Text style={{ ...letrista, fontSize: 18, color: sorpresa ? C.amarillo : C.negro, paddingHorizontal: 6, paddingTop: 3 }}>{etiquetaPin(d)}</Text>
+          {d.tipo !== 'recien_llegado' ? (
+            <Text style={{ fontSize: 10, fontWeight: '800', color: urgente(d) ? '#B00020' : sorpresa ? C.amarillo : C.negro, paddingBottom: 3 }}>
+              {d.quedan <= 3 ? `¡quedan ${d.quedan}!` : `quedan ${d.quedan}`}
+            </Text>
+          ) : <View style={{ height: 4 }} />}
+        </View>
+        {d.dentro_del_radio ? (
+          <View style={{ position: 'absolute', top: -8, right: -6, backgroundColor: '#1F9D55', borderWidth: 2, borderColor: C.negro, borderRadius: 8, paddingHorizontal: 4, transform: [{ rotate: '8deg' }] }}>
+            <Text style={{ fontSize: 9, fontWeight: '800', color: '#FFFFFF' }}>¡AQUÍ!</Text>
+          </View>
+        ) : null}
+      </View>
+      <View style={{ width: 3, height: 10, backgroundColor: C.negro }} />
+      <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: color, borderWidth: 2.5, borderColor: C.negro, marginTop: -1 }} />
+    </View>
+  );
+}
+

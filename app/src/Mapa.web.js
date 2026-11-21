@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { C, cuadras, textoCategoria } from './tema';
-import { COLOR_TIPO, etiquetaPin, useCoordenadas, useLocalesMapa, HojaMapa } from './MapaComun';
+import { COLOR_TIPO, CINTA_TIPO, urgente, etiquetaPin, useCoordenadas, useLocalesMapa, HojaMapa } from './MapaComun';
 
 const L = require('leaflet');
 
@@ -20,10 +20,26 @@ function prepararEstilos() {
   st.textContent = `
     .caserito-mapa .leaflet-tile-pane { filter: sepia(.35) saturate(1.15) brightness(1.02); }
     .caserito-pin { background: none; border: none; }
-    .caserito-pin .tag { display:inline-block; background:${C.amarillo}; color:${C.negro}; border:2px solid ${C.negro}; border-radius:6px;
-      padding:3px 6px 0; font-family:LuckiestGuy_400Regular, sans-serif; font-style:italic; font-size:14px; white-space:nowrap; transform:rotate(-4deg); }
-    .caserito-pin .tag.sorpresa { background:${C.negro}; color:${C.amarillo}; }
-    .caserito-pin .punto { width:14px; height:14px; margin:2px auto 0; border-radius:7px; border:2px solid ${C.negro}; box-sizing:border-box; }
+    /* Cartel de feria: cinta con el tipo, precio grande a pincel, palito y sombra dura */
+    .cartel-wrap { position:relative; width:92px; height:96px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; }
+    .cartel { position:relative; min-width:64px; max-width:92px; background:${C.amarillo}; border:2.5px solid ${C.negro}; border-radius:8px; box-shadow:3px 3px 0 ${C.negro};
+      overflow:hidden; text-align:center; transform:rotate(var(--giro, -4deg)); transform-origin:50% 100%; }
+    .cartel .cinta { font:800 9px Archivo, sans-serif; letter-spacing:.6px; color:#FFF6E5; padding:2px 5px 1px; white-space:nowrap; }
+    .cartel .precio { font-family:LuckiestGuy_400Regular, 'Luckiest Guy', sans-serif; font-style:italic; font-size:19px; line-height:1; color:${C.negro}; padding:4px 6px 1px; white-space:nowrap; }
+    .cartel .quedan { font:800 10px Archivo, sans-serif; color:${C.negro}; padding:0 5px 3px; white-space:nowrap; }
+    .cartel.sorpresa { background:${C.negro}; } .cartel.sorpresa .precio, .cartel.sorpresa .quedan { color:${C.amarillo}; }
+    .cartel.urgente .quedan { color:#B00020; }
+    .palo { width:3px; height:12px; background:${C.negro}; }
+    .base { width:12px; height:12px; border-radius:6px; border:2.5px solid ${C.negro}; box-sizing:border-box; margin-top:-1px; }
+    .aqui-tag { position:absolute; top:-10px; right:-12px; font:800 9px Archivo, sans-serif; background:#1F9D55; color:#fff; border:2px solid ${C.negro}; border-radius:8px; padding:1px 5px; transform:rotate(8deg); }
+    @media (prefers-reduced-motion: no-preference) {
+      .cartel-wrap { animation: caer .5s cubic-bezier(.2,1.6,.4,1) both; }
+      .cartel.urgente { animation: tiritar 1.6s ease-in-out infinite; }
+      .pulso { position:absolute; bottom:-6px; left:50%; width:28px; height:28px; margin-left:-14px; border-radius:50%; border:3px solid var(--color); opacity:0; animation: pulso 2s ease-out infinite; }
+    }
+    @keyframes caer { from { transform: translateY(-14px); opacity:0 } to { transform:none; opacity:1 } }
+    @keyframes tiritar { 0%,80%,100% { transform:rotate(var(--giro, -4deg)) } 85% { transform:rotate(calc(var(--giro, -4deg) + 6deg)) } 90% { transform:rotate(calc(var(--giro, -4deg) - 6deg)) } 95% { transform:rotate(calc(var(--giro, -4deg) + 3deg)) } }
+    @keyframes pulso { 0% { transform:scale(.4); opacity:.8 } 100% { transform:scale(1.6); opacity:0 } }
     .caserito-barrio { font: 700 12px Archivo, sans-serif; color: #1E5AA8; text-align: center; text-shadow: 0 0 3px #FFF6E5, 0 0 3px #FFF6E5; opacity: .85; white-space: nowrap; }
     .local-sin-drop { width:18px; height:18px; border-radius:9px; background:#FFF6E5; border:3px solid #111; box-sizing:border-box; }
     .caserito-yo { width:18px; height:18px; border-radius:9px; background:#1D4ED8; border:3px solid #fff; box-shadow:0 0 0 6px rgba(29,78,216,.25); box-sizing:border-box; }
@@ -99,9 +115,16 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [] }) {
     drops.forEach((d) => {
       const p = coords[d.local_id];
       if (!p) return;
-      const html = `<div style="text-align:center"><span class="tag${d.tipo === 'sorpresa' ? ' sorpresa' : ''}">${escapar(etiquetaPin(d))}</span>`
-        + `<div class="punto" style="background:${COLOR_TIPO[d.tipo] || C.rojo}"></div></div>`;
-      const icono = L.divIcon({ className: 'caserito-pin', html, iconSize: [70, 44], iconAnchor: [35, 44] });
+      const color = COLOR_TIPO[d.tipo] || C.rojo;
+      const giro = [-5, 3, -2, 4][(d.drop_id || '').charCodeAt(0) % 4 || 0];
+      const quedan = d.tipo === 'recien_llegado' ? '' : `<div class="quedan">${d.quedan <= 3 ? '¡quedan ' + d.quedan + '!' : 'quedan ' + d.quedan}</div>`;
+      const html = `<div class="cartel-wrap" style="--color:${color}">`
+        + `<div style="position:relative"><div class="cartel${d.tipo === 'sorpresa' ? ' sorpresa' : ''}${urgente(d) ? ' urgente' : ''}" style="--giro:${giro}deg">`
+        + `<div class="cinta" style="background:${color}">${escapar(CINTA_TIPO[d.tipo] || 'DROP')}</div>`
+        + `<div class="precio">${escapar(etiquetaPin(d))}</div>${quedan}</div>`
+        + (d.dentro_del_radio ? '<div class="aqui-tag">¡AQUÍ!</div>' : '') + '</div>'
+        + `<div class="palo"></div><div class="base" style="background:${color}"></div><div class="pulso"></div></div>`;
+      const icono = L.divIcon({ className: 'caserito-pin', html, iconSize: [92, 96], iconAnchor: [46, 96] });
       L.marker([p.lat, p.lng], { icon: icono, title: `${d.local_nombre}, ${cuadras(d.cuadras)}`, keyboard: true })
         .on('click', () => setSel(d))
         .addTo(capa.current);
