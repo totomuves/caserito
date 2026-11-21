@@ -340,7 +340,7 @@ function EdicionEspecial({ ide, barrio, tengo, necesarias, t }) {
         ))}
         <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 43, backgroundColor: lista ? C.negro : '#B9AA92', paddingHorizontal: 8, justifyContent: 'center' }}>
           <Text numberOfLines={1} style={{ ...letrista, fontSize: 17, color: lista ? C.amarillo : C.papel }}>{nombre.toUpperCase()}</Text>
-          <Text style={{ fontFamily: F.negrita, fontSize: 8, letterSpacing: 2, color: lista ? '#C9A227' : C.papel }}>{t('EDICIÓN ESPECIAL', 'EDICIÓN ESPECIAL')} · {ide.edicion.replace(/^Edición /, '').toUpperCase()}</Text>
+          <Text numberOfLines={1} style={{ fontFamily: F.negrita, fontSize: 8, letterSpacing: 1.5, color: lista ? '#C9A227' : C.papel }}>{t('EDICIÓN ESPECIAL', 'EDICIÓN ESPECIAL')}</Text>
         </View>
       </View>
       <View style={{ flex: 1, gap: 6 }}>
