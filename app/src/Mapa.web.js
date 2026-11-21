@@ -23,6 +23,19 @@ function prepararEstilos() {
     .caserito-mapa { background:#FFF3B0; }
     .caserito-mapa .leaflet-tile-pane { filter: sepia(.55) saturate(1.6) hue-rotate(-8deg) brightness(1.04) contrast(1.05); }
     .caserito-pin { background: none; border: none; }
+    .lam-flota { position:relative; width:94px; height:150px; display:flex; flex-direction:column; align-items:center; perspective:320px; }
+    .lam-flota .lam-mapa { transform:rotateX(16deg) rotateY(-14deg) rotateZ(var(--rot,-2deg)); box-shadow:4px 6px 0 ${C.negro}; transform-origin:50% 100%; }
+    .lam-flota:hover .lam-mapa { transform:rotateX(0) rotateY(0) scale(1.08); }
+    .lam-flota .sombra { position:absolute; bottom:6px; width:46px; height:12px; border-radius:50%; background:rgba(17,17,17,.28); filter:blur(2px); }
+    .lam-flota .hilo { width:2px; flex:1; background:repeating-linear-gradient(${C.negro} 0 4px, transparent 4px 7px); margin-top:4px; }
+    .lam-flota .ubic { position:relative; width:22px; height:22px; border-radius:11px 11px 11px 2px; transform:rotate(-45deg); background:${C.negro}; border:2px solid ${C.papel}; box-shadow:0 0 0 2px ${C.negro}; margin-bottom:10px; z-index:1; }
+    .lam-flota .ubic::after { content:''; position:absolute; left:5px; top:5px; width:8px; height:8px; border-radius:50%; background:var(--color,${C.amarillo}); }
+    @media (prefers-reduced-motion: no-preference) {
+      .lam-flota .lam-mapa { animation: flotar 3.2s ease-in-out infinite; animation-delay:var(--delay,0s); }
+      .lam-flota .sombra { animation: sombra 3.2s ease-in-out infinite; animation-delay:var(--delay,0s); }
+    }
+    @keyframes flotar { 0%,100% { translate:0 0 } 50% { translate:0 -7px } }
+    @keyframes sombra { 0%,100% { transform:scale(1); opacity:1 } 50% { transform:scale(.8); opacity:.7 } }
     .lam-mapa { width:88px; background:${C.papel}; border:2.5px solid ${C.negro}; padding:3px; box-shadow:3px 3px 0 ${C.negro}; transform:rotate(var(--rot,-2deg)); font-family:Archivo, sans-serif; cursor:pointer; }
     .lam-mapa:hover { transform:rotate(0deg) scale(1.08); z-index:1000; }
     .lam-arte { position:relative; height:44px; border:2px solid ${C.negro}; overflow:hidden; display:flex; align-items:center; justify-content:center; }
@@ -138,11 +151,11 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null,
     const conDrop = new Set(drops.map((d) => d.local_id));
     locales.filter((l) => !conDrop.has(l.id)).forEach((l, k) => {
       const html = cerca
-        ? `<div class="lam-mapa" style="--rot:${[-3, 2, -1, 3][k % 4]}deg"><div class="lam-arte">${arteHtml(l.id, l.categoria)}`
+        ? `<div class="lam-flota" style="--rot:${[-3, 2, -1, 3][k % 4]}deg;--delay:-${(k % 5) * 0.6}s"><div class="lam-mapa"><div class="lam-arte">${arteHtml(l.id, l.categoria)}`
           + (l.logo_url ? `<img src="${escapar(l.logo_url)}" alt="" style="position:absolute;right:2px;bottom:2px;width:18px;height:18px">` : '')
-          + `</div><b>${escapar(l.nombre)}</b><i>★ ${escapar(especialidad(l))}</i></div>`
+          + `</div><b>${escapar(l.nombre)}</b><i>★ ${escapar(especialidad(l))}</i></div><div class="hilo"></div><div class="ubic"></div><div class="sombra"></div></div>`
         : '<div class="local-sin-drop"></div>';
-      const icono = L.divIcon({ className: 'caserito-pin', html, iconSize: cerca ? [94, 92] : [18, 18], iconAnchor: cerca ? [47, 46] : [9, 9] });
+      const icono = L.divIcon({ className: 'caserito-pin', html, iconSize: cerca ? [94, 150] : [18, 18], iconAnchor: cerca ? [47, 138] : [9, 9] });
       L.marker([l.punto.lat, l.punto.lng], { icon: icono, title: l.nombre, keyboard: true, zIndexOffset: -100 })
         .bindPopup(`<b>${escapar(l.nombre)}</b><br>${escapar(textoCategoria(l.categoria))}${l.producto_estrella ? ' · ★ ' + escapar(l.producto_estrella) : ''}<br><span style="color:#4A4A4A">Sin drop ahora · gana su lámina con el próximo drop</span>`)
         .addTo(capa.current);

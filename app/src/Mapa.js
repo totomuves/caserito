@@ -51,7 +51,7 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null,
             strokeColor={C.azul} strokeWidth={2} lineDashPattern={[8, 6]} fillColor="rgba(255,209,0,0.10)" tappable={false} />
         ))}
         {locales.filter((l) => !conDrop.has(l.id)).map((l, k) => (
-          <Marker key={'l' + l.id + (cerca ? 'c' : 'l')} coordinate={{ latitude: l.punto.lat, longitude: l.punto.lng }} title={l.nombre}
+          <Marker key={'l' + l.id + (cerca ? 'c' : 'l')} anchor={cerca ? { x: 0.5, y: 0.92 } : { x: 0.5, y: 0.5 }} coordinate={{ latitude: l.punto.lat, longitude: l.punto.lng }} title={l.nombre}
             description={`${textoCategoria(l.categoria)}${l.producto_estrella ? ' · ★ ' + l.producto_estrella : ''} · sin drop ahora`} tracksViewChanges={false}>
             {cerca ? <LaminaMapa l={l} k={k} /> : <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: C.papel, borderWidth: 3, borderColor: C.negro }} />}
           </Marker>
@@ -72,9 +72,24 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null,
 
 // Mini lámina del local (sin drop ahora): arte del rubro, ojos, nombre y su especialidad
 function LaminaMapa({ l, k }) {
-  const pal = paletaLocal(l.id);
+  // La lámina flota sobre el pin de ubicación, inclinada en 3D, con su sombra en el suelo
   return (
-    <View style={{ width: 88, padding: 3, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, transform: [{ rotate: `${[-3, 2, -1, 3][k % 4]}deg` }] }}>
+    <View style={{ width: 96, height: 156, alignItems: 'center' }}>
+      <View style={{ transform: [{ perspective: 320 }, { rotateX: '16deg' }, { rotateY: '-14deg' }, { rotate: `${[-3, 2, -1, 3][k % 4]}deg` }] }}>
+        <View style={{ position: 'absolute', left: 4, top: 6, right: -4, bottom: -6, backgroundColor: C.negro }} />
+        <TarjetaLamina l={l} />
+      </View>
+      <View style={{ flex: 1, width: 2, marginTop: 4, borderLeftWidth: 2, borderColor: C.negro, borderStyle: 'dashed' }} />
+      <View style={{ width: 22, height: 22, borderTopLeftRadius: 11, borderTopRightRadius: 11, borderBottomRightRadius: 11, borderBottomLeftRadius: 2, transform: [{ rotate: '-45deg' }], backgroundColor: C.negro, borderWidth: 2, borderColor: C.papel, alignItems: 'center', justifyContent: 'center', marginBottom: 2 }}>
+        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: C.amarillo }} />
+      </View>
+      <View style={{ width: 44, height: 10, borderRadius: 22, backgroundColor: 'rgba(17,17,17,0.25)', marginBottom: 2 }} />
+    </View>
+  );
+}
+function TarjetaLamina({ l }) {
+  return (
+    <View style={{ width: 88, padding: 3, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro }}>
       <View style={{ height: 44, borderWidth: 2, borderColor: C.negro, overflow: 'hidden' }}>
         <ArteLocal id={l.id} categoria={l.categoria} ancho="100%" alto={44} borde={false} />
       </View>
