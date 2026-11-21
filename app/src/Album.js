@@ -3,7 +3,7 @@ import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { supabase, explicar } from './supabase';
 import { C, F, letrista, textoCategoria } from './tema';
-import { Ola, Brillo, IconoCategoria, Boton, FondoBauhaus, Figura, figuraDe, colorDe } from './componentes';
+import { Ola, Brillo, IconoCategoria, Boton, FondoBauhaus, Figura, figuraDe, colorDe, PuntosPop } from './componentes';
 import { useIdioma } from './idioma';
 import { identidadDe, Motivo } from './identidad';
 import { Monstruito, apodoLamina, letraLamina } from './monstruito';
@@ -16,13 +16,13 @@ const MARCOS = [
 ];
 const GIROS = ['-2deg', '1.5deg', '-1deg', '2deg'];
 
-// Arte Bauhaus de cada lámina: bloque de color, la figura del rubro y una figura de acento, con ojos saltones
+// Arte de cada lámina: Bauhaus + pop art (puntos Ben-Day de Lichtenstein): bloque de color, la figura del rubro y una figura de acento, con ojos saltones
 const PALETAS = [
-  { fondo: C.amarillo, figura: C.rojo, acento: C.azul },
-  { fondo: C.azul, figura: C.amarillo, acento: C.rojo },
-  { fondo: C.rojo, figura: C.negro, acento: C.amarillo },
-  { fondo: C.crema, figura: C.azul, acento: C.amarillo },
-  { fondo: C.negro, figura: C.amarillo, acento: C.rojo },
+  { fondo: C.amarillo, figura: C.rojo, acento: C.azul, puntos: '#F29B00' },
+  { fondo: C.azul, figura: C.amarillo, acento: C.rojo, puntos: '#5D8BD0' },
+  { fondo: C.rojo, figura: C.negro, acento: C.amarillo, puntos: '#FF6B7E' },
+  { fondo: C.papel, figura: C.azul, acento: C.amarillo, puntos: '#F2A0A8' },
+  { fondo: C.negro, figura: C.amarillo, acento: C.rojo, puntos: '#3A3A3A' },
 ];
 const ACENTOS = ['cuadrado', 'circulo', 'triangulo', 'cuarto'];
 const POSICIONES = [
@@ -39,6 +39,7 @@ function ArteBauhaus({ local, k, alto = 80 }) {
   const ojo = alto * 0.2;
   return (
     <View style={{ height: alto, backgroundColor: pal.fondo, borderWidth: 2, borderColor: C.negro, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
+      <PuntosPop color={pal.puntos} fondo={pal.fondo} tam={alto / 40} sep={alto / 11} />
       <Figura forma={forma} color={pal.figura} tam={alto * 0.85} grosor={0} borde={pal.figura} style={{ position: 'absolute', ...pos.figura }} />
       <Figura forma={acento} color={pal.acento} tam={alto * 0.38} grosor={2} style={{ position: 'absolute', ...pos.acento }} />
       <View style={{ flexDirection: 'row', gap: 3 }}>

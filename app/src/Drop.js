@@ -4,7 +4,7 @@ import QRCode from 'react-native-qrcode-svg';
 import Svg, { Path } from 'react-native-svg';
 import { supabase, explicar, leerPunto } from './supabase';
 import { C, F, letrista, precio, cuadras, textoCategoria } from './tema';
-import { Ola, Boton, EtiquetaPrecio, Brillo, FondoBauhaus, Figura } from './componentes';
+import { Ola, Boton, EtiquetaPrecio, Brillo, FondoBauhaus, Figura, PuntosPop, GloboPop, Estallido } from './componentes';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR, categoriaTur } from './idioma';
 
 export default function Drop({ drop, usuario, alCerrar }) {
@@ -77,13 +77,21 @@ export default function Drop({ drop, usuario, alCerrar }) {
       </View>
       <Ola color={C.rojo} />
 
+      <View style={{ marginHorizontal: 16, marginTop: 14, borderWidth: 3, borderColor: C.negro, height: 150, overflow: 'hidden', padding: 12, shadowColor: C.negro, shadowOffset: { width: 5, height: 5 }, shadowOpacity: 1, shadowRadius: 0 }}>
+        <PuntosPop color={C.rojo} fondo="#FFE3E3" tam={3.4} sep={10} />
+        {drop.frase ? (
+          <GloboPop style={{ maxWidth: '78%' }}>
+            <FraseGlosario texto={drop.frase} colorAyuda={C.rojoTexto} style={{ fontFamily: F.negrita, fontSize: 15, lineHeight: 19, textTransform: 'uppercase' }} />
+          </GloboPop>
+        ) : null}
+        <Estallido texto={drop.tipo === 'sorpresa' && !mio ? '¿?' : precio(drop.precio) || '¡YA!'} tam={96} style={{ position: 'absolute', right: -4, bottom: -10 }} />
+      </View>
+
       <View style={{ marginHorizontal: 16, marginTop: 14, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: 0, padding: 18, gap: 10 }}>
-        <EtiquetaPrecio valor={drop.tipo === 'sorpresa' && !mio ? '¿?' : precio(drop.precio)} />
         <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.rojoTexto, textTransform: 'uppercase' }}>
           {drop.tipo === 'recien_llegado' ? t('Recién llegado', "Recién llegado · Just in") : drop.tipo === 'grupal' ? t('Drop grupal', "Drop grupal · Group") : drop.tipo === 'sorpresa' ? t('Drop sorpresa', "Drop sorpresa · Mystery") : 'Drop'} · {t('quedan', "quedan:")} {quedan}
         </Text>
         <Text style={{ ...letrista, fontSize: 24, lineHeight: 28 }}>{drop.tipo === 'sorpresa' && !drop.dentro_del_radio ? t('SE REVELA EN EL LOCAL', "SE REVELA EN EL LOCAL · SURPRISE!") : drop.titulo.toUpperCase()}</Text>
-        {drop.frase ? <FraseGlosario texto={`“${drop.frase.toUpperCase()}”`} colorAyuda={C.rojoTexto} style={{ ...letrista, fontSize: 17, lineHeight: 22, color: C.rojo }} /> : null}
 
         {drop.tipo === 'grupal' && (
           <View style={{ gap: 6, marginTop: 4 }}>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, Text, View, useWindowDimensions } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Path, Defs, Pattern, Circle, Rect } from 'react-native-svg';
 import { C, F, letrista } from './tema';
 
 // Borde ondulado entre bandas de color, como los lienzos de feria
@@ -138,3 +138,56 @@ export function EtiquetaPrecio({ valor, giro = '4deg' }) {
     </View>
   );
 }
+
+
+// ——— Drops estilo Lichtenstein (pop art): puntos Ben-Day, globo de diálogo y estallido ———
+let idPuntos = 0;
+export function PuntosPop({ color = C.rojo, fondo = C.papel, tam = 3, sep = 9, style }) {
+  const [id] = React.useState(() => `bd${++idPuntos}`);
+  return (
+    <Svg width="100%" height="100%" style={[{ position: 'absolute', left: 0, top: 0 }, style]} accessibilityElementsHidden importantForAccessibility="no" pointerEvents="none">
+      <Defs>
+        <Pattern id={id} patternUnits="userSpaceOnUse" width={sep} height={sep}>
+          <Rect x="0" y="0" width={sep} height={sep} fill={fondo} />
+          <Circle cx={sep / 4} cy={sep / 4} r={tam} fill={color} />
+          <Circle cx={(sep * 3) / 4} cy={(sep * 3) / 4} r={tam} fill={color} />
+        </Pattern>
+      </Defs>
+      <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />
+    </Svg>
+  );
+}
+
+// Globo de diálogo de cómic: la frase del local "dicha" por el drop
+export function GloboPop({ children, cola = 'izquierda', style }) {
+  return (
+    <View style={[{ marginBottom: 12 }, style]}>
+      <View style={{ backgroundColor: '#FFFFFF', borderWidth: 3, borderColor: C.negro, borderRadius: 18, paddingHorizontal: 12, paddingVertical: 8 }}>{children}</View>
+      <Svg width={26} height={16} viewBox="0 0 26 16" style={{ position: 'absolute', bottom: -13, [cola === 'izquierda' ? 'left' : 'right']: 22 }}>
+        <Path d="M2 0 L24 0 L4 15 Z" fill="#FFFFFF" stroke={C.negro} strokeWidth={3} strokeLinejoin="miter" />
+        <Path d="M3 -1 L23 -1" stroke="#FFFFFF" strokeWidth={4} />
+      </Svg>
+    </View>
+  );
+}
+
+// Estallido con onomatopeya (¡ZAS!, ¡PUM!, ¡YA!)
+const PUNTAS = (() => {
+  const n = 12; let d = '';
+  for (let i = 0; i < n * 2; i++) {
+    const r = i % 2 ? 31 : 50; const a = (Math.PI * i) / n - Math.PI / 2;
+    d += `${i ? 'L' : 'M'}${(50 + r * Math.cos(a)).toFixed(1)} ${(50 + r * Math.sin(a)).toFixed(1)} `;
+  }
+  return d + 'Z';
+})();
+export function Estallido({ texto = '¡ZAS!', tam = 74, color = C.amarillo, colorTexto = C.rojo, style }) {
+  return (
+    <View style={[{ width: tam, height: tam, alignItems: 'center', justifyContent: 'center' }, style]} pointerEvents="none">
+      <Svg width={tam} height={tam} viewBox="0 0 100 100" style={{ position: 'absolute' }}>
+        <Path d={PUNTAS} fill={color} stroke={C.negro} strokeWidth={4} strokeLinejoin="miter" />
+      </Svg>
+      <Text style={{ ...letrista, fontSize: tam * 0.24, color: colorTexto, textShadowColor: C.negro, textShadowOffset: { width: 1.5, height: 1.5 }, textShadowRadius: 0, transform: [{ rotate: '-8deg' }] }}>{texto}</Text>
+    </View>
+  );
+}
+export const ONOMATOPEYAS = ['¡ZAS!', '¡PUM!', '¡YA!', '¡WOW!', '¡PAF!'];
