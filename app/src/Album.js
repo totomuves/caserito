@@ -6,6 +6,7 @@ import { C, F, letrista, textoCategoria } from './tema';
 import { Ola, Brillo, IconoCategoria, Boton } from './componentes';
 import { useIdioma } from './idioma';
 import { identidadDe, Motivo } from './identidad';
+import { Monstruito, apodoLamina, letraLamina } from './monstruito';
 
 const MARCOS = [
   { fondo: C.amarillo, num: C.negro, texto: C.negro },
@@ -144,7 +145,7 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
             <Pressable key={l.id} onPress={() => setSel(k)} accessibilityLabel={`${t('Lámina', "Lámina")} ${k + 1}, ${ganada ? l.nombre + t(', ganada', ", ¡la tienes!") + (rep[l.id] && rep[l.id].repetidas ? `, ${rep[l.id].repetidas} ${t('repetidas', 'repetidas')}` : '') : textoCategoria(l.categoria) + t(', te falta', ", te falta")}`}
               style={{ width: '22.6%', height: 118, borderRadius: 12, borderWidth: activa ? 3 : 2.5, borderStyle: ganada || activa ? 'solid' : 'dashed', borderColor: activa ? C.rojo : ganada ? C.negro : '#8A7A66', backgroundColor: ganada ? m.fondo : 'transparent', transform: [{ rotate: ganada ? GIROS[k % 4] : '0deg' }], padding: 5, justifyContent: 'space-between' }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Text style={{ ...letrista, fontSize: 13, color: ganada ? m.num : '#8A7A66' }}>{k + 1}</Text>
+                <Text style={{ ...letrista, fontSize: 13, color: ganada ? m.num : '#8A7A66' }}>{k + 1}{ganada ? letraLamina(l) : ''}</Text>
                 {ganada && rep[l.id] && rep[l.id].repetidas > 0 ? (
                   <View style={{ backgroundColor: C.negro, borderRadius: 8, paddingHorizontal: 5, paddingVertical: 1 }}>
                     <Text style={{ fontFamily: F.negrita, fontSize: 10, color: C.amarillo }}>×{rep[l.id].repetidas}</Text>
@@ -154,17 +155,13 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
               {ganada ? <Motivo tipo={ide.motivo} a={ide.principal} b={ide.acento} alto={4} /> : null}
               <View style={{ alignItems: 'center' }}>
                 {ganada ? (
-                  <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: C.papel, borderWidth: 2, borderColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
-                    {l.logo_url
-                      ? <Image source={{ uri: l.logo_url }} style={{ width: 42, height: 42, borderRadius: 21 }} accessibilityIgnoresInvertColors />
-                      : <IconoCategoria categoria={l.categoria} />}
-                  </View>
+                  <Monstruito categoria={l.categoria} local={l} tam={48} />
                 ) : (
                   <Text style={{ ...letrista, fontSize: 30, color: '#8A7A66' }}>?</Text>
                 )}
               </View>
               <Text numberOfLines={2} style={{ fontFamily: F.negrita, fontSize: 10, textAlign: 'center', color: ganada ? m.texto : C.gris }}>
-                {ganada ? l.nombre : textoCategoria(l.categoria)}
+                {ganada ? apodoLamina(l) : textoCategoria(l.categoria)}
               </Text>
             </Pressable>
           );
@@ -176,7 +173,20 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
           <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.rojoTexto, textTransform: 'uppercase' }}>
             {t('Lámina', "Lámina")} {sel + 1} · {mias[elegido.id] ? t('ganada', "¡la tienes!") : t('te falta', "te falta")}
           </Text>
-          <Text style={{ ...letrista, fontSize: 22 }}>{mias[elegido.id] ? elegido.nombre.toUpperCase() : textoCategoria(elegido.categoria).toUpperCase()}</Text>
+          {mias[elegido.id] ? (
+            <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+              <Monstruito categoria={elegido.categoria} local={elegido} tam={72} />
+              <View style={{ flex: 1 }}>
+                <Text style={{ ...letrista, fontSize: 22 }}>{apodoLamina(elegido).toUpperCase()}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  {elegido.logo_url ? <Image source={{ uri: elegido.logo_url }} style={{ width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, borderColor: C.negro }} accessibilityIgnoresInvertColors /> : null}
+                  <Text style={{ fontFamily: F.negrita, fontSize: 14 }}>{elegido.nombre} · {t('lámina', 'lámina')} {sel + 1}{letraLamina(elegido)}</Text>
+                </View>
+              </View>
+            </View>
+          ) : (
+            <Text style={{ ...letrista, fontSize: 22 }}>{textoCategoria(elegido.categoria).toUpperCase()}</Text>
+          )}
           <Text style={{ fontFamily: F.normal, fontSize: 14 }}>
             {mias[elegido.id]
               ? `${t('La ganaste el', "La ganaste el")} ${new Date(mias[elegido.id]).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' })}${elegido.producto_estrella ? ' · ' + t('producto estrella', "imperdible") + ': ' + elegido.producto_estrella : ''}.`
