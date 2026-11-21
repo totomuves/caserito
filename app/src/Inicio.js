@@ -75,7 +75,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
       <View style={{ backgroundColor: C.amarillo, paddingHorizontal: 18, paddingTop: 10, paddingBottom: 4 }}>
         <FondoBauhaus variante="inicio" />
         <Logo ancho={190} style={{ marginLeft: 22, marginTop: 4, marginBottom: 2 }} />
-        <Text style={{ fontFamily: F.negrita, fontSize: 13, paddingLeft: 26 }}>{visita ? t(`Vas a ${visita.nombre} · ${visita.comuna}`, `Going to ${visita.nombre} · ${visita.comuna}`) : t(`${lugar} · tu barrio te tiene ofertas`, `${lugar} · ofertas like a local`)}</Text>
+        <Text style={{ fontFamily: F.negrita, fontSize: 13, lineHeight: 17, marginLeft: 22, width: 190 }}>{visita ? t(`Vas a ${visita.nombre} · ${visita.comuna}`, `Going to ${visita.nombre} · ${visita.comuna}`) : t(`${lugar} · tu barrio te tiene ofertas`, `${lugar} · ofertas like a local`)}</Text>
         <Pressable onPress={() => setVerIdiomas(!verIdiomas)} accessibilityRole="button" accessibilityLabel="Idioma · Language"
           style={{ position: 'absolute', right: 68, top: 14, height: 44, paddingHorizontal: 12, borderRadius: R(16), borderWidth: 2.5, borderColor: C.negro, backgroundColor: tur ? C.negro : C.papel, justifyContent: 'center' }}>
           <Text style={{ fontFamily: F.negrita, fontSize: 12, color: tur ? C.amarillo : C.negro }}>{tur ? `🌍 ${lang.toUpperCase()}` : 'Tourist?'}</Text>
