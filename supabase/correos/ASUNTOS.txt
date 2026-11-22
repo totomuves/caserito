@@ -1,0 +1,4 @@
+magic_link: Tu código para entrar a Caserito
+change_email: Tu código para guardar tu cuenta Caserito
+confirm_signup: Confirma tu cuenta de Caserito
+reset_password: Cambia tu clave de Caserito
