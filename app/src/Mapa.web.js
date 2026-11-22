@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { C, cuadras, textoCategoria } from './tema';
 import { figuraDe } from './componentes';
 import { arteHtml } from './arteLocal';
@@ -81,7 +81,8 @@ function escapar(t) {
   return String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null, alVisitar = () => {} }) {
+export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], visita = null, alVisitar = () => {} }) {
+  const marcaYo = useRef(null);
   const vista = visita;
   const setVista = alVisitar;
   const coords = useCoordenadas(drops);
@@ -115,9 +116,6 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       }).addTo(m);
     }
-    if (!pos.aprox) {
-      L.marker([pos.lat, pos.lng], { icon: L.divIcon({ className: '', html: '<div class="caserito-yo"></div>', iconSize: [18, 18] }), interactive: false }).addTo(m);
-    }
     capaBarrios.current = L.layerGroup().addTo(m);
     capa.current = L.layerGroup().addTo(m);
     mapa.current = m;
@@ -125,11 +123,27 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null,
     return () => { m.remove(); mapa.current = null; };
   }, []);
 
-  // Ir a un barrio (o volver a "Aquí")
+  // Tu ubicación real (punto azul): se mueve contigo. Si no diste permiso, no se dibuja.
+  useEffect(() => {
+    const m = mapa.current;
+    if (!m) return;
+    if (!yo) { if (marcaYo.current) { marcaYo.current.remove(); marcaYo.current = null; } return; }
+    if (!marcaYo.current) {
+      marcaYo.current = L.marker([yo.lat, yo.lng], { icon: L.divIcon({ className: '', html: '<div class="caserito-yo"></div>', iconSize: [20, 20] }), interactive: false, zIndexOffset: 2000 }).addTo(m);
+    } else marcaYo.current.setLatLng([yo.lat, yo.lng]);
+  }, [yo && yo.lat, yo && yo.lng, !!mapa.current]);
+
+  // Si el centro cambia (llegó tu ubicación, elegiste barrio), el mapa se mueve
+  useEffect(() => {
+    if (mapa.current && !vista) mapa.current.setView([pos.lat, pos.lng], mapa.current.getZoom());
+  }, [pos.lat, pos.lng]);
+
+  // Ir a un barrio (o volver a "Aquí", a tu ubicación real)
   function irA(b) {
     setVista(b);
     setSel(null);
-    if (mapa.current) mapa.current.flyTo(b ? [b.lat, b.lng] : [pos.lat, pos.lng], b ? 15 : 16, { duration: 0.8 });
+    const aqui = yo || pos;
+    if (mapa.current) mapa.current.flyTo(b ? [b.lat, b.lng] : [aqui.lat, aqui.lng], b ? 15 : 16, { duration: 0.8 });
   }
 
   // Límites de los barrios (línea azul punteada y el nombre al medio)
@@ -181,6 +195,12 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null,
     <View style={{ flex: 1, zIndex: 0, isolation: 'isolate' }}>
       <View ref={caja} style={{ flex: 1 }} accessibilityLabel="Mapa de drops del barrio" />
       <SelectorBarrios barrios={barrios} vista={vista} alElegir={irA} />
+      {yo ? (
+        <Pressable onPress={() => irA(null)} accessibilityRole="button" accessibilityLabel="Ir a mi ubicación"
+          style={{ position: 'absolute', right: 12, bottom: 330, zIndex: 950, width: 46, height: 46, backgroundColor: C.negro, borderWidth: 3, borderColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: '#1D4ED8', borderWidth: 3, borderColor: '#FFFFFF' }} />
+        </Pressable>
+      ) : null}
       <FiltrosMapa drops={drops} filtro={filtro} alElegir={(f) => { setFiltro(f); setSel(null); }} arriba={barrios.length > 1 ? 58 : 10} />
       <HojaMapa drops={visibles} pos={pos} sel={sel} alAbrir={alAbrir} coords={coords} />
     </View>

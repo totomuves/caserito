@@ -210,7 +210,7 @@ function Caserito() {
           ) : pestana === 'tu' ? (
             <Cuenta key={usuario.id} usuario={usuario} alAyuda={() => setPestana('ayuda')} />
           ) : pestana === 'mapa' ? (
-            <Mapa drops={drops} pos={visita ? { lat: visita.lat, lng: visita.lng } : lejos ? (centroLejos || { ...BARRIO_ITALIA }) : pos} alAbrir={abrir} barrios={barrios} visita={visita} alVisitar={setVisita} />
+            <Mapa drops={drops} pos={visita ? { lat: visita.lat, lng: visita.lng } : lejos ? (centroLejos || { ...BARRIO_ITALIA }) : pos} yo={pos && !pos.aprox ? pos : null} alAbrir={abrir} barrios={barrios} visita={visita} alVisitar={setVisita} />
           ) : (
             <Album usuario={usuario} alIrAlMapa={() => setPestana('mapa')} barrios={barrios} barrioInicial={(visita || barrioDe(pos, barrios).barrio || {}).id} />
           )}
