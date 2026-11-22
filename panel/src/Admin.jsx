@@ -19,7 +19,7 @@ const SECCIONES = [
   { id: 'estilo', texto: 'Estilo de la app' },
 ];
 
-export default function Admin({ usuario }) {
+export default function Admin({ usuario, alEntrarLocal }) {
   const [seccion, setSeccion] = useState('resumen');
   return (
     <div className="contenido">
@@ -30,7 +30,7 @@ export default function Admin({ usuario }) {
         ))}
       </div>
       {seccion === 'resumen' && <Resumen irA={setSeccion} />}
-      {seccion === 'locales' && <Locales usuario={usuario} />}
+      {seccion === 'locales' && <Locales usuario={usuario} alEntrarLocal={alEntrarLocal} />}
       {seccion === 'drops' && <Drops />}
       {seccion === 'resenas' && <Resenas />}
       {seccion === 'comentarios' && <Comentarios />}
@@ -194,7 +194,7 @@ function ResumenSimple({ d }) {
   );
 }
 
-function Locales({ usuario }) {
+function Locales({ usuario, alEntrarLocal }) {
   const { datos, error, recargar } = useCarga(() => supabase.from('locales')
     .select('id, nombre, barrio, categoria, categorias, cocina_pais, direccion, aprobado, activo, creado_at')
     .order('aprobado').order('creado_at', { ascending: false }));
@@ -268,6 +268,7 @@ function Locales({ usuario }) {
               ? <button className="boton" style={{ flex: 1, minHeight: 44 }} onClick={() => cambiar(l, { aprobado: true })}>Aprobar</button>
               : <button className="pildora" style={{ flex: 1 }} onClick={() => cambiar(l, { activo: !l.activo })}>{l.activo ? 'Pausar' : 'Reactivar'}</button>}
           </div>
+          {alEntrarLocal && <button className="boton" style={{ alignSelf: 'flex-start', minHeight: 42 }} onClick={() => alEntrarLocal(l)}>Entrar a este local →</button>}
           <Entrega local={l} e={entregas[l.id]} alCambiar={cargarEntregas} />
           <EliminarLocal local={l} alEliminar={recargar} />
         </div>

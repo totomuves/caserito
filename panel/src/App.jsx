@@ -111,7 +111,10 @@ export default function App() {
   if (admin && (soloAdmin || !local)) {
     return (
       <Marco>
-        <Admin usuario={sesion.user} />
+        <Admin usuario={sesion.user} alEntrarLocal={async (l) => {
+          const r = await supabase.from('locales').select('*').eq('id', l.id).single();
+          if (r.data) { setLocal(r.data); setPermisos(TODOS); setRol('Admin Caserito'); setSoloAdmin(false); }
+        }} />
         {!local && (
           <div className="contenido" style={{ paddingTop: 0 }}>
             <button className="pildora" onClick={() => { setSoloAdmin(false); setLocal(null); setAdmin(false); }}>Inscribir un local con esta cuenta</button>
