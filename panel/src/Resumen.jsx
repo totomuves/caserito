@@ -323,6 +323,8 @@ export default function Resumen({ local, alCrear }) {
             <span className="ayuda">Convierte = de los que se anotaron, cuántos llegaron a canjear. Si un drop se agota rápido, súbele el cupo o repítelo con "Duplicar".</span>
           </div>
 
+          <Premios local={local} desde={desde} hasta={hasta} />
+
           <h2 className="letrista">LO QUE DICEN</h2>
           <div className="tarjeta">
             {resenas.length === 0 ? <span className="ayuda">Todavía no tienes reseñas. Solo pueden opinar quienes canjearon.</span> : resenas.map((r, i) => (
@@ -336,5 +338,56 @@ export default function Resumen({ local, alCrear }) {
         </section>
       </div>
     </div>
+  );
+}
+
+
+// Premios que entregó el local: cambios de láminas repetidas y el arte del barrio (SQL 023)
+function Premios({ local, desde, hasta }) {
+  const [filas, setFilas] = useState(null);
+  const [falta, setFalta] = useState(false);
+  useEffect(() => {
+    supabase.rpc('premios_del_local', { p_local: local.id }).then(({ data, error }) => {
+      if (error) { setFalta(true); setFilas([]); } else setFilas(data || []);
+    });
+  }, [local.id]);
+  if (!filas) return null;
+  const enPeriodo = filas.filter((f) => f.entregado_at && new Date(f.entregado_at) >= desde && new Date(f.entregado_at) <= hasta);
+  const pendientes = filas.filter((f) => f.estado === 'pendiente');
+  const laminas = enPeriodo.reduce((s, f) => s + (f.tipo === 'repetidas' ? f.cantidad : 0), 0);
+  const fecha = (x) => new Date(x).toLocaleString('es-CL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  return (
+    <>
+      <h2 className="letrista">PREMIOS ENTREGADOS</h2>
+      <div className="tarjeta" style={{ gap: 10 }}>
+        {falta ? <span className="ayuda">Para ver los premios entregados, falta correr el SQL 023.</span> : (
+          <>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <div className="mini-stat"><b>{enPeriodo.length}</b><span>premios entregados</span></div>
+              <div className="mini-stat"><b>{laminas}</b><span>láminas repetidas recibidas</span></div>
+              <div className="mini-stat"><b>{pendientes.length}</b><span>por retirar</span></div>
+            </div>
+            {!local.repetidas_premio && <span className="ayuda">Todavía no ofreces premio por repetidas. Ponlo en "Editar mi local" para que tus caseritos vuelvan.</span>}
+            {filas.length === 0 ? <span className="ayuda">Aquí vas a ver cada premio que entregues: quién, qué y cuándo.</span> : (
+              <table className="tabla">
+                <thead><tr><th>Caserito</th><th>Premio</th><th>Pidió</th><th>Estado</th></tr></thead>
+                <tbody>
+                  {filas.slice(0, 12).map((f, i) => (
+                    <tr key={i}>
+                      <td>{f.caserito}</td>
+                      <td>{f.tipo === 'arte' ? '🎨 ' : `${f.cantidad} repetidas → `}{f.premio}</td>
+                      <td>{fecha(f.pedido_at)}</td>
+                      <td style={{ fontWeight: 800, color: f.estado === 'entregado' ? 'var(--azul)' : f.estado === 'pendiente' ? 'var(--rojo)' : '#8A7A66' }}>
+                        {f.estado === 'entregado' ? `✓ ${fecha(f.entregado_at)}` : f.estado === 'pendiente' ? 'Por retirar' : 'Venció'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </>
+        )}
+      </div>
+    </>
   );
 }
