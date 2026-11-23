@@ -13,7 +13,7 @@ export async function abrirKit(local) {
   const url = `${URL_APP}/?local=${local.id}`;
   const qr = await QRCode.toDataURL(url, { width: 1000, margin: 1, errorCorrectionLevel: 'M', color: { dark: '#111111', light: '#FFFFFF' } });
   const lamina = (tam) => `<div class="lam" style="width:${tam};height:${tam}">${arteHtml(local.id, local.categoria, local.nombre)}</div>`;
-  const logo = `${window.location.origin}/droper-logo.svg`;
+  const logo = `${window.location.origin}/dropper-logo.svg?v=2`;
   const nombre = esc(local.nombre);
   const sticker = `<div class="sticker">${lamina('22mm')}<img class="qr" src="${qr}" alt=""><b>ESCANEA</b><span>${nombre}</span></div>`;
   const mitadMesa = (giro) => `<div class="mesa-mitad" style="transform:rotate(${giro}deg)">
