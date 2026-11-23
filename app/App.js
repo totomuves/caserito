@@ -13,7 +13,7 @@ import { ArchivoNarrow_700Bold } from '@expo-google-fonts/archivo-narrow/700Bold
 import { Gelasio_400Regular } from '@expo-google-fonts/gelasio/400Regular';
 import { EstiloProvider, useEstilo } from './src/estilo';
 import Cargando from './src/Cargando';
-import { supabase, explicar } from './src/supabase';
+import { supabase, explicar, esDeRed } from './src/supabase';
 import { C, F, BARRIO_ITALIA, R } from './src/tema';
 import { IdiomaProvider, useIdioma } from './src/idioma';
 import Inicio from './src/Inicio';
@@ -78,7 +78,8 @@ function Caserito() {
       const { data } = await supabase.auth.getSession();
       let u = data.session && data.session.user;
       if (!u) {
-        const r = await supabase.auth.signInAnonymously();
+        let r = await supabase.auth.signInAnonymously();
+        for (let i = 0; i < 5 && r.error && esDeRed(r.error); i++) { await new Promise((ok) => setTimeout(ok, 2000)); r = await supabase.auth.signInAnonymously(); }
         if (r.error) { setError(explicar(r.error)); setCargando(false); return; }
         u = r.data.user;
       }
@@ -165,7 +166,7 @@ function Caserito() {
     if (visita) {
       const r = await supabase.rpc('drops_cerca', { lat: visita.lat, lng: visita.lng, radio_m: 2000 });
       if (!vigente()) return;
-      if (r.error) setError(explicar(r.error));
+      if (r.error) { if (esDeRed(r.error)) { setTimeout(() => cargarRef2.current && cargarRef2.current(), 3000); return; } setError(explicar(r.error)); }
       else { setError(''); setDrops((r.data || []).map((d) => ({ ...d, dentro_del_radio: false, cuadras: Math.max(d.cuadras, 99) }))); setLejos(false); setCentroLejos(null); }
       setCargando(false);
       return;
@@ -196,10 +197,24 @@ function Caserito() {
       }
     }
     if (!vigente()) return;
-    if (error) { if (!dropsRef.current.length) setError(explicar(error)); } // con un error de red no borramos lo que ya ves
+    if (error) {
+      // Sin conexión (o el teléfono volvió de segundo plano): no mostramos error, reintentamos solos en 3 s
+      if (esDeRed(error)) { setTimeout(() => cargarRef2.current && cargarRef2.current(), 3000); return; }
+      if (!dropsRef.current.length) setError(explicar(error));
+    }
     else { setError(''); setDrops(data || []); setLejos(lejos); setCentroLejos(mostrado); }
     setCargando(false);
   }, [usuario, posBusqueda, barrios, visita]);
+  const cargarRef2 = useRef(null);
+  cargarRef2.current = cargar;
+  // Al volver a la app o recuperar internet, se actualiza al tiro
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+    const otraVez = () => { if (document.visibilityState !== 'hidden') { setError(''); cargarRef2.current && cargarRef2.current(); } };
+    window.addEventListener('online', otraVez);
+    document.addEventListener('visibilitychange', otraVez);
+    return () => { window.removeEventListener('online', otraVez); document.removeEventListener('visibilitychange', otraVez); };
+  }, []);
 
   // Si llegaste al barrio que ibas a visitar, la app vuelve sola a "Aquí" (para que se active tu QR)
   useEffect(() => {

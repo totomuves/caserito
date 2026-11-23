@@ -12,6 +12,12 @@ export const supabase = createClient(url, key, {
   auth: { storage: AsyncStorage, autoRefreshToken: true, persistSession: true, detectSessionInUrl: false },
 });
 
+// Errores de conexión (Safari: "Load failed", Chrome: "Failed to fetch", app: "Network request failed")
+export function esDeRed(error) {
+  const m = (error && (error.message || String(error))) || '';
+  return /Load failed|Failed to fetch|Network request failed|NetworkError|network connection was lost|The Internet connection appears to be offline|fetch failed|aborted/i.test(m);
+}
+
 export function explicar(error) {
   const m = (error && (error.message || String(error))) || 'Error desconocido';
   if (/Could not find the function|function .* does not exist|PGRST202/i.test(m)) return 'Esta parte de Droper se está actualizando. Prueba en un rato.';
@@ -23,7 +29,7 @@ export function explicar(error) {
   if (/Signups not allowed for otp|otp_disabled|User not found/i.test(m)) return 'No hay una cuenta con ese correo. Usa "Guardar mi cuenta".';
   if (/Email address .* is invalid|invalid email/i.test(m)) return 'Ese correo no parece válido.';
   if (/Error sending|sending (confirmation|magic link|email change)/i.test(m)) return 'No pudimos mandar el correo. Inténtalo en un rato.';
-  if (/Network request failed/i.test(m)) return 'Sin conexión. Revisa internet e inténtalo de nuevo.';
+  if (esDeRed(error)) return 'Sin conexión. Revisa internet e inténtalo de nuevo.';
   return m;
 }
 
