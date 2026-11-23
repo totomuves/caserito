@@ -80,6 +80,8 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
   }
 
   const moderno = estilo === 'moderno';
+  const scroll = React.useRef(null);
+  const comoLlegar = alComoLlegar ? (x) => { alComoLlegar(x); try { scroll.current && scroll.current.scrollTo({ y: 0, animated: true }); } catch (e) { /* nada */ } } : null;
   // Desde qué distancia aparecen los drops (y siempre del más cercano al más lejano)
   const DISTANCIAS = [{ m: 200, es: '2 cuadras', en: '2 blocks' }, { m: 500, es: '5 cuadras', en: '5 blocks' }, { m: 1000, es: '1 km', en: '1 km' }, { m: 3000, es: '3 km', en: '3 km' }, { m: 10000, es: '10 km', en: '10 km' }];
   const textoRadio = (DISTANCIAS.find((x) => x.m === radio) || { es: `${radio} m` }).es;
@@ -189,7 +191,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
                     <Text style={{ fontFamily: F.negrita, fontSize: 13, color: '#FFFFFF' }}>{t('Lo quiero', 'Lo quiero · I want it')}</Text>
                   </Pressable>
                   {p ? (
-                    <Pressable onPress={() => (alComoLlegar ? alComoLlegar({ ...p, nombre: d.local_nombre }) : caminar(p))} accessibilityRole="button" style={{ height: 42, paddingHorizontal: 12, borderRadius: 14, backgroundColor: C.crema, alignItems: 'center', justifyContent: 'center' }}>
+                    <Pressable onPress={() => (comoLlegar ? comoLlegar({ ...p, nombre: d.local_nombre }) : caminar(p))} accessibilityRole="button" style={{ height: 42, paddingHorizontal: 12, borderRadius: 14, backgroundColor: C.crema, alignItems: 'center', justifyContent: 'center' }}>
                       <Text style={{ fontFamily: F.negrita, fontSize: 13 }}>{t('Cómo llegar', 'Directions')}</Text>
                     </Pressable>
                   ) : null}
@@ -300,7 +302,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
   );
 
   return (
-    <ScrollView contentContainerStyle={{ paddingBottom: 110 }}
+    <ScrollView ref={scroll} contentContainerStyle={{ paddingBottom: 110 }}
       refreshControl={<RefreshControl refreshing={refrescando} onRefresh={async () => { setRefrescando(true); await alRefrescar(); setRefrescando(false); }} />}>
       {moderno ? cabeceraModerna : (
         <>

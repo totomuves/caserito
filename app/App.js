@@ -324,13 +324,13 @@ function Caserito() {
           ) : cargando ? (
             <Cargando fuente={F.negrita} texto={t('Buscando drops cerca…', 'Buscando drops cerca… · Finding drops')} />
           ) : dropAbierto ? (
-            <Drop drop={dropAbierto} usuario={usuario} alCerrar={() => { setAbierto(null); cargar(); }} alComoLlegar={(d) => { setDestino(d); setAbierto(null); setLugarAbierto(null); setPestana('mapa'); }} />
+            <Drop drop={dropAbierto} usuario={usuario} alCerrar={() => { setAbierto(null); cargar(); }} alComoLlegar={(d) => { setDestino(d); setAbierto(null); setLugarAbierto(null); setPestana('inicio'); }} />
           ) : lugarAbierto ? (
             <Plano lugar={lugarAbierto} drops={drops} alAbrir={abrir} alCerrar={() => setLugarAbierto(null)} />
           ) : pestana === 'ayuda' ? (
             <Ayuda alCerrar={() => setPestana('inicio')} />
           ) : pestana === 'inicio' ? (
-            <Inicio drops={drops} destino={destino} alCerrarRuta={() => setDestino(null)} alComoLlegar={(d) => { setDestino(d); setAbierto(null); setLugarAbierto(null); setPestana('mapa'); }} radio={radio} alCambiarRadio={setRadio} dropsMapa={dropsDelMapa} diag={diag} alRecargar={() => cargarRef2.current && cargarRef2.current()} usuario={usuario} pos={pos} alVerMapa={() => setPestana('mapa')} lejos={lejos} alAbrir={abrir} alRefrescar={cargar} alAyuda={() => setPestana('ayuda')}
+            <Inicio drops={drops} destino={destino} alCerrarRuta={() => setDestino(null)} alComoLlegar={(d) => { setDestino(d); setAbierto(null); setLugarAbierto(null); }} radio={radio} alCambiarRadio={setRadio} dropsMapa={dropsDelMapa} diag={diag} alRecargar={() => cargarRef2.current && cargarRef2.current()} usuario={usuario} pos={pos} alVerMapa={() => setPestana('mapa')} lejos={lejos} alAbrir={abrir} alRefrescar={cargar} alAyuda={() => setPestana('ayuda')}
               avisoQr={avisoQr} alCerrarAvisoQr={() => setAvisoQr('')} barrioActual={barrioDe(pos, barrios)} barrioLejos={centroLejos && centroLejos.nombre}
               barrios={barrios} visita={visita} alVisitar={setVisita} lugares={lugares} alAbrirLugar={setLugarAbierto}
               avisos={avisos} avisoMotivo={avisoMotivo} alPrenderAvisos={prenderAvisos} alCerrarAvisos={cerrarAvisos} />

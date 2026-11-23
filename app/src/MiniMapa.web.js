@@ -35,6 +35,7 @@ function estilos() {
 export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVerMapa = () => {}, t = (a) => a, lugares = [], alAbrirLugar = () => {}, destino = null, alCerrarRuta = () => {} }) {
   const [ruta, setRuta] = useState(null);
   const vibrados = useRef(new Set());
+  const encuadre = useRef(null);
   const capaRuta = useRef(null);
   const caja = useRef(null);
   const mapa = useRef(null);
@@ -87,7 +88,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
     if (!caja.current || mapa.current || !centro) return;
     caja.current.classList.add('droper-mini');
     if (ESTILO === 'moderno') caja.current.classList.add('moderno');
-    const m = L.map(caja.current, { zoomControl: false, attributionControl: true, dragging: false, scrollWheelZoom: false, doubleClickZoom: 'center', touchZoom: 'center', minZoom: 14, maxZoom: 19, boxZoom: false, keyboard: false, zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false });
+    const m = L.map(caja.current, { zoomControl: false, attributionControl: true, dragging: false, scrollWheelZoom: false, doubleClickZoom: 'center', touchZoom: 'center', minZoom: 12, maxZoom: 19, boxZoom: false, keyboard: false, zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false });
     L.tileLayer(LLAVE_CARTO
       ? `https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${LLAVE_CARTO}`
       : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(m);
@@ -114,6 +115,9 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
       const puntos = r ? r.puntos.map((p) => [p.lat, p.lng]) : [[centro.lat, centro.lng], [destino.lat, destino.lng]];
       L.polyline(puntos, { color: '#111111', weight: 9, opacity: 0.85, lineCap: 'round', lineJoin: 'round' }).addTo(g);
       L.polyline(puntos, { color: '#E30A2F', weight: 5, lineCap: 'round', lineJoin: 'round', dashArray: r ? null : '8 10' }).addTo(g);
+      // la primera vez, se aleja para mostrar la ruta completa (después te sigue con ese zoom)
+      const clave = `${destino.lat},${destino.lng}`;
+      if (encuadre.current !== clave && mapa.current) { encuadre.current = clave; try { mapa.current.fitBounds(puntos, { padding: [44, 44], maxZoom: 18, animate: false }); } catch (e) { /* nada */ } }
     });
     return () => { vivo = false; };
   }, [destino && destino.lat, destino && destino.lng, centro && Math.round(centro.lat * 3700), centro && Math.round(centro.lng * 3100), !!mapa.current]);
