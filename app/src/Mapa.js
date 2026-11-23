@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import MapView, { Marker, Polygon, Polyline } from 'react-native-maps';
 import Svg, { Path } from 'react-native-svg';
 import { puntosDe } from './barrios';
@@ -41,6 +41,7 @@ export const ESTILO = [
 // Mapa en el teléfono (Apple Maps / Google Maps). En la web se usa Mapa.web.js
 export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], visita = null, alVisitar = () => {}, lugares = [], alAbrirLugar = () => {}, destino = null, alCerrarRuta = () => {}, alComoLlegarMapa = null }) {
   const [ruta, setRuta] = useState(null);
+  const [siguiendo, setSiguiendo] = useState(true);
   const desde = yo || pos;
   const vista = visita;
   const setVista = alVisitar;
@@ -73,7 +74,7 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
 
   return (
     <View style={{ flex: 1, zIndex: 0 }}>
-      <MapView ref={mapa} onRegionChangeComplete={(r) => setCerca(r.latitudeDelta < 0.012)} style={{ flex: 1, backgroundColor: SKIN === 'moderno' ? '#FFFFFF' : '#FFF3B0' }} showsUserLocation customMapStyle={SKIN === 'moderno' ? ESTILO_MODERNO : ESTILO} showsPointsOfInterest={false}
+      <MapView ref={mapa} onPanDrag={() => siguiendo && setSiguiendo(false)} followsUserLocation={siguiendo} onUserLocationChange={(e) => { const c = e.nativeEvent.coordinate; if (siguiendo && c && mapa.current) mapa.current.animateCamera({ center: { latitude: c.latitude, longitude: c.longitude } }, { duration: 400 }); }} onRegionChangeComplete={(r) => setCerca(r.latitudeDelta < 0.012)} style={{ flex: 1, backgroundColor: SKIN === 'moderno' ? '#FFFFFF' : '#FFF3B0' }} showsUserLocation customMapStyle={SKIN === 'moderno' ? ESTILO_MODERNO : ESTILO} showsPointsOfInterest={false}
         initialRegion={{ latitude: pos.lat, longitude: pos.lng, latitudeDelta: 0.012, longitudeDelta: 0.012 }}>
         {barrios.map((b) => (
           <Polygon key={b.id} coordinates={puntosDe(b.limite).map((p) => ({ latitude: p.lat, longitude: p.lng }))}
@@ -111,6 +112,12 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
             strokeColor="#E30A2F" strokeWidth={6} lineDashPattern={ruta ? undefined : [8, 10]} />
         ) : null}
       </MapView>
+      {!siguiendo ? (
+        <Pressable onPress={() => setSiguiendo(true)} accessibilityRole="button" accessibilityLabel="Seguir mi ubicación"
+          style={{ position: 'absolute', right: 12, bottom: 330, zIndex: 950, width: 46, height: 46, borderRadius: 14, backgroundColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: '#1D4ED8', borderWidth: 3, borderColor: '#FFFFFF' }} />
+        </Pressable>
+      ) : null}
       {destino ? <BarraRuta destino={destino} ruta={ruta} alCerrar={alCerrarRuta} alExterno={() => caminar(destino)} /> : null}
       <SelectorBarrios barrios={barrios} vista={vista} alElegir={irA} />
       <FiltrosMapa drops={drops} filtro={filtro} alElegir={(f) => { setFiltro(f); setSel(null); }} arriba={barrios.length > 1 ? 58 : 10} />

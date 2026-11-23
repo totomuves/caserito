@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { C, cuadras, textoCategoria, ESTILO } from './tema';
+import { C, R, cuadras, textoCategoria, ESTILO } from './tema';
 import { figuraDe } from './componentes';
 import { arteHtml } from './arteLocal';
 import { CSS_PINES, laminaPinHtml, tamLamina, posterPinHtml, tamPoster } from './pinesWeb';
@@ -94,6 +94,9 @@ function escapar(t) {
 
 export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], visita = null, alVisitar = () => {}, lugares = [], alAbrirLugar = () => {}, destino = null, alCerrarRuta = () => {}, alComoLlegarMapa = null }) {
   const capaRuta = useRef(null);
+  const seguir = useRef(true);
+  const [siguiendo, setSiguiendo] = useState(true);
+  const rutaEncuadrada = useRef(null);
   const [ruta, setRuta] = useState(null);
   const capaLugares = useRef(null);
   const capaTiendas = useRef(null);
@@ -139,6 +142,7 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
     capaTiendas.current = L.layerGroup().addTo(m);
     capaRuta.current = L.layerGroup().addTo(m);
     const soltarCalles = ESTILO === 'moderno' ? conectarCalles(L, m) : null;
+    m.on('dragstart', () => { seguir.current = false; setSiguiendo(false); });
     mapa.current = m;
     setTimeout(() => m.invalidateSize(), 50);
     return () => { if (soltarCalles) soltarCalles(); m.remove(); mapa.current = null; };
@@ -152,15 +156,18 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
     if (!marcaYo.current) {
       marcaYo.current = L.marker([yo.lat, yo.lng], { icon: L.divIcon({ className: '', html: '<div class="caserito-yo"></div>', iconSize: [20, 20] }), interactive: false, zIndexOffset: 2000 }).addTo(m);
     } else marcaYo.current.setLatLng([yo.lat, yo.lng]);
+    // Modo seguir: mientras caminas, el mapa te acompaña (se apaga si mueves el mapa con el dedo)
+    if (seguir.current) m.panTo([yo.lat, yo.lng], { animate: true, duration: 0.5 });
   }, [yo && yo.lat, yo && yo.lng, !!mapa.current]);
 
   // Si el centro cambia (llegó tu ubicación, elegiste barrio), el mapa se mueve
   useEffect(() => {
-    if (mapa.current && !vista) mapa.current.setView([pos.lat, pos.lng], mapa.current.getZoom());
+    if (mapa.current && !vista && (seguir.current || !yo)) mapa.current.setView([pos.lat, pos.lng], mapa.current.getZoom());
   }, [pos.lat, pos.lng]);
 
   // Ir a un barrio (o volver a "Aquí", a tu ubicación real)
   function irA(b) {
+    seguir.current = !b; setSiguiendo(!b);
     setVista(b);
     setSel(null);
     const aqui = yo || pos;
@@ -207,7 +214,8 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
       L.polyline(puntos, { color: '#111111', weight: 10, opacity: 0.9, lineCap: 'round', lineJoin: 'round' }).addTo(g);
       L.polyline(puntos, { color: '#E30A2F', weight: 6, opacity: 1, lineCap: 'round', lineJoin: 'round', dashArray: r ? null : '8 10' }).addTo(g);
       L.circleMarker([destino.lat, destino.lng], { radius: 9, color: '#111', weight: 3, fillColor: '#FFD100', fillOpacity: 1 }).addTo(g);
-      try { m.fitBounds(puntos, { padding: [70, 70], maxZoom: 18, animate: false }); } catch (e) { /* nada */ }
+      const clave = `${destino.lat},${destino.lng}`;
+      if (rutaEncuadrada.current !== clave) { rutaEncuadrada.current = clave; try { m.fitBounds(puntos, { padding: [70, 70], maxZoom: 18, animate: false }); } catch (e) { /* nada */ } }
     });
     return () => { vivo = false; };
   }, [destino && destino.lat, destino && destino.lng, desde && Math.round(desde.lat * 3700), desde && Math.round(desde.lng * 3100), !!mapa.current]);
@@ -251,7 +259,7 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
       <SelectorBarrios barrios={barrios} vista={vista} alElegir={irA} />
       {yo ? (
         <Pressable onPress={() => irA(null)} accessibilityRole="button" accessibilityLabel="Ir a mi ubicación"
-          style={{ position: 'absolute', right: 12, bottom: 330, zIndex: 950, width: 46, height: 46, backgroundColor: C.negro, borderWidth: 3, borderColor: C.borde, alignItems: 'center', justifyContent: 'center' }}>
+          style={{ position: 'absolute', right: 12, bottom: 330, zIndex: 950, width: 46, height: 46, borderRadius: R(14), backgroundColor: siguiendo ? '#1D4ED8' : C.negro, borderWidth: 3, borderColor: C.borde, alignItems: 'center', justifyContent: 'center' }}>
           <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: '#1D4ED8', borderWidth: 3, borderColor: '#FFFFFF' }} />
         </Pressable>
       ) : null}
