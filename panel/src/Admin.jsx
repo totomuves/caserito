@@ -19,6 +19,7 @@ const SECCIONES = [
   { id: 'invitar', texto: 'Invitar locales' },
   { id: 'barrios', texto: 'Barrios y arte' },
   { id: 'lugares', texto: 'Patios y malls' },
+  { id: 'envivo', texto: 'Drops en vivo' },
   { id: 'suscripciones', texto: 'Suscripciones' },
   { id: 'qr', texto: 'QR' },
   { id: 'estilo', texto: 'Estilo de la app' },
@@ -44,6 +45,7 @@ export default function Admin({ usuario, alEntrarLocal }) {
       {seccion === 'estilo' && <><EstiloApp /><ColoresBanners /><InterruptorTiendas /></>}
       {seccion === 'invitar' && <Invitar />}
       {seccion === 'suscripciones' && <SuscripcionesAdmin />}
+      {seccion === 'envivo' && <DropsEnVivo />}
       {seccion === 'qr' && (
         <Qr url={URL_APP} titulo="DROPER" archivo="caserito-qr-app.png"
           bajada="QR general de la app para caseritos: one-pager, flyers, redes y el 'último flyer'." />
@@ -772,6 +774,39 @@ function SuscripcionesAdmin() {
           </div>
         ))}
       </div>
+      {msg && <p style={{ margin: 0, fontWeight: 700 }}>{msg}</p>}
+    </div>
+  );
+}
+
+// Drops de hoy: si se ven en la app y, si no, por qué
+function DropsEnVivo() {
+  const [filas, setFilas] = useState(null);
+  const [msg, setMsg] = useState('');
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    supabase.rpc('diagnostico_drops').then(({ data, error }) => {
+      if (error) { setMsg(/diagnostico_drops/.test(error.message || '') ? 'Falta correr el SQL 031 (diagnóstico).' : explicar(error)); setFilas([]); return; }
+      setFilas(data || []);
+    });
+  }, [n]);
+  const hora = (t) => new Date(t).toLocaleString('es-CL', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
+  if (!filas) return <p className="ayuda">Cargando…</p>;
+  return (
+    <div className="tarjeta" style={{ display: 'grid', gap: 10 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 className="letrista" style={{ margin: 0 }}>Drops en vivo</h2>
+        <button type="button" className="pildora" onClick={() => setN(n + 1)}>Actualizar</button>
+      </div>
+      {filas.length === 0 && !msg && <p style={{ margin: 0 }}>No hay drops de las últimas 12 horas.</p>}
+      {filas.map((d) => (
+        <div key={d.drop_id} style={{ display: 'grid', gap: 2, borderLeft: `6px solid ${d.se_ve ? '#FFD100' : '#E30A2F'}`, paddingLeft: 10 }}>
+          <b>{d.local} · {d.titulo}</b>
+          <span className="ayuda">{hora(d.parte)} → {hora(d.termina)} · quedan {d.quedan ?? 0}{d.lat ? ` · ${d.lat.toFixed(5)}, ${d.lng.toFixed(5)}` : ''}</span>
+          <span style={{ fontWeight: 700, color: d.se_ve ? '#111' : '#C20826' }}>{d.se_ve ? '✓ ' : '✕ '}{d.motivo}</span>
+          {d.lat ? <a className="ayuda" href={`https://www.google.com/maps?q=${d.lat},${d.lng}`} target="_blank" rel="noreferrer">Ver dónde quedó el local en Google Maps</a> : null}
+        </div>
+      ))}
       {msg && <p style={{ margin: 0, fontWeight: 700 }}>{msg}</p>}
     </div>
   );

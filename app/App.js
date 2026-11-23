@@ -167,6 +167,7 @@ function Caserito() {
     const t = setInterval(traer, 60000);
     return () => { vivo = false; clearInterval(t); };
   }, [usuario, posBusqueda && Math.round(posBusqueda.lat * 100), posBusqueda && Math.round(posBusqueda.lng * 100)]);
+  const dropsDelMapa = React.useMemo(() => { const m = new Map(dropsMapa.map((d) => [d.drop_id, d])); drops.forEach((d) => m.set(d.drop_id, d)); return [...m.values()]; }, [dropsMapa, drops]);
   const turno = useRef(0);
   const dropsRef = useRef([]);
   dropsRef.current = drops; // si llegan respuestas desordenadas, solo vale la última pedida
@@ -316,7 +317,7 @@ function Caserito() {
           ) : pestana === 'tu' ? (
             <Cuenta key={usuario.id} usuario={usuario} alAyuda={() => setPestana('ayuda')} />
           ) : pestana === 'mapa' ? (
-            <Mapa drops={(() => { const m = new Map(dropsMapa.map((d) => [d.drop_id, d])); drops.forEach((d) => m.set(d.drop_id, d)); return [...m.values()]; })()} pos={visita ? { lat: visita.lat, lng: visita.lng } : lejos ? (centroLejos || { ...BARRIO_ITALIA }) : pos} yo={pos && !pos.aprox ? pos : null} alAbrir={abrir} barrios={barrios} visita={visita} alVisitar={setVisita} lugares={lugares} alAbrirLugar={setLugarAbierto} />
+            <Mapa drops={dropsDelMapa} pos={visita ? { lat: visita.lat, lng: visita.lng } : lejos ? (centroLejos || { ...BARRIO_ITALIA }) : pos} yo={pos && !pos.aprox ? pos : null} alAbrir={abrir} barrios={barrios} visita={visita} alVisitar={setVisita} lugares={lugares} alAbrirLugar={setLugarAbierto} />
           ) : (
             <Album usuario={usuario} alIrAlMapa={() => setPestana('mapa')} barrios={barrios} barrioInicial={(visita || barrioDe(pos, barrios).barrio || {}).id} />
           )}
