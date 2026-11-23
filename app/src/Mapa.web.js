@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { C, R, cuadras, textoCategoria, ESTILO } from './tema';
 import { figuraDe } from './componentes';
 import { arteHtml } from './arteLocal';
@@ -7,6 +7,7 @@ import { CSS_PINES, laminaPinHtml, tamLamina, posterPinHtml, tamPoster } from '.
 import { conectarCalles, CSS_CALLES } from './callesWeb';
 import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, useTiendasOsm, SelectorBarrios, FiltrosMapa, HojaMapa, traerRuta, BarraRuta } from './MapaComun';
 import { caminar } from './Drop';
+import { useRumbo, pedirPermisoRumbo } from './rumbo';
 
 const L = require('leaflet');
 
@@ -95,6 +96,11 @@ function escapar(t) {
 export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], visita = null, alVisitar = () => {}, lugares = [], alAbrirLugar = () => {}, destino = null, alCerrarRuta = () => {}, alComoLlegarMapa = null }) {
   const capaRuta = useRef(null);
   const seguir = useRef(true);
+  // Brújula: el mapa gira con el teléfono (modo caminar: te sigue y no se arrastra)
+  const [brujula, setBrujula] = useState(false);
+  const rumbo = useRumbo(brujula);
+  // las láminas y pósters giran al revés para quedar derechos
+  useEffect(() => { if (caja.current && caja.current.style) caja.current.style.setProperty('--contra', `${rumbo}deg`); }, [rumbo]);
   const [siguiendo, setSiguiendo] = useState(true);
   const rutaEncuadrada = useRef(null);
   const [ruta, setRuta] = useState(null);
@@ -152,11 +158,19 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
   useEffect(() => {
     const m = mapa.current;
     if (!m) return;
+    if (!m.getPane('yo')) { const pane = m.createPane('yo'); pane.style.zIndex = 680; pane.style.pointerEvents = 'none'; }
     if (!yo) { if (marcaYo.current) { marcaYo.current.remove(); marcaYo.current = null; } return; }
     if (!marcaYo.current || marcaYo.current._map !== m) {
       if (marcaYo.current) marcaYo.current.remove();
-      marcaYo.current = L.marker([yo.lat, yo.lng], { icon: L.divIcon({ className: '', html: '<div class="caserito-yo"></div>', iconSize: [20, 20] }), interactive: false, zIndexOffset: 2000 }).addTo(m);
-    } else marcaYo.current.setLatLng([yo.lat, yo.lng]);
+      // Punto azul dibujado como figura del mapa (no depende de estilos): halo de precisión + punto
+      marcaYo.current = L.featureGroup([
+        L.circle([yo.lat, yo.lng], { pane: 'yo', radius: Math.max(yo.precision || 15, 8), color: '#1D4ED8', weight: 1, fillColor: '#1D4ED8', fillOpacity: 0.12, interactive: false }),
+        L.circleMarker([yo.lat, yo.lng], { pane: 'yo', radius: 12, color: '#1D4ED8', weight: 0, fillColor: '#1D4ED8', fillOpacity: 0.25, interactive: false }),
+        L.circleMarker([yo.lat, yo.lng], { pane: 'yo', radius: 8, color: '#FFFFFF', weight: 3, fillColor: '#1D4ED8', fillOpacity: 1, interactive: false }),
+      ]).addTo(m);
+    } else {
+      marcaYo.current.eachLayer((c) => { c.setLatLng([yo.lat, yo.lng]); if (c.setRadius && c instanceof L.Circle && !(c instanceof L.CircleMarker && !(c instanceof L.Circle))) c.setRadius(Math.max(yo.precision || 15, 8)); });
+    }
     // Modo seguir: mientras caminas, el mapa te acompaña (se apaga si mueves el mapa con el dedo)
     if (seguir.current) m.panTo([yo.lat, yo.lng], { animate: true, duration: 0.5 });
   }, [yo && yo.lat, yo && yo.lng, !!mapa.current]);
@@ -257,7 +271,19 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
 
   return (
     <View style={{ flex: 1, zIndex: 0, isolation: 'isolate' }}>
-      <View ref={caja} style={{ flex: 1 }} accessibilityLabel="Mapa de drops del barrio" />
+      <View style={{ flex: 1, overflow: 'hidden' }}>
+        <View ref={caja} style={{ position: 'absolute', left: '-25%', top: '-25%', width: '150%', height: '150%', transform: [{ rotate: `${-rumbo}deg` }] }} accessibilityLabel="Mapa de drops del barrio" />
+      </View>
+      <Pressable onPress={async () => {
+          const m = mapa.current;
+          if (brujula) { setBrujula(false); if (m) m.dragging.enable(); return; }
+          if (!(await pedirPermisoRumbo())) return;
+          setBrujula(true); seguir.current = true; setSiguiendo(true);
+          if (m) { m.dragging.disable(); const a = yo || pos; m.setView([a.lat, a.lng], Math.max(m.getZoom(), 17), { animate: false }); }
+        }} accessibilityRole="switch" accessibilityState={{ checked: brujula }} accessibilityLabel="Brújula: girar el mapa con el teléfono"
+        style={{ position: 'absolute', right: 12, bottom: 386, zIndex: 950, width: 46, height: 46, borderRadius: R(14), backgroundColor: brujula ? C.amarillo : C.papel, borderWidth: 3, borderColor: C.borde, alignItems: 'center', justifyContent: 'center' }}>
+        <Text style={{ fontSize: 20, transform: [{ rotate: `${-rumbo}deg` }] }}>🧭</Text>
+      </Pressable>
       <SelectorBarrios barrios={barrios} vista={vista} alElegir={irA} />
       {yo ? (
         <Pressable onPress={() => irA(null)} accessibilityRole="button" accessibilityLabel="Ir a mi ubicación"

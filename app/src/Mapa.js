@@ -9,6 +9,7 @@ import { ArteLocal } from './arteLocal';
 import { LaminaPin, PosterPin } from './pinesNativo';
 import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa, traerRuta, BarraRuta } from './MapaComun';
 import { caminar } from './Drop';
+import { useRumbo } from './rumbo';
 
 // Estilo amarillo pálido del diseño "pantallas" (Google Maps en Android)
 // Moderno: fondo gris muy claro, calles blancas con borde marcado y nombres oscuros
@@ -42,6 +43,9 @@ export const ESTILO = [
 export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], visita = null, alVisitar = () => {}, lugares = [], alAbrirLugar = () => {}, destino = null, alCerrarRuta = () => {}, alComoLlegarMapa = null }) {
   const [ruta, setRuta] = useState(null);
   const [siguiendo, setSiguiendo] = useState(true);
+  const [brujula, setBrujula] = useState(false);
+  const rumbo = useRumbo(brujula);
+  useEffect(() => { if (mapa.current) mapa.current.animateCamera({ heading: brujula ? rumbo : 0 }, { duration: 250 }); }, [rumbo, brujula]);
   const desde = yo || pos;
   const vista = visita;
   const setVista = alVisitar;
@@ -112,6 +116,10 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
             strokeColor="#E30A2F" strokeWidth={6} lineDashPattern={ruta ? undefined : [8, 10]} />
         ) : null}
       </MapView>
+      <Pressable onPress={() => { setBrujula(!brujula); setSiguiendo(true); }} accessibilityRole="switch" accessibilityState={{ checked: brujula }} accessibilityLabel="Brújula"
+        style={{ position: 'absolute', right: 12, bottom: 386, zIndex: 950, width: 46, height: 46, borderRadius: 14, backgroundColor: brujula ? C.amarillo : '#FFFFFF', borderWidth: 2, borderColor: C.borde, alignItems: 'center', justifyContent: 'center' }}>
+        <Text style={{ fontSize: 20 }}>🧭</Text>
+      </Pressable>
       {!siguiendo ? (
         <Pressable onPress={() => setSiguiendo(true)} accessibilityRole="button" accessibilityLabel="Seguir mi ubicación"
           style={{ position: 'absolute', right: 12, bottom: 330, zIndex: 950, width: 46, height: 46, borderRadius: 14, backgroundColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
