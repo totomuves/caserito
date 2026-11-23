@@ -31,7 +31,9 @@ export default function App() {
 
 function Caserito() {
   const { t, tur } = useIdioma();
-  const [fuentes] = useFonts({ LuckiestGuy_400Regular, Jost_700Bold, Jost_800ExtraBold, Anton_400Regular, ArchivoNarrow_700Bold, Gelasio_400Regular, Archivo_400Regular, Archivo_600SemiBold, Archivo_800ExtraBold });
+  const [paciencia, setPaciencia] = useState(false);
+  useEffect(() => { const x = setTimeout(() => setPaciencia(true), 4000); return () => clearTimeout(x); }, []);
+  const [fuentes, errorFuentes] = useFonts({ LuckiestGuy_400Regular, Jost_700Bold, Jost_800ExtraBold, Anton_400Regular, ArchivoNarrow_700Bold, Gelasio_400Regular, Archivo_400Regular, Archivo_600SemiBold, Archivo_800ExtraBold });
   const [usuario, setUsuario] = useState(null);
   const [pos, setPos] = useState(null);
   const [drops, setDrops] = useState([]);
@@ -86,7 +88,11 @@ function Caserito() {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') { setPos({ ...BARRIO_ITALIA, aprox: true }); return; }
-      const p = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+      // Nunca quedarse pegado esperando el GPS: primero la última conocida, y si nada llega en 8 s, Barrio Italia
+      setTimeout(() => setPos((x) => x || { ...BARRIO_ITALIA, aprox: true }), 8000);
+      const u = await Location.getLastKnownPositionAsync().catch(() => null);
+      if (u) setPos({ lat: u.coords.latitude, lng: u.coords.longitude });
+      const p = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
       setPos({ lat: p.coords.latitude, lng: p.coords.longitude });
       sub = await Location.watchPositionAsync({ accuracy: Location.Accuracy.High, distanceInterval: 10 },
         (q) => setPos({ lat: q.coords.latitude, lng: q.coords.longitude }));
@@ -180,7 +186,8 @@ function Caserito() {
   const estiloBarrio = (barrioAhora && barrioAhora.estilo) || null;
   useEffect(() => { setEstiloBarrio(estiloBarrio); }, [estiloBarrio]);
 
-  if (!fuentes) return <Cargando texto="Droper" />;
+  // Si las fuentes fallan o se demoran, seguimos con las del sistema (nunca quedarse pegado)
+  if (!fuentes && !errorFuentes && !paciencia) return <Cargando texto="Droper" />;
 
   const abrir = (d) => setAbierto(d.drop_id);
   const dropAbierto = drops.find((d) => d.drop_id === abierto);
