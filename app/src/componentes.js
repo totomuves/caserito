@@ -18,8 +18,10 @@ export function Ola({ color, fondo = C.crema, abajo = true }) {
   if (ESTILO === 'moderno') {
     // Moderno: el encabezado termina con esquinas redondeadas, sin adornos
     return (
-      <View style={{ backgroundColor: fondo }} accessibilityElementsHidden importantForAccessibility="no">
-        <View style={{ height: 18, backgroundColor: color, borderBottomLeftRadius: 26, borderBottomRightRadius: 26 }} />
+      <View style={{ backgroundColor: fondo, marginTop: abajo ? -1 : 0, marginBottom: abajo ? 0 : -1 }} accessibilityElementsHidden importantForAccessibility="no">
+        <View style={abajo
+          ? { height: 19, backgroundColor: color, borderBottomLeftRadius: 26, borderBottomRightRadius: 26 }
+          : { height: 19, backgroundColor: color, borderTopLeftRadius: 26, borderTopRightRadius: 26 }} />
       </View>
     );
   }
