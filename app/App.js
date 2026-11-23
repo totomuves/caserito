@@ -310,7 +310,7 @@ function Caserito() {
           ) : pestana === 'ayuda' ? (
             <Ayuda alCerrar={() => setPestana('inicio')} />
           ) : pestana === 'inicio' ? (
-            <Inicio drops={drops} usuario={usuario} pos={pos} alVerMapa={() => setPestana('mapa')} lejos={lejos} alAbrir={abrir} alRefrescar={cargar} alAyuda={() => setPestana('ayuda')}
+            <Inicio drops={drops} dropsMapa={dropsDelMapa} usuario={usuario} pos={pos} alVerMapa={() => setPestana('mapa')} lejos={lejos} alAbrir={abrir} alRefrescar={cargar} alAyuda={() => setPestana('ayuda')}
               avisoQr={avisoQr} alCerrarAvisoQr={() => setAvisoQr('')} barrioActual={barrioDe(pos, barrios)} barrioLejos={centroLejos && centroLejos.nombre}
               barrios={barrios} visita={visita} alVisitar={setVisita} lugares={lugares} alAbrirLugar={setLugarAbierto}
               avisos={avisos} avisoMotivo={avisoMotivo} alPrenderAvisos={prenderAvisos} alCerrarAvisos={cerrarAvisos} />
