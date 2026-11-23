@@ -275,29 +275,55 @@ export function useTiendasOsm() {
   return tiendas;
 }
 
-// Ruta caminando (OpenStreetMap / OSRM): puntos, metros y minutos
+// Ruta caminando (OpenStreetMap / OSRM): puntos, metros, minutos y pasos ("gira a la derecha en …")
+const GIRO = { left: 'a la izquierda', right: 'a la derecha', 'slight left': 'levemente a la izquierda', 'slight right': 'levemente a la derecha', 'sharp left': 'a la izquierda', 'sharp right': 'a la derecha', straight: 'derecho', uturn: 'en U' };
+function textoPaso(p) {
+  const calle = p.name ? ` por ${p.name}` : '';
+  const m = p.maneuver || {};
+  const giro = GIRO[m.modifier] || '';
+  if (m.type === 'depart') return `Sal${calle}`;
+  if (m.type === 'arrive') return 'Llegaste al local';
+  if (m.type === 'roundabout' || m.type === 'rotary') return `En la rotonda, toma la salida ${m.exit || ''}${calle}`;
+  if (giro === 'derecho' || m.type === 'continue' || m.type === 'new name') return `Sigue derecho${calle}`;
+  return `Dobla ${giro}${calle}`.replace('Dobla ', giro ? 'Dobla ' : 'Sigue ');
+}
 export async function traerRuta(desde, hasta) {
-  const url = `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${desde.lng},${desde.lat};${hasta.lng},${hasta.lat}?overview=full&geometries=geojson`;
+  const url = `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${desde.lng},${desde.lat};${hasta.lng},${hasta.lat}?overview=full&geometries=geojson&steps=true`;
   try {
     const r = await fetch(url);
     const d = await r.json();
     const ruta = d.routes && d.routes[0];
     if (!ruta) return null;
-    return { puntos: ruta.geometry.coordinates.map(([lng, lat]) => ({ lat, lng })), metros: Math.round(ruta.distance), minutos: Math.max(1, Math.round(ruta.distance / 75)) };
+    const pasos = ((ruta.legs && ruta.legs[0] && ruta.legs[0].steps) || [])
+      .filter((p) => p.maneuver && p.maneuver.type !== 'depart' || p.distance > 5)
+      .map((p) => ({ texto: textoPaso(p), metros: Math.round(p.distance), lat: p.maneuver.location[1], lng: p.maneuver.location[0] }));
+    return { puntos: ruta.geometry.coordinates.map(([lng, lat]) => ({ lat, lng })), metros: Math.round(ruta.distance), minutos: Math.max(1, Math.round(ruta.distance / 75)), pasos };
   } catch (e) { return null; }
+}
+// El próximo paso según dónde estás
+export function proximoPaso(ruta, yo) {
+  if (!ruta || !ruta.pasos || !ruta.pasos.length || !yo) return null;
+  const dist = (p) => Math.hypot((p.lat - yo.lat) * 111320, (p.lng - yo.lng) * 93000);
+  // el primer paso que todavía está a más de 12 m (los anteriores ya los hiciste)
+  let i = 0, mejor = Infinity;
+  ruta.pasos.forEach((p, k) => { const d = dist(p); if (d < mejor) { mejor = d; i = k; } });
+  const p = mejor < 12 && ruta.pasos[i + 1] ? ruta.pasos[i + 1] : ruta.pasos[i];
+  return { ...p, a: Math.round(dist(p)) };
 }
 
 // Barra de la ruta: tiempo, distancia, abrir en otra app y cerrar
-export function BarraRuta({ destino, ruta, alCerrar, alExterno }) {
+export function BarraRuta({ destino, ruta, alCerrar, alExterno, yo = null, compacta = false }) {
+  const paso = proximoPaso(ruta, yo);
   const { t } = useIdioma();
   return (
-    <View style={{ position: 'absolute', left: 12, right: 12, top: 60, zIndex: 950, backgroundColor: C.negro, borderRadius: R(16), paddingHorizontal: 14, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+    <View style={{ position: 'absolute', left: compacta ? 8 : 12, right: compacta ? 8 : 12, top: compacta ? 8 : 60, zIndex: 950, backgroundColor: C.negro, borderRadius: R(16), paddingHorizontal: 14, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
       <Text style={{ fontSize: 20 }}>🚶</Text>
       <View style={{ flex: 1 }}>
         <Text style={{ fontFamily: F.negrita, fontSize: 15, color: '#FFFFFF' }} numberOfLines={1}>{destino.nombre}</Text>
         <Text style={{ fontFamily: F.media, fontSize: 12, color: C.amarillo }}>
           {ruta ? t(`${ruta.minutos} min caminando · ${ruta.metros < 1000 ? `${ruta.metros} m` : `${(ruta.metros / 1000).toFixed(1)} km`}`, `${ruta.minutos} min walking`) : t('Calculando la ruta…', 'Finding route…')}
         </Text>
+        {paso ? <Text style={{ fontFamily: F.negrita, fontSize: 13, color: '#FFFFFF', marginTop: 2 }} numberOfLines={2}>➜ {paso.texto}{paso.a > 15 ? ` · en ${paso.a} m` : ''}</Text> : null}
       </View>
       <Pressable onPress={alExterno} accessibilityRole="button" accessibilityLabel={t('Abrir en Google Maps o Apple Maps', 'Open in maps app')}
         style={{ height: 34, paddingHorizontal: 10, borderRadius: 12, backgroundColor: '#FFFFFF', justifyContent: 'center' }}>

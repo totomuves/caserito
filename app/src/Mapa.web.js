@@ -145,7 +145,7 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
     m.on('dragstart', () => { seguir.current = false; setSiguiendo(false); });
     mapa.current = m;
     setTimeout(() => m.invalidateSize(), 50);
-    return () => { if (soltarCalles) soltarCalles(); m.remove(); mapa.current = null; };
+    return () => { if (soltarCalles) soltarCalles(); m.remove(); mapa.current = null; marcaYo.current = null; };
   }, []);
 
   // Tu ubicación real (punto azul): se mueve contigo. Si no diste permiso, no se dibuja.
@@ -153,7 +153,8 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
     const m = mapa.current;
     if (!m) return;
     if (!yo) { if (marcaYo.current) { marcaYo.current.remove(); marcaYo.current = null; } return; }
-    if (!marcaYo.current) {
+    if (!marcaYo.current || marcaYo.current._map !== m) {
+      if (marcaYo.current) marcaYo.current.remove();
       marcaYo.current = L.marker([yo.lat, yo.lng], { icon: L.divIcon({ className: '', html: '<div class="caserito-yo"></div>', iconSize: [20, 20] }), interactive: false, zIndexOffset: 2000 }).addTo(m);
     } else marcaYo.current.setLatLng([yo.lat, yo.lng]);
     // Modo seguir: mientras caminas, el mapa te acompaña (se apaga si mueves el mapa con el dedo)
@@ -264,7 +265,7 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
         </Pressable>
       ) : null}
       <FiltrosMapa drops={drops} filtro={filtro} alElegir={(f) => { setFiltro(f); setSel(null); }} arriba={barrios.length > 1 ? 58 : 10} />
-      {destino ? <BarraRuta destino={destino} ruta={ruta} alCerrar={alCerrarRuta} alExterno={() => caminar(destino)} /> : null}
+      {destino ? <BarraRuta destino={destino} ruta={ruta} yo={yo || pos} alCerrar={alCerrarRuta} alExterno={() => caminar(destino)} /> : null}
       <HojaMapa drops={visibles} pos={pos} sel={sel} alAbrir={alAbrir} coords={coords} alComoLlegar={alComoLlegarMapa} />
     </View>
   );

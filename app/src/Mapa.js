@@ -118,7 +118,7 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
           <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: '#1D4ED8', borderWidth: 3, borderColor: '#FFFFFF' }} />
         </Pressable>
       ) : null}
-      {destino ? <BarraRuta destino={destino} ruta={ruta} alCerrar={alCerrarRuta} alExterno={() => caminar(destino)} /> : null}
+      {destino ? <BarraRuta destino={destino} ruta={ruta} yo={desde} alCerrar={alCerrarRuta} alExterno={() => caminar(destino)} /> : null}
       <SelectorBarrios barrios={barrios} vista={vista} alElegir={irA} />
       <FiltrosMapa drops={drops} filtro={filtro} alElegir={(f) => { setFiltro(f); setSel(null); }} arriba={barrios.length > 1 ? 58 : 10} />
       <HojaMapa drops={visibles} pos={pos} sel={sel} alAbrir={alAbrir} coords={coords} alComoLlegar={alComoLlegarMapa} />

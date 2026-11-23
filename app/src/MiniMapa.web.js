@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { C, F, R, precio, ESTILO } from './tema';
-import { useCoordenadas, useLocalesMapa, useTiendasOsm, especialidad, traerRuta } from './MapaComun';
+import { useCoordenadas, useLocalesMapa, useTiendasOsm, especialidad, traerRuta, BarraRuta } from './MapaComun';
+import { caminar } from './Drop';
 import { arteHtml } from './arteLocal';
 import { conectarCalles, CSS_CALLES } from './callesWeb';
 import { CSS_PINES, laminaPinHtml, tamLamina, posterPinHtml, tamPoster } from './pinesWeb';
@@ -31,7 +32,8 @@ function estilos() {
   document.head.appendChild(st);
 }
 
-export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVerMapa = () => {}, t = (a) => a, lugares = [], alAbrirLugar = () => {}, destino = null }) {
+export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVerMapa = () => {}, t = (a) => a, lugares = [], alAbrirLugar = () => {}, destino = null, alCerrarRuta = () => {} }) {
+  const [ruta, setRuta] = useState(null);
   const capaRuta = useRef(null);
   const caja = useRef(null);
   const mapa = useRef(null);
@@ -103,10 +105,11 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
     const g = capaRuta.current;
     if (!g) return;
     g.clearLayers();
-    if (!destino || !centro) return;
+    if (!destino || !centro) { setRuta(null); return; }
     let vivo = true;
     traerRuta(centro, destino).then((r) => {
       if (!vivo) return;
+      setRuta(r);
       const puntos = r ? r.puntos.map((p) => [p.lat, p.lng]) : [[centro.lat, centro.lng], [destino.lat, destino.lng]];
       L.polyline(puntos, { color: '#111111', weight: 9, opacity: 0.85, lineCap: 'round', lineJoin: 'round' }).addTo(g);
       L.polyline(puntos, { color: '#E30A2F', weight: 5, lineCap: 'round', lineJoin: 'round', dashArray: r ? null : '8 10' }).addTo(g);
@@ -154,6 +157,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
       <View style={{ position: 'absolute', left: 10, top: 10, backgroundColor: C.papel, borderRadius: 14, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: C.borde, zIndex: 500 }}>
         <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{yo ? (yo.precision > 80 ? t(`Ubicación aproximada (±${yo.precision} m)`, `Approx. location (±${yo.precision} m)`) : t(`Tú · 2 cuadras${yo.precision ? ` · ±${yo.precision} m` : ''}`, 'You · 2 blocks around')) : t('Activa tu ubicación', 'Turn on location')}</Text>
       </View>
+      {destino ? <BarraRuta destino={destino} ruta={ruta} yo={centro} compacta alCerrar={alCerrarRuta} alExterno={() => caminar(destino)} /> : null}
       <Pressable onPress={alVerMapa} accessibilityRole="button" accessibilityLabel={t('Abrir mapa', 'Open map')}
         style={{ position: 'absolute', right: 10, bottom: 10, backgroundColor: C.negro, borderRadius: 16, paddingHorizontal: 14, height: 34, justifyContent: 'center', zIndex: 500 }}>
         <Text style={{ fontFamily: F.negrita, fontSize: 12, color: '#FFFFFF' }}>{t('Ver mapa →', 'Map →')}</Text>
