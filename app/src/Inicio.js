@@ -24,7 +24,7 @@ function etiquetaPara(d, hora, t, cuad) {
   return cuad(d.cuadras).toUpperCase();
 }
 
-export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda, avisos, avisoMotivo, alPrenderAvisos, alCerrarAvisos, avisoQr, alCerrarAvisoQr, barrioActual, barrioLejos, barrios = [], visita = null, alVisitar = () => {}, pos = null, alVerMapa = () => {}, lugares = [], alAbrirLugar = () => {}, dropsMapa = null, diag = {}, alRecargar = () => {}, radio = 3000, alCambiarRadio = () => {} }) {
+export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda, avisos, avisoMotivo, alPrenderAvisos, alCerrarAvisos, avisoQr, alCerrarAvisoQr, barrioActual, barrioLejos, barrios = [], visita = null, alVisitar = () => {}, pos = null, alVerMapa = () => {}, lugares = [], alAbrirLugar = () => {}, dropsMapa = null, diag = {}, alRecargar = () => {}, radio = 3000, alCambiarRadio = () => {}, alComoLlegar = null }) {
   const b = barrioActual && barrioActual.barrio;
   const nombreBarrio = (b && b.nombre) || 'Barrio Italia';
   const lugar = b ? (barrioActual.dentro ? `${b.nombre} · ${b.comuna}` : b.nombre) : 'Barrio Italia';
@@ -188,7 +188,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
                     <Text style={{ fontFamily: F.negrita, fontSize: 13, color: '#FFFFFF' }}>{t('Lo quiero', 'Lo quiero · I want it')}</Text>
                   </Pressable>
                   {p ? (
-                    <Pressable onPress={() => caminar(p)} accessibilityRole="button" style={{ height: 42, paddingHorizontal: 12, borderRadius: 14, backgroundColor: C.crema, alignItems: 'center', justifyContent: 'center' }}>
+                    <Pressable onPress={() => (alComoLlegar ? alComoLlegar({ ...p, nombre: d.local_nombre }) : caminar(p))} accessibilityRole="button" style={{ height: 42, paddingHorizontal: 12, borderRadius: 14, backgroundColor: C.crema, alignItems: 'center', justifyContent: 'center' }}>
                       <Text style={{ fontFamily: F.negrita, fontSize: 13 }}>{t('Cómo llegar', 'Directions')}</Text>
                     </Pressable>
                   ) : null}

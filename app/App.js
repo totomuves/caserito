@@ -68,6 +68,7 @@ function Caserito() {
   const [cargando, setCargando] = useState(true);
   const [lejos, setLejos] = useState(false);
   const [centroLejos, setCentroLejos] = useState(null);
+  const [destino, setDestino] = useState(null); // Cómo llegar: ruta dibujada en el mapa de la app
   // Distancia desde la que aparecen los drops en "Cerca de ti" (la elige la persona; se recuerda)
   const [radio, setRadioState] = useState(3000);
   useEffect(() => { AsyncStorage.getItem('droper_radio').then((v) => { const n = Number(v); if (n >= 100) setRadioState(n); }).catch(() => {}); }, []);
@@ -327,14 +328,14 @@ function Caserito() {
           ) : pestana === 'ayuda' ? (
             <Ayuda alCerrar={() => setPestana('inicio')} />
           ) : pestana === 'inicio' ? (
-            <Inicio drops={drops} radio={radio} alCambiarRadio={setRadio} dropsMapa={dropsDelMapa} diag={diag} alRecargar={() => cargarRef2.current && cargarRef2.current()} usuario={usuario} pos={pos} alVerMapa={() => setPestana('mapa')} lejos={lejos} alAbrir={abrir} alRefrescar={cargar} alAyuda={() => setPestana('ayuda')}
+            <Inicio drops={drops} alComoLlegar={(d) => { setDestino(d); setAbierto(null); setLugarAbierto(null); setPestana('mapa'); }} radio={radio} alCambiarRadio={setRadio} dropsMapa={dropsDelMapa} diag={diag} alRecargar={() => cargarRef2.current && cargarRef2.current()} usuario={usuario} pos={pos} alVerMapa={() => setPestana('mapa')} lejos={lejos} alAbrir={abrir} alRefrescar={cargar} alAyuda={() => setPestana('ayuda')}
               avisoQr={avisoQr} alCerrarAvisoQr={() => setAvisoQr('')} barrioActual={barrioDe(pos, barrios)} barrioLejos={centroLejos && centroLejos.nombre}
               barrios={barrios} visita={visita} alVisitar={setVisita} lugares={lugares} alAbrirLugar={setLugarAbierto}
               avisos={avisos} avisoMotivo={avisoMotivo} alPrenderAvisos={prenderAvisos} alCerrarAvisos={cerrarAvisos} />
           ) : pestana === 'tu' ? (
             <Cuenta key={usuario.id} usuario={usuario} alAyuda={() => setPestana('ayuda')} />
           ) : pestana === 'mapa' ? (
-            <Mapa drops={dropsDelMapa} pos={visita ? { lat: visita.lat, lng: visita.lng } : lejos ? (centroLejos || { ...BARRIO_ITALIA }) : pos} yo={pos && !pos.aprox ? pos : null} alAbrir={abrir} barrios={barrios} visita={visita} alVisitar={setVisita} lugares={lugares} alAbrirLugar={setLugarAbierto} />
+            <Mapa drops={dropsDelMapa} pos={visita ? { lat: visita.lat, lng: visita.lng } : lejos ? (centroLejos || { ...BARRIO_ITALIA }) : pos} yo={pos && !pos.aprox ? pos : null} alAbrir={abrir} barrios={barrios} visita={visita} alVisitar={setVisita} lugares={lugares} alAbrirLugar={setLugarAbierto} destino={destino} alCerrarRuta={() => setDestino(null)} alComoLlegarMapa={setDestino} />
           ) : (
             <Album usuario={usuario} alIrAlMapa={() => setPestana('mapa')} barrios={barrios} barrioInicial={(visita || barrioDe(pos, barrios).barrio || {}).id} />
           )}

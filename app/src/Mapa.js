@@ -1,13 +1,14 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Text, View } from 'react-native';
-import MapView, { Marker, Polygon } from 'react-native-maps';
+import MapView, { Marker, Polygon, Polyline } from 'react-native-maps';
 import Svg, { Path } from 'react-native-svg';
 import { puntosDe } from './barrios';
 import { C, letrista, cuadras, textoCategoria, ESTILO as SKIN } from './tema';
 import { figuraDe } from './componentes';
 import { ArteLocal } from './arteLocal';
 import { LaminaPin, PosterPin } from './pinesNativo';
-import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa } from './MapaComun';
+import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa, traerRuta, BarraRuta } from './MapaComun';
+import { caminar } from './Drop';
 
 // Estilo amarillo pálido del diseño "pantallas" (Google Maps en Android)
 // Moderno: fondo gris muy claro, calles blancas con borde marcado y nombres oscuros
@@ -15,10 +16,10 @@ export const ESTILO_MODERNO = [
   { elementType: 'geometry', stylers: [{ color: '#F4F4F4' }] },
   { elementType: 'labels.text.fill', stylers: [{ color: '#222222' }] },
   { elementType: 'labels.text.stroke', stylers: [{ color: '#FFFFFF' }, { weight: 3 }] },
-  { featureType: 'road', elementType: 'geometry.fill', stylers: [{ color: '#FFD100' }] },
+  { featureType: 'road', elementType: 'geometry.fill', stylers: [{ color: '#9DBDEB' }] },
   { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#8A8A8A' }, { weight: 1.2 }] },
-  { featureType: 'road.arterial', elementType: 'geometry.fill', stylers: [{ color: '#FFD100' }, { weight: 3 }] },
-  { featureType: 'road.highway', elementType: 'geometry.fill', stylers: [{ color: '#FFC400' }] },
+  { featureType: 'road.arterial', elementType: 'geometry.fill', stylers: [{ color: '#9DBDEB' }, { weight: 3 }] },
+  { featureType: 'road.highway', elementType: 'geometry.fill', stylers: [{ color: '#6F9BE0' }] },
   { featureType: 'poi', stylers: [{ visibility: 'off' }] },
   { featureType: 'transit', stylers: [{ visibility: 'off' }] },
   { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#CFE3F3' }] },
@@ -38,10 +39,24 @@ export const ESTILO = [
 ];
 
 // Mapa en el teléfono (Apple Maps / Google Maps). En la web se usa Mapa.web.js
-export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null, alVisitar = () => {}, lugares = [], alAbrirLugar = () => {} }) {
+export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], visita = null, alVisitar = () => {}, lugares = [], alAbrirLugar = () => {}, destino = null, alCerrarRuta = () => {}, alComoLlegarMapa = null }) {
+  const [ruta, setRuta] = useState(null);
+  const desde = yo || pos;
   const vista = visita;
   const setVista = alVisitar;
   const mapa = useRef(null);
+  // Cómo llegar: ruta caminando dibujada en el mapa
+  useEffect(() => {
+    if (!destino || !desde) { setRuta(null); return; }
+    let vivo = true;
+    traerRuta(desde, destino).then((r) => {
+      if (!vivo) return;
+      setRuta(r);
+      const puntos = (r ? r.puntos : [desde, destino]).map((p) => ({ latitude: p.lat, longitude: p.lng }));
+      if (mapa.current) mapa.current.fitToCoordinates(puntos, { edgePadding: { top: 120, bottom: 220, left: 60, right: 60 }, animated: true });
+    });
+    return () => { vivo = false; };
+  }, [destino && destino.lat, destino && destino.lng, desde && Math.round(desde.lat * 3700), desde && Math.round(desde.lng * 3100)]);
   function irA(b) {
     setVista(b);
     setSel(null);
@@ -91,10 +106,15 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null,
             );
           });
         })()}
+        {destino && desde ? (
+          <Polyline coordinates={(ruta ? ruta.puntos : [desde, destino]).map((p) => ({ latitude: p.lat, longitude: p.lng }))}
+            strokeColor="#E30A2F" strokeWidth={6} lineDashPattern={ruta ? undefined : [8, 10]} />
+        ) : null}
       </MapView>
+      {destino ? <BarraRuta destino={destino} ruta={ruta} alCerrar={alCerrarRuta} alExterno={() => caminar(destino)} /> : null}
       <SelectorBarrios barrios={barrios} vista={vista} alElegir={irA} />
       <FiltrosMapa drops={drops} filtro={filtro} alElegir={(f) => { setFiltro(f); setSel(null); }} arriba={barrios.length > 1 ? 58 : 10} />
-      <HojaMapa drops={visibles} pos={pos} sel={sel} alAbrir={alAbrir} coords={coords} />
+      <HojaMapa drops={visibles} pos={pos} sel={sel} alAbrir={alAbrir} coords={coords} alComoLlegar={alComoLlegarMapa} />
     </View>
   );
 }

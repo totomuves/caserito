@@ -29,12 +29,12 @@ async function traerZona(z) {
   if (pidiendo[z]) return pidiendo[z];
   const [i, j] = z.split(':').map(Number);
   const s = i * ZONA, w = j * ZONA, n = s + ZONA, e = w + ZONA;
-  const q = `[out:json][timeout:20];way["highway"~"^(${TIPOS})$"](${s},${w},${n},${e});out geom;`;
+  const q = `[out:json][timeout:40];way["highway"~"^(${TIPOS})$"](${s},${w},${n},${e});out geom;`;
   pidiendo[z] = (async () => {
     for (const servidor of SERVIDORES) {
       try {
         const ctrl = new AbortController();
-        const t = setTimeout(() => ctrl.abort(), 15000);
+        const t = setTimeout(() => ctrl.abort(), 45000);
         const r = await fetch(servidor, { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, signal: ctrl.signal });
         clearTimeout(t);
         if (!r.ok) continue;
@@ -53,7 +53,7 @@ async function traerZona(z) {
 }
 
 // Conecta las calles amarillas a un mapa de Leaflet. Devuelve una función para desconectar.
-export function conectarCalles(L, m, { color = '#FFD100' } = {}) {
+export function conectarCalles(L, m, { color = '#7FA8E6' } = {}) {
   if (!m.getPane('calles')) {
     const pane = m.createPane('calles');
     pane.style.zIndex = 150; // debajo de las teselas (200)

@@ -5,7 +5,8 @@ import { figuraDe } from './componentes';
 import { arteHtml } from './arteLocal';
 import { CSS_PINES, laminaPinHtml, tamLamina, posterPinHtml, tamPoster } from './pinesWeb';
 import { conectarCalles, CSS_CALLES } from './callesWeb';
-import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, useTiendasOsm, SelectorBarrios, FiltrosMapa, HojaMapa } from './MapaComun';
+import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, useTiendasOsm, SelectorBarrios, FiltrosMapa, HojaMapa, traerRuta, BarraRuta } from './MapaComun';
+import { caminar } from './Drop';
 
 const L = require('leaflet');
 
@@ -91,7 +92,9 @@ function escapar(t) {
   return String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], visita = null, alVisitar = () => {}, lugares = [], alAbrirLugar = () => {} }) {
+export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], visita = null, alVisitar = () => {}, lugares = [], alAbrirLugar = () => {}, destino = null, alCerrarRuta = () => {}, alComoLlegarMapa = null }) {
+  const capaRuta = useRef(null);
+  const [ruta, setRuta] = useState(null);
   const capaLugares = useRef(null);
   const capaTiendas = useRef(null);
   const tiendas = useTiendasOsm();
@@ -134,6 +137,7 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
     capa.current = L.layerGroup().addTo(m);
     capaLugares.current = L.layerGroup().addTo(m);
     capaTiendas.current = L.layerGroup().addTo(m);
+    capaRuta.current = L.layerGroup().addTo(m);
     const soltarCalles = ESTILO === 'moderno' ? conectarCalles(L, m) : null;
     mapa.current = m;
     setTimeout(() => m.invalidateSize(), 50);
@@ -188,6 +192,26 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
     });
   }, [tiendas, cerca, !!mapa.current]);
 
+  // Cómo llegar: la ruta caminando dibujada en el mapa (se recalcula si avanzas ~30 m)
+  const desde = yo || pos;
+  useEffect(() => {
+    const g = capaRuta.current, m = mapa.current;
+    if (!g || !m) return;
+    g.clearLayers();
+    if (!destino || !desde) { setRuta(null); return; }
+    let vivo = true;
+    traerRuta(desde, destino).then((r) => {
+      if (!vivo) return;
+      setRuta(r);
+      const puntos = r ? r.puntos.map((p) => [p.lat, p.lng]) : [[desde.lat, desde.lng], [destino.lat, destino.lng]];
+      L.polyline(puntos, { color: '#111111', weight: 10, opacity: 0.9, lineCap: 'round', lineJoin: 'round' }).addTo(g);
+      L.polyline(puntos, { color: '#E30A2F', weight: 6, opacity: 1, lineCap: 'round', lineJoin: 'round', dashArray: r ? null : '8 10' }).addTo(g);
+      L.circleMarker([destino.lat, destino.lng], { radius: 9, color: '#111', weight: 3, fillColor: '#FFD100', fillOpacity: 1 }).addTo(g);
+      try { m.fitBounds(puntos, { padding: [70, 70], maxZoom: 18, animate: false }); } catch (e) { /* nada */ }
+    });
+    return () => { vivo = false; };
+  }, [destino && destino.lat, destino && destino.lng, desde && Math.round(desde.lat * 3700), desde && Math.round(desde.lng * 3100), !!mapa.current]);
+
   // Patios y malls: tarjeta negra; al tocarla se abre su plano
   useEffect(() => {
     const g = capaLugares.current;
@@ -232,7 +256,8 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
         </Pressable>
       ) : null}
       <FiltrosMapa drops={drops} filtro={filtro} alElegir={(f) => { setFiltro(f); setSel(null); }} arriba={barrios.length > 1 ? 58 : 10} />
-      <HojaMapa drops={visibles} pos={pos} sel={sel} alAbrir={alAbrir} coords={coords} />
+      {destino ? <BarraRuta destino={destino} ruta={ruta} alCerrar={alCerrarRuta} alExterno={() => caminar(destino)} /> : null}
+      <HojaMapa drops={visibles} pos={pos} sel={sel} alAbrir={alAbrir} coords={coords} alComoLlegar={alComoLlegarMapa} />
     </View>
   );
 }

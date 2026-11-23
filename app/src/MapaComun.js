@@ -172,7 +172,7 @@ export function useLocalesMapa() {
 }
 
 // Aviso sin ubicación + hoja de abajo con el drop elegido o el más cercano
-export function HojaMapa({ drops, pos, sel, alAbrir, coords = {} }) {
+export function HojaMapa({ drops, pos, sel, alAbrir, coords = {}, alComoLlegar = null }) {
   const cercano = sel || [...drops].sort((a, b) => a.cuadras - b.cuadras)[0];
   const { tur, lang, t, cuad } = useIdioma();
   const destino = cercano && coords[cercano.local_id];
@@ -219,7 +219,7 @@ export function HojaMapa({ drops, pos, sel, alAbrir, coords = {} }) {
                 </Pressable>
               ) : (
                 <>
-                  <Pressable onPress={() => caminar(destino)} accessibilityRole="button" style={{ flex: 1, minHeight: 48, borderRadius: R(16), backgroundColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
+                  <Pressable onPress={() => (alComoLlegar ? alComoLlegar({ ...destino, nombre: cercano.local_nombre }) : caminar(destino))} accessibilityRole="button" style={{ flex: 1, minHeight: 48, borderRadius: R(16), backgroundColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
                     <Text style={{ fontFamily: F.negrita, fontSize: 15, color: C.amarillo }}>{t(`Cómo llegar · ${minutos(cercano)} min`, `Cómo llegar · ${minutos(cercano)} min walk`)}</Text>
                   </Pressable>
                   <Pressable onPress={() => alAbrir(cercano)} accessibilityRole="button" style={{ minHeight: 48, paddingHorizontal: 16, borderRadius: R(16), borderWidth: 2.5, borderColor: C.borde, alignItems: 'center', justifyContent: 'center' }}>
@@ -273,4 +273,40 @@ export function useTiendasOsm() {
     });
   }, []);
   return tiendas;
+}
+
+// Ruta caminando (OpenStreetMap / OSRM): puntos, metros y minutos
+export async function traerRuta(desde, hasta) {
+  const url = `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${desde.lng},${desde.lat};${hasta.lng},${hasta.lat}?overview=full&geometries=geojson`;
+  try {
+    const r = await fetch(url);
+    const d = await r.json();
+    const ruta = d.routes && d.routes[0];
+    if (!ruta) return null;
+    return { puntos: ruta.geometry.coordinates.map(([lng, lat]) => ({ lat, lng })), metros: Math.round(ruta.distance), minutos: Math.max(1, Math.round(ruta.distance / 75)) };
+  } catch (e) { return null; }
+}
+
+// Barra de la ruta: tiempo, distancia, abrir en otra app y cerrar
+export function BarraRuta({ destino, ruta, alCerrar, alExterno }) {
+  const { t } = useIdioma();
+  return (
+    <View style={{ position: 'absolute', left: 12, right: 12, top: 60, zIndex: 950, backgroundColor: C.negro, borderRadius: R(16), paddingHorizontal: 14, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+      <Text style={{ fontSize: 20 }}>🚶</Text>
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontFamily: F.negrita, fontSize: 15, color: '#FFFFFF' }} numberOfLines={1}>{destino.nombre}</Text>
+        <Text style={{ fontFamily: F.media, fontSize: 12, color: C.amarillo }}>
+          {ruta ? t(`${ruta.minutos} min caminando · ${ruta.metros < 1000 ? `${ruta.metros} m` : `${(ruta.metros / 1000).toFixed(1)} km`}`, `${ruta.minutos} min walking`) : t('Calculando la ruta…', 'Finding route…')}
+        </Text>
+      </View>
+      <Pressable onPress={alExterno} accessibilityRole="button" accessibilityLabel={t('Abrir en Google Maps o Apple Maps', 'Open in maps app')}
+        style={{ height: 34, paddingHorizontal: 10, borderRadius: 12, backgroundColor: '#FFFFFF', justifyContent: 'center' }}>
+        <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{t('Abrir en Maps', 'Maps')}</Text>
+      </Pressable>
+      <Pressable onPress={alCerrar} accessibilityRole="button" accessibilityLabel={t('Cerrar ruta', 'Close route')} hitSlop={8}
+        style={{ width: 34, height: 34, borderRadius: 12, backgroundColor: '#333333', alignItems: 'center', justifyContent: 'center' }}>
+        <Text style={{ fontFamily: F.negrita, fontSize: 16, color: '#FFFFFF' }}>✕</Text>
+      </Pressable>
+    </View>
+  );
 }
