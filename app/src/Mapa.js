@@ -9,6 +9,19 @@ import { ArteLocal } from './arteLocal';
 import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa } from './MapaComun';
 
 // Estilo amarillo pálido del diseño "pantallas" (Google Maps en Android)
+// Moderno: fondo gris muy claro, calles blancas con borde marcado y nombres oscuros
+export const ESTILO_MODERNO = [
+  { elementType: 'geometry', stylers: [{ color: '#EDEDED' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#222222' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#FFFFFF' }, { weight: 3 }] },
+  { featureType: 'road', elementType: 'geometry.fill', stylers: [{ color: '#FFFFFF' }] },
+  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#8A8A8A' }, { weight: 1.2 }] },
+  { featureType: 'road.arterial', elementType: 'geometry.fill', stylers: [{ color: '#FFFFFF' }, { weight: 3 }] },
+  { featureType: 'road.highway', elementType: 'geometry.fill', stylers: [{ color: '#FFE680' }] },
+  { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+  { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#CFE3F3' }] },
+];
 export const ESTILO = [
   { elementType: 'geometry', stylers: [{ color: '#FFF3B0' }] },
   { elementType: 'labels.text.fill', stylers: [{ color: '#6B6B6B' }] },
@@ -44,7 +57,7 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null,
 
   return (
     <View style={{ flex: 1, zIndex: 0 }}>
-      <MapView ref={mapa} onRegionChangeComplete={(r) => setCerca(r.latitudeDelta < 0.012)} style={{ flex: 1, backgroundColor: SKIN === 'moderno' ? '#FFFFFF' : '#FFF3B0' }} showsUserLocation customMapStyle={SKIN === 'moderno' ? [] : ESTILO} showsPointsOfInterest={false}
+      <MapView ref={mapa} onRegionChangeComplete={(r) => setCerca(r.latitudeDelta < 0.012)} style={{ flex: 1, backgroundColor: SKIN === 'moderno' ? '#FFFFFF' : '#FFF3B0' }} showsUserLocation customMapStyle={SKIN === 'moderno' ? ESTILO_MODERNO : ESTILO} showsPointsOfInterest={false}
         initialRegion={{ latitude: pos.lat, longitude: pos.lng, latitudeDelta: 0.012, longitudeDelta: 0.012 }}>
         {barrios.map((b) => (
           <Polygon key={b.id} coordinates={puntosDe(b.limite).map((p) => ({ latitude: p.lat, longitude: p.lng }))}

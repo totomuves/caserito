@@ -20,9 +20,9 @@ function estilos() {
   st.id = 'droper-mini';
   st.textContent = `
     .droper-mini { background:#FFF3B0; }
-    .droper-mini .leaflet-tile-pane { filter: sepia(.55) saturate(1.6) hue-rotate(-8deg) brightness(1.04) contrast(1.05); }
+    .droper-mini .leaflet-tile-pane { filter: sepia(.5) saturate(1.5) hue-rotate(-8deg) brightness(1.02) contrast(1.3); }
     .droper-mini.moderno { background:#FFFFFF; }
-    .droper-mini.moderno .leaflet-tile-pane { filter: grayscale(1) brightness(1.1) contrast(1.08); }
+    .droper-mini.moderno .leaflet-tile-pane { filter: grayscale(1) contrast(1.55) brightness(1.06); }
     .droper-mini .leaflet-control-attribution { font-size:8px; background:rgba(255,255,255,.7); }
     .mini-yo { width:18px; height:18px; border-radius:9px; background:#1D4ED8; border:3px solid #fff; box-shadow:0 0 0 8px rgba(29,78,216,.18), 0 1px 4px rgba(0,0,0,.35); box-sizing:border-box; }
     .mini-lam { display:flex; flex-direction:column; align-items:center; cursor:pointer; }

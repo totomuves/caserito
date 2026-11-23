@@ -22,9 +22,9 @@ function prepararEstilos() {
   const st = document.createElement('style');
   st.textContent = `
     .caserito-mapa { background:#FFF3B0; }
-    .caserito-mapa .leaflet-tile-pane { filter: sepia(.55) saturate(1.6) hue-rotate(-8deg) brightness(1.04) contrast(1.05); }
+    .caserito-mapa .leaflet-tile-pane { filter: sepia(.5) saturate(1.5) hue-rotate(-8deg) brightness(1.02) contrast(1.3); }
     .caserito-mapa.moderno { background:#FFFFFF; }
-    .caserito-mapa.moderno .leaflet-tile-pane { filter: grayscale(1) brightness(1.1) contrast(1.08); }
+    .caserito-mapa.moderno .leaflet-tile-pane { filter: grayscale(1) contrast(1.55) brightness(1.06); }
     .caserito-pin { background: none; border: none; }
     .lugar-pin { display:flex; flex-direction:column; align-items:center; cursor:pointer; }
     .lugar-carta { background:${C.negro}; color:#fff; border:2.5px solid ${C.negro}; border-radius:12px; padding:6px 10px; box-shadow:0 6px 14px rgba(17,17,17,.3); font-family:Archivo, sans-serif; min-width:110px; }
