@@ -72,6 +72,9 @@ export default function Suscripcion({ local }) {
           {cargando ? 'Abriendo Flow…' : s.estado === 'morosa' || s.estado === 'cancelada' ? 'Registrar tarjeta de nuevo' : gratis ? 'Dejar lista mi tarjeta' : 'Suscribirme'}
         </button>
       )}
+      {porCorreo && s.estado === 'activa' && (
+        <button className="pildora" onClick={suscribirme} disabled={cargando}>{cargando ? 'Abriendo Flow…' : 'Pasar a pago automático con tarjeta'}</button>
+      )}
       {msg && <span role="status" style={{ fontWeight: 700 }}>{msg}</span>}
     </div>
   );
