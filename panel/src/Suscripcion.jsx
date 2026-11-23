@@ -37,7 +37,13 @@ export default function Suscripcion({ local }) {
     setCargando(true); setMsg('');
     const { data, error } = await supabase.functions.invoke('flow', { body: { accion: 'iniciar', local_id: local.id } });
     setCargando(false);
-    if (error || !data || !data.url) { setMsg((data && data.error) || (error && error.message) || 'No se pudo abrir Flow. Inténtalo en un rato.'); return; }
+    if (error || !data || !data.url) {
+      let detalle = (data && data.error) || '';
+      if (!detalle && error && error.context && typeof error.context.json === 'function') { try { detalle = (await error.context.json()).error || ''; } catch (e) { /* sin cuerpo */ } }
+      if (!detalle && error && /Failed to send a request/i.test(error.message || '')) detalle = 'La función "flow" no responde: revisa que esté creada en Supabase (Edge Functions) con ese nombre exacto y con "Verify JWT" apagado.';
+      setMsg(detalle || (error && error.message) || 'No se pudo abrir Flow. Inténtalo en un rato.');
+      return;
+    }
     window.location.href = data.url; // Flow: registro de tarjeta
   }
 
