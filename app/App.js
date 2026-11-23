@@ -156,12 +156,15 @@ function Caserito() {
   }, [pos]);
   // Mapa: TODOS los drops vigentes de la ciudad (no solo los cercanos); el inicio sigue mostrando lo de cerca
   const [dropsMapa, setDropsMapa] = useState([]);
+  const [diag, setDiag] = useState({}); // para ver qué pasa cuando no aparecen drops
   useEffect(() => {
     if (!usuario) return;
     let vivo = true;
     const base = posBusqueda && !posBusqueda.aprox ? posBusqueda : BARRIO_ITALIA;
     const traer = () => supabase.rpc('drops_cerca', { lat: base.lat, lng: base.lng, radio_m: 60000 }).then(({ data, error }) => {
-      if (vivo && !error && data) setDropsMapa(data);
+      if (!vivo) return;
+      if (!error && data) setDropsMapa(data);
+      setDiag((x) => ({ ...x, ciudad: data ? data.length : null, errorCiudad: error ? error.message : '', hora: new Date().toLocaleTimeString('es-CL') }));
     });
     traer();
     const t = setInterval(traer, 60000);
@@ -194,7 +197,8 @@ function Caserito() {
         r = await supabase.rpc('drops_cerca', { lat: pos.lat, lng: pos.lng, radio_m: 3000 });
       }
       data = r.data || []; error = r.error;
-    }
+      setDiag((x) => ({ ...x, cerca: data.length, errorCerca: error ? error.message : '', lat: pos.lat, lng: pos.lng, precision: pos.precision }));
+    } else setDiag((x) => ({ ...x, cerca: null, aprox: true }));
     // Sin drops cerca (o sin tu ubicación): los del barrio más cercano que tenga, para que cualquiera pueda mirar
     let lejos = false, mostrado = null;
     if (!error && data.length === 0) {
@@ -310,7 +314,7 @@ function Caserito() {
           ) : pestana === 'ayuda' ? (
             <Ayuda alCerrar={() => setPestana('inicio')} />
           ) : pestana === 'inicio' ? (
-            <Inicio drops={drops} dropsMapa={dropsDelMapa} usuario={usuario} pos={pos} alVerMapa={() => setPestana('mapa')} lejos={lejos} alAbrir={abrir} alRefrescar={cargar} alAyuda={() => setPestana('ayuda')}
+            <Inicio drops={drops} dropsMapa={dropsDelMapa} diag={diag} alRecargar={() => cargarRef2.current && cargarRef2.current()} usuario={usuario} pos={pos} alVerMapa={() => setPestana('mapa')} lejos={lejos} alAbrir={abrir} alRefrescar={cargar} alAyuda={() => setPestana('ayuda')}
               avisoQr={avisoQr} alCerrarAvisoQr={() => setAvisoQr('')} barrioActual={barrioDe(pos, barrios)} barrioLejos={centroLejos && centroLejos.nombre}
               barrios={barrios} visita={visita} alVisitar={setVisita} lugares={lugares} alAbrirLugar={setLugarAbierto}
               avisos={avisos} avisoMotivo={avisoMotivo} alPrenderAvisos={prenderAvisos} alCerrarAvisos={cerrarAvisos} />

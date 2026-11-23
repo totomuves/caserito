@@ -24,7 +24,7 @@ function etiquetaPara(d, hora, t, cuad) {
   return cuad(d.cuadras).toUpperCase();
 }
 
-export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda, avisos, avisoMotivo, alPrenderAvisos, alCerrarAvisos, avisoQr, alCerrarAvisoQr, barrioActual, barrioLejos, barrios = [], visita = null, alVisitar = () => {}, pos = null, alVerMapa = () => {}, lugares = [], alAbrirLugar = () => {}, dropsMapa = null }) {
+export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda, avisos, avisoMotivo, alPrenderAvisos, alCerrarAvisos, avisoQr, alCerrarAvisoQr, barrioActual, barrioLejos, barrios = [], visita = null, alVisitar = () => {}, pos = null, alVerMapa = () => {}, lugares = [], alAbrirLugar = () => {}, dropsMapa = null, diag = {}, alRecargar = () => {} }) {
   const b = barrioActual && barrioActual.barrio;
   const nombreBarrio = (b && b.nombre) || 'Barrio Italia';
   const lugar = b ? (barrioActual.dentro ? `${b.nombre} · ${b.comuna}` : b.nombre) : 'Barrio Italia';
@@ -127,7 +127,18 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
         <Pressable onPress={alVerMapa} accessibilityRole="button"><Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.gris }}>{t('Ver en el mapa', 'Ver mapa')}</Text></Pressable>
       </View>
       {visibles.length === 0 ? (
-        <Text style={{ fontFamily: F.media, fontSize: 14, color: C.gris, paddingHorizontal: 18, paddingTop: 8 }}>{t('No hay drops por aquí ahora. Vuelve más rato: los locales sueltan sorpresas durante el día.', 'No drops right now. Vuelve más rato.')}</Text>
+        <View style={{ paddingHorizontal: 18, paddingTop: 8, gap: 6 }}>
+          <Text style={{ fontFamily: F.media, fontSize: 14, color: C.gris }}>{t('No hay drops por aquí ahora. Vuelve más rato: los locales sueltan sorpresas durante el día.', 'No drops right now. Vuelve más rato.')}</Text>
+          {/* Diagnóstico corto (para saber qué pasa si debería haber drops) */}
+          <Pressable onPress={alRecargar} accessibilityRole="button">
+            <Text style={{ fontFamily: F.media, fontSize: 11, color: '#8A8A8A' }}>
+              {diag.aprox ? 'Sin ubicación exacta' : diag.lat ? `Buscando en ${diag.lat.toFixed(4)}, ${diag.lng.toFixed(4)}${diag.precision ? ` (±${diag.precision} m)` : ''}` : 'Esperando ubicación'}
+              {` · ${diag.cerca ?? '–'} a 3 km · ${diag.ciudad ?? '–'} en la ciudad`}
+              {diag.errorCerca || diag.errorCiudad ? ` · error: ${diag.errorCerca || diag.errorCiudad}` : ''}
+              {diag.hora ? ` · ${diag.hora}` : ''} · tocar para recargar
+            </Text>
+          </Pressable>
+        </View>
       ) : (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 14, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 20 }}>
           {visibles.map((d) => {
