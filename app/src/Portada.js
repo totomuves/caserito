@@ -63,7 +63,7 @@ function UltimaHora({ textos, t }) {
 }
 
 function Caja({ children, fondo = PAPEL, style }) {
-  return <View style={[{ borderWidth: 2, borderColor: C.negro, backgroundColor: fondo }, style]}>{children}</View>;
+  return <View style={[{ borderWidth: 2, borderColor: C.borde, backgroundColor: fondo }, style]}>{children}</View>;
 }
 
 export default function Portada({ drops, nombreBarrio, barrios, visita, alVisitar, alAbrir, alRefrescar, coords = {}, t, cuad }) {
@@ -82,12 +82,12 @@ export default function Portada({ drops, nombreBarrio, barrios, visita, alVisita
     <ScrollView style={{ flex: 1, backgroundColor: PAPEL }} contentContainerStyle={{ paddingBottom: 120 }}
       refreshControl={<RefreshControl refreshing={refrescando} onRefresh={refrescar} />}>
       {/* Cabecera */}
-      <View style={{ flexDirection: 'row', marginTop: 10, marginHorizontal: 10, borderWidth: 2, borderColor: C.negro }}>
+      <View style={{ flexDirection: 'row', marginTop: 10, marginHorizontal: 10, borderWidth: 2, borderColor: C.borde }}>
         <View style={{ flex: 1, backgroundColor: ROJO, paddingHorizontal: 10, paddingTop: 6, paddingBottom: 4 }}>
           <Text style={{ ...T, fontSize: 44, lineHeight: 46, color: '#FFFFFF', transform: [{ skewX: '-10deg' }], textShadowColor: C.negro, textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 0 }}>DROPER</Text>
           <Text style={{ ...N, fontSize: 10, letterSpacing: 3, color: AMARILLO }}>{t('EL DIARIO POPULAR DEL BARRIO', 'THE BARRIO DAILY · DIARIO POPULAR')}</Text>
         </View>
-        <View style={{ width: 72, backgroundColor: AMARILLO, borderLeftWidth: 2, borderColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ width: 72, backgroundColor: AMARILLO, borderLeftWidth: 2, borderColor: C.borde, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ ...T, fontSize: 30, lineHeight: 34 }}>$0</Text>
           <Text style={{ ...N, fontSize: 9 }}>{t('PURA YAPA', 'FREE · YAPA')}</Text>
         </View>
@@ -108,7 +108,7 @@ export default function Portada({ drops, nombreBarrio, barrios, visita, alVisita
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 0, paddingHorizontal: 10, paddingTop: 8 }}>
         {CATEGORIAS.filter((c) => c.id === 'todo' || drops.some((d) => tieneCategoria(d, c.id))).map((c, k) => (
           <Pressable key={c.id} onPress={() => setSeccion(c.id)} accessibilityRole="button" accessibilityState={{ selected: seccion === c.id }}
-            style={{ paddingHorizontal: 10, paddingVertical: 6, borderWidth: 2, borderLeftWidth: k ? 0 : 2, borderColor: C.negro, backgroundColor: seccion === c.id ? C.negro : PAPEL }}>
+            style={{ paddingHorizontal: 10, paddingVertical: 6, borderWidth: 2, borderLeftWidth: k ? 0 : 2, borderColor: C.borde, backgroundColor: seccion === c.id ? C.negro : PAPEL }}>
             <Text style={{ ...T, fontSize: 14, color: seccion === c.id ? AMARILLO : C.negro }}>{(c.id === 'todo' ? t('PORTADA', 'FRONT PAGE') : c.texto).toUpperCase()}</Text>
           </Pressable>
         ))}
@@ -131,9 +131,9 @@ export default function Portada({ drops, nombreBarrio, barrios, visita, alVisita
           <View style={{ flexDirection: 'row', gap: 8, marginHorizontal: 10, marginTop: 8 }}>
             <Caja style={{ width: 150, height: 150, overflow: 'hidden' }}>
               <PuntosPop color={ROJO} fondo="#FFE3E3" tam={2.4} sep={8} />
-              <View style={{ position: 'absolute', left: 25, top: 18, width: 96, height: 96, borderRadius: 48, backgroundColor: AMARILLO, borderWidth: 3, borderColor: C.negro }} />
+              <View style={{ position: 'absolute', left: 25, top: 18, width: 96, height: 96, borderRadius: 48, backgroundColor: AMARILLO, borderWidth: 3, borderColor: C.borde }} />
               <View style={{ position: 'absolute', left: 50, top: 50, flexDirection: 'row', gap: 4 }}>
-                {[0, 1].map((i) => <View key={i} style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: '#FFFFFF', borderWidth: 2, borderColor: C.negro, alignItems: i ? 'flex-end' : 'flex-start', justifyContent: 'flex-end', padding: 1 }}><View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: C.negro }} /></View>)}
+                {[0, 1].map((i) => <View key={i} style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: '#FFFFFF', borderWidth: 2, borderColor: C.borde, alignItems: i ? 'flex-end' : 'flex-start', justifyContent: 'flex-end', padding: 1 }}><View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: C.negro }} /></View>)}
               </View>
               <Text style={{ ...N, position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: C.negro, color: '#FFFFFF', fontSize: 9, padding: 4 }}>{t('Foto: la lámina que se lleva quien canjea.', 'Photo: la lámina you get when you canjear.')}</Text>
             </Caja>
@@ -149,7 +149,7 @@ export default function Portada({ drops, nombreBarrio, barrios, visita, alVisita
             </View>
           </View>
 
-          <View style={{ marginHorizontal: 10, marginTop: 12, borderTopWidth: 3, borderBottomWidth: 1, borderColor: C.negro, height: 6 }} />
+          <View style={{ marginHorizontal: 10, marginTop: 12, borderTopWidth: 3, borderBottomWidth: 1, borderColor: C.borde, height: 6 }} />
 
           {/* Segunda nota + farándula */}
           <View style={{ flexDirection: 'row', gap: 8, marginHorizontal: 10, marginTop: 8 }}>
@@ -176,16 +176,16 @@ export default function Portada({ drops, nombreBarrio, barrios, visita, alVisita
           {/* Clasificados: el resto de los drops */}
           {resto.length ? (
             <>
-              <View style={{ marginHorizontal: 10, marginTop: 14, borderTopWidth: 3, borderBottomWidth: 3, borderColor: C.negro, paddingVertical: 4, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <View style={{ marginHorizontal: 10, marginTop: 14, borderTopWidth: 3, borderBottomWidth: 3, borderColor: C.borde, paddingVertical: 4, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
                 <Text style={{ ...T, fontSize: 24 }}>{t('CLASIFICADOS DEL BARRIO', 'CLASIFICADOS · CLASSIFIEDS')}</Text>
                 <Text style={{ ...N, fontSize: 11 }}>{resto.length} {t('avisos', 'ads')}</Text>
               </View>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: 10, borderBottomWidth: 2, borderColor: C.negro }}>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: 10, borderBottomWidth: 2, borderColor: C.borde }}>
                 {resto.map((d, k) => {
                   const negro = d.tipo === 'sorpresa';
                   return (
                     <Pressable key={d.drop_id} onPress={() => alAbrir(d)} accessibilityRole="button"
-                      style={{ width: '33.33%', padding: 6, borderRightWidth: k % 3 === 2 ? 0 : 1, borderBottomWidth: 1, borderColor: C.negro, backgroundColor: negro ? C.negro : 'transparent' }}>
+                      style={{ width: '33.33%', padding: 6, borderRightWidth: k % 3 === 2 ? 0 : 1, borderBottomWidth: 1, borderColor: C.borde, backgroundColor: negro ? C.negro : 'transparent' }}>
                       <Text numberOfLines={1} style={{ ...T, fontSize: 15, color: negro ? AMARILLO : C.negro }}>{negro ? t('¿SORPRESA?', '¿SURPRISE?') : d.local_nombre.toUpperCase()}</Text>
                       <Text numberOfLines={3} style={{ ...S, fontSize: 11, lineHeight: 14, color: negro ? '#FFFFFF' : C.negro }}>{negro ? t(`Se revela en el local. Quedan ${d.quedan}.`, `Revealed at the local. Only ${d.quedan}.`) : t(`${d.titulo}. Quedan ${d.quedan}.`, `${d.titulo}. Only ${d.quedan} left.`)}</Text>
                       <Text style={{ ...T, fontSize: 17, color: negro ? AMARILLO : d.tipo === 'grupal' ? C.azul : ROJO }}>{negro ? '¿?' : precio(d.precio) || cuad(d.cuadras)}</Text>

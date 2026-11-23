@@ -15,6 +15,14 @@ export function Ola({ color, fondo = C.crema, abajo = true }) {
       </Svg>
     );
   }
+  if (ESTILO === 'moderno') {
+    // Moderno: el encabezado termina con esquinas redondeadas, sin adornos
+    return (
+      <View style={{ backgroundColor: fondo }} accessibilityElementsHidden importantForAccessibility="no">
+        <View style={{ height: 18, backgroundColor: color, borderBottomLeftRadius: 26, borderBottomRightRadius: 26 }} />
+      </View>
+    );
+  }
   if (ESTILO === 'diario') {
     return (
       <View style={{ backgroundColor: fondo }} accessibilityElementsHidden importantForAccessibility="no">
@@ -30,7 +38,7 @@ export function Ola({ color, fondo = C.crema, abajo = true }) {
       <View style={{ height: 3, backgroundColor: C.negro }} />
       <View style={{ flexDirection: 'row', height: 10 }}>
         {[C.rojo, C.amarillo, C.azul, C.negro, C.papel, C.rojo, C.azul, C.amarillo].map((c, i) => (
-          <View key={i} style={{ flex: 1, backgroundColor: c, borderRightWidth: i < 7 ? 3 : 0, borderBottomWidth: 3, borderColor: C.negro }} />
+          <View key={i} style={{ flex: 1, backgroundColor: c, borderRightWidth: i < 7 ? 3 : 0, borderBottomWidth: 3, borderColor: C.borde }} />
         ))}
       </View>
       {!abajo ? <View style={{ height: 6, backgroundColor: color }} /> : null}
@@ -78,7 +86,7 @@ export function IconoCategoria({ categoria, tam = 28, color = C.negro }) {
 export function Pildora({ texto, activa, onPress, color = C.negro, categoria }) {
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityState={{ selected: !!activa }}
-      style={{ minHeight: 40, paddingHorizontal: 12, borderRadius: R(16), borderWidth: 2.5, borderColor: C.negro, backgroundColor: activa ? color : C.papel, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+      style={{ minHeight: 40, paddingHorizontal: 12, borderRadius: R(16), borderWidth: 2.5, borderColor: C.borde, backgroundColor: activa ? color : C.papel, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
       {categoria && categoria !== 'todo' ? <Figura forma={figuraDe(categoria)} color={colorDe(categoria)} tam={11} borde={activa ? C.papel : C.negro} /> : null}
       <Text style={{ fontFamily: F.negrita, fontSize: 13, color: activa ? (color === C.negro ? C.amarillo : '#FFFFFF') : C.negro }}>{texto}</Text>
     </Pressable>
@@ -118,7 +126,7 @@ export function Figura({ forma = 'circulo', color = C.rojo, tam = 24, borde = C.
 }
 // Composición de figuras grandes para el fondo de un encabezado (detrás del texto)
 export function FondoBauhaus({ variante = 'inicio' }) {
-  if (ESTILO === 'diario') return null;
+  if (ESTILO === 'diario' || ESTILO === 'moderno') return null;
   if (ESTILO === 'clasico') {
     return (
       <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }}>
@@ -151,7 +159,7 @@ export function FondoBauhaus({ variante = 'inicio' }) {
 export function Boton({ texto, onPress, fondo = C.negro, color = C.papel, deshabilitado, grande, style }) {
   return (
     <Pressable onPress={deshabilitado ? undefined : onPress} accessibilityRole="button" accessibilityState={{ disabled: !!deshabilitado }}
-      style={({ pressed }) => [{ minHeight: grande ? 52 : 44, borderRadius: R(16), borderWidth: 3, borderColor: C.negro, backgroundColor: deshabilitado ? '#E7DCC4' : fondo, shadowColor: fondo === C.negro ? C.rojo : C.negro, shadowOffset: { width: 4, height: 4 }, shadowOpacity: deshabilitado ? 0 : 1, shadowRadius: 0, elevation: 0, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 18, opacity: pressed ? 0.85 : 1 }, style]}>
+      style={({ pressed }) => [{ minHeight: grande ? 52 : 44, borderRadius: R(16), borderWidth: 3, borderColor: C.borde, backgroundColor: deshabilitado ? '#E7DCC4' : fondo, shadowColor: fondo === C.negro ? C.rojo : C.negro, shadowOffset: { width: 4, height: 4 }, shadowOpacity: deshabilitado || ESTILO === 'moderno' ? 0 : 1, shadowRadius: 0, elevation: 0, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 18, opacity: pressed ? 0.85 : 1 }, style]}>
       <Text style={[grande ? { ...letrista, fontSize: 19 } : { fontFamily: F.negrita, fontSize: 15 }, { color: deshabilitado ? C.gris : color }]}>{texto}</Text>
     </Pressable>
   );
@@ -160,7 +168,7 @@ export function Boton({ texto, onPress, fondo = C.negro, color = C.papel, deshab
 export function EtiquetaPrecio({ valor, giro = '4deg' }) {
   if (!valor) return null;
   return (
-    <View style={{ position: 'absolute', top: -14, right: 8, backgroundColor: C.amarillo, borderWidth: 3, borderColor: C.negro, paddingHorizontal: 10, paddingVertical: 2, shadowColor: C.negro, shadowOffset: { width: 3, height: 3 }, shadowOpacity: 1, shadowRadius: 0 }}>
+    <View style={{ position: 'absolute', top: -14, right: 8, backgroundColor: C.amarillo, borderWidth: 3, borderColor: C.borde, paddingHorizontal: 10, paddingVertical: 2, shadowColor: C.sombra, shadowOffset: { width: 3, height: 3 }, shadowOpacity: 1, shadowRadius: 0 }}>
       <Text style={{ ...letrista, fontSize: 22, color: C.negro }}>{valor}</Text>
     </View>
   );
@@ -189,7 +197,7 @@ export function PuntosPop({ color = C.rojo, fondo = C.papel, tam = 3, sep = 9, s
 export function GloboPop({ children, cola = 'izquierda', style }) {
   return (
     <View style={[{ marginBottom: 12 }, style]}>
-      <View style={{ backgroundColor: '#FFFFFF', borderWidth: 3, borderColor: C.negro, borderRadius: 18, paddingHorizontal: 12, paddingVertical: 8 }}>{children}</View>
+      <View style={{ backgroundColor: '#FFFFFF', borderWidth: 3, borderColor: C.borde, borderRadius: 18, paddingHorizontal: 12, paddingVertical: 8 }}>{children}</View>
       <Svg width={26} height={16} viewBox="0 0 26 16" style={{ position: 'absolute', bottom: -13, [cola === 'izquierda' ? 'left' : 'right']: 22 }}>
         <Path d="M2 0 L24 0 L4 15 Z" fill="#FFFFFF" stroke={C.negro} strokeWidth={3} strokeLinejoin="miter" />
         <Path d="M3 -1 L23 -1" stroke="#FFFFFF" strokeWidth={4} />

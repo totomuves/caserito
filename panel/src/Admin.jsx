@@ -474,6 +474,7 @@ function BarrioForm({ b, alGuardar }) {
             <option value="clasico">Clásico</option>
             <option value="bauhaus">Bauhaus</option>
             <option value="diario">Diario</option>
+            <option value="moderno">Moderno</option>
           </select>
         </label>
       ) : <span className="ayuda">Para elegir un estilo por barrio, corre el SQL 022.</span>}
@@ -577,6 +578,7 @@ function Invitar() {
 const ESTILOS = [
   { id: 'clasico', nombre: 'Clásico', desc: 'El primero: letras de pincel, esquinas redondas, olas y brillos.', fondo: '#FFD100', tinta: '#E30A2F', fuente: "'Luckiest Guy', sans-serif", italica: true },
   { id: 'bauhaus', nombre: 'Bauhaus', desc: 'Figuras geométricas, colores planos, esquinas rectas. Drops y láminas en pop art.', fondo: '#1E5AA8', tinta: '#FFD100', fuente: 'Jost, Archivo, sans-serif' },
+  { id: 'moderno', nombre: 'Moderno', desc: 'App moderna y limpia: fondo blanco, esquinas redondas, sombras suaves y la barra de abajo flotante.', fondo: '#FFFFFF', tinta: '#111111', fuente: 'Archivo, sans-serif' },
   { id: 'diario', nombre: 'Diario', desc: 'El Inicio es la portada del diario popular del barrio: titulares, farándula y clasificados.', fondo: '#D7261E', tinta: '#FFFFFF', fuente: 'Anton, Archivo, sans-serif' },
 ];
 function EstiloApp() {

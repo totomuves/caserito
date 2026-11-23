@@ -8,7 +8,10 @@ export const C = {
   papel: '#FFF6E5',
   gris: '#4A4A4A',
   amarilloSuave: '#FFF3B0',
+  borde: '#111111',  // bordes de tarjetas y botones (en Moderno: gris suave)
+  sombra: '#111111', // sombras (en Moderno: suaves)
 };
+const BASE = { ...C };
 
 export const F = {
   letrista: 'Jost_800ExtraBold',
@@ -27,12 +30,17 @@ export const letrista = { fontFamily: F.letrista, letterSpacing: -0.3 };
 export let ESTILO = 'bauhaus';
 export function aplicarEstilo(e) {
   ESTILO = e;
-  if (e === 'clasico') Object.assign(letrista, { fontFamily: F.pincel, fontStyle: 'italic', letterSpacing: 0.5 });
+  Object.assign(C, BASE);
+  if (e === 'moderno') Object.assign(C, { papel: '#FFFFFF', crema: '#F4F4F6', borde: '#E4E4E9', sombra: 'rgba(17,17,17,0.10)', amarilloSuave: '#FFF7CC' });
+  if (e === 'moderno') Object.assign(letrista, { fontFamily: F.negrita, fontStyle: 'normal', letterSpacing: -0.6 });
+  else if (e === 'clasico') Object.assign(letrista, { fontFamily: F.pincel, fontStyle: 'italic', letterSpacing: 0.5 });
   else if (e === 'diario') Object.assign(letrista, { fontFamily: F.titular, fontStyle: 'normal', letterSpacing: 0 });
   else Object.assign(letrista, { fontFamily: F.letrista, fontStyle: 'normal', letterSpacing: -0.3 });
 }
 // Radio de esquinas: redondeado solo en el clásico
-export const R = (n) => (ESTILO === 'clasico' ? n : 0);
+export const R = (n) => (ESTILO === 'moderno' ? Math.max(n, 14) : ESTILO === 'clasico' ? n : 0);
+// Estilos 'sobrios' (Clásico y Moderno): tarjetas simples, sin pop art
+export const sobrio = () => ESTILO === 'clasico' || ESTILO === 'moderno';
 
 // Debe coincidir con caserito.categorias_validas() (supabase/004)
 export const CATEGORIAS = [

@@ -60,15 +60,15 @@ export default function Honor({ usuario, t }) {
       {lista.map((l) => {
         const listo = l.visitas >= VISITAS;
         return (
-          <View key={l.local_id} style={{ backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: R(16), padding: 12, gap: 8 }}>
+          <View key={l.local_id} style={{ backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.borde, borderRadius: R(16), padding: 12, gap: 8 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
               {l.imagen_url ? (
-                <View style={{ borderWidth: 3, borderColor: C.negro, borderRadius: 10, backgroundColor: C.amarillo, padding: 3, transform: [{ rotate: '-3deg' }] }}>
+                <View style={{ borderWidth: 3, borderColor: C.borde, borderRadius: 10, backgroundColor: C.amarillo, padding: 3, transform: [{ rotate: '-3deg' }] }}>
                   <Image source={{ uri: l.imagen_url }} style={{ width: 84, height: 126, borderRadius: 6 }} accessibilityLabel={t('Tu lámina de honor', 'Tu lámina de honor')} />
                   <Text style={{ ...letrista, fontSize: 11, textAlign: 'center', marginTop: 2 }}>{l.local_nombre.toUpperCase()}</Text>
                 </View>
               ) : (
-                <View style={{ width: 84, height: 126, borderWidth: 2.5, borderStyle: 'dashed', borderColor: C.negro, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: listo ? C.amarillo : C.crema }}>
+                <View style={{ width: 84, height: 126, borderWidth: 2.5, borderStyle: 'dashed', borderColor: C.borde, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: listo ? C.amarillo : C.crema }}>
                   <Text style={{ ...letrista, fontSize: 26 }}>{listo ? '★' : `${l.visitas}/${VISITAS}`}</Text>
                 </View>
               )}
@@ -79,7 +79,7 @@ export default function Honor({ usuario, t }) {
                     : listo ? t('¡Desbloqueaste tu lámina de honor!', '¡Unlocked tu lámina de honor!')
                     : t(`Te faltan ${VISITAS - l.visitas} visitas`, `Te faltan ${VISITAS - l.visitas} visitas`)}
                 </Text>
-                <View style={{ height: 8, borderRadius: 4, borderWidth: 2, borderColor: C.negro, backgroundColor: C.amarilloSuave, overflow: 'hidden' }}>
+                <View style={{ height: 8, borderRadius: 4, borderWidth: 2, borderColor: C.borde, backgroundColor: C.amarilloSuave, overflow: 'hidden' }}>
                   <View style={{ width: `${Math.min(100, Math.round((l.visitas / VISITAS) * 100))}%`, height: '100%', backgroundColor: C.amarillo }} />
                 </View>
               </View>
@@ -90,7 +90,7 @@ export default function Honor({ usuario, t }) {
             {abierto === l.local_id ? (
               <View style={{ gap: 8 }}>
                 <Pressable onPress={() => setAcepto(!acepto)} accessibilityRole="checkbox" accessibilityState={{ checked: acepto }} style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>
-                  <View style={{ width: 24, height: 24, borderWidth: 2.5, borderColor: C.negro, borderRadius: 6, backgroundColor: acepto ? C.amarillo : '#FFFFFF', alignItems: 'center', justifyContent: 'center' }}>
+                  <View style={{ width: 24, height: 24, borderWidth: 2.5, borderColor: C.borde, borderRadius: 6, backgroundColor: acepto ? C.amarillo : '#FFFFFF', alignItems: 'center', justifyContent: 'center' }}>
                     {acepto ? <Text style={{ fontFamily: F.negrita }}>✓</Text> : null}
                   </View>
                   <Text style={{ flex: 1, fontFamily: F.media, fontSize: 13 }}>

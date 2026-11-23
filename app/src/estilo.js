@@ -14,7 +14,7 @@ export function EstiloProvider({ children }) {
   const estilo = deBarrio || general;
   // El admin elige el estilo (tabla caserito.ajustes). Se guarda una copia para partir rápido la próxima vez.
   useEffect(() => {
-    const valido = (v) => ['clasico', 'bauhaus', 'diario'].includes(v);
+    const valido = (v) => ['clasico', 'bauhaus', 'diario', 'moderno'].includes(v);
     AsyncStorage.getItem(CLAVE).then((v) => { if (valido(v)) setEstiloState(v); }).catch(() => {});
     supabase.from('ajustes').select('valor').eq('clave', 'estilo').maybeSingle().then(({ data }) => {
       if (data && valido(data.valor)) { setEstiloState(data.valor); AsyncStorage.setItem(CLAVE, data.valor).catch(() => {}); }
@@ -39,8 +39,8 @@ export function SelectorEstilo() {
         const on = estilo === o.id;
         return (
           <Pressable key={o.id} onPress={() => setEstilo(o.id)} accessibilityRole="radio" accessibilityState={{ checked: on }}
-            style={{ flex: 1, minHeight: 64, borderWidth: 3, borderColor: C.negro, padding: 10, backgroundColor: on ? (o.id === 'diario' ? C.rojo : C.amarillo) : C.papel,
-              shadowColor: C.negro, shadowOffset: { width: on ? 4 : 0, height: on ? 4 : 0 }, shadowOpacity: 1, shadowRadius: 0 }}>
+            style={{ flex: 1, minHeight: 64, borderWidth: 3, borderColor: C.borde, padding: 10, backgroundColor: on ? (o.id === 'diario' ? C.rojo : C.amarillo) : C.papel,
+              shadowColor: C.sombra, shadowOffset: { width: on ? 4 : 0, height: on ? 4 : 0 }, shadowOpacity: 1, shadowRadius: 0 }}>
             <Text style={{ fontFamily: o.id === 'diario' ? F.titular : F.letrista, fontSize: 18, color: on && o.id === 'diario' ? '#FFFFFF' : C.negro }}>{o.titulo.toUpperCase()}</Text>
             <Text style={{ fontFamily: F.media, fontSize: 12, color: on && o.id === 'diario' ? '#FFFFFF' : C.gris }}>{o.sub}</Text>
           </Pressable>

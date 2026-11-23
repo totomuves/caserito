@@ -6,8 +6,8 @@ import { Ola, Boton } from './componentes';
 import { useIdioma, SelectorIdioma } from './idioma';
 
 // "Tú": cuenta del caserito, apodo, idioma y comentarios de la beta
-const campo = { minHeight: 48, borderWidth: 2, borderColor: C.negro, borderRadius: R(16), backgroundColor: '#FFFFFF', paddingHorizontal: 12, fontFamily: F.normal, fontSize: 16, color: C.negro };
-const tarjeta = { marginHorizontal: 16, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: R(16), padding: 16, gap: 10 };
+const campo = { minHeight: 48, borderWidth: 2, borderColor: C.borde, borderRadius: R(16), backgroundColor: '#FFFFFF', paddingHorizontal: 12, fontFamily: F.normal, fontSize: 16, color: C.negro };
+const tarjeta = { marginHorizontal: 16, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.borde, borderRadius: R(16), padding: 16, gap: 10 };
 const correoValido = (c) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(c.trim());
 
 export default function Cuenta({ usuario, alAyuda }) {

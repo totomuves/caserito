@@ -197,7 +197,7 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
       <SelectorBarrios barrios={barrios} vista={vista} alElegir={irA} />
       {yo ? (
         <Pressable onPress={() => irA(null)} accessibilityRole="button" accessibilityLabel="Ir a mi ubicación"
-          style={{ position: 'absolute', right: 12, bottom: 330, zIndex: 950, width: 46, height: 46, backgroundColor: C.negro, borderWidth: 3, borderColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
+          style={{ position: 'absolute', right: 12, bottom: 330, zIndex: 950, width: 46, height: 46, backgroundColor: C.negro, borderWidth: 3, borderColor: C.borde, alignItems: 'center', justifyContent: 'center' }}>
           <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: '#1D4ED8', borderWidth: 3, borderColor: '#FFFFFF' }} />
         </Pressable>
       ) : null}

@@ -163,7 +163,7 @@ export function FraseGlosario({ texto, style, numberOfLines, colorAyuda = C.amar
         )))}
       </Text>
       {abierta ? (
-        <Pressable onPress={() => setAbierta(null)} style={{ alignSelf: 'flex-start', backgroundColor: C.papel, borderWidth: 2, borderColor: C.negro, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6 }}>
+        <Pressable onPress={() => setAbierta(null)} style={{ alignSelf: 'flex-start', backgroundColor: C.papel, borderWidth: 2, borderColor: C.borde, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6 }}>
           <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.negro }}>“{abierta.toLowerCase()}” = {significado(abierta, tur, lang)}</Text>
         </Pressable>
       ) : hay ? (
@@ -182,7 +182,7 @@ export function SelectorIdioma({ alElegir, style }) {
         const activo = lang === x.id;
         return (
           <Pressable key={x.id} onPress={() => { setLang(x.id); alElegir && alElegir(x.id); }} accessibilityRole="button" accessibilityState={{ selected: activo }}
-            style={{ minHeight: 44, paddingHorizontal: 12, borderRadius: R(16), borderWidth: 2.5, borderColor: C.negro, backgroundColor: activo ? C.negro : C.papel, justifyContent: 'center' }}>
+            style={{ minHeight: 44, paddingHorizontal: 12, borderRadius: R(16), borderWidth: 2.5, borderColor: C.borde, backgroundColor: activo ? C.negro : C.papel, justifyContent: 'center' }}>
             <Text style={{ fontFamily: F.negrita, fontSize: 13, color: activo ? C.amarillo : C.negro }}>{x.nombre}{x.id !== 'es' ? ` · ${x.mezcla}` : ''}</Text>
           </Pressable>
         );

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { supabase } from './supabase';
-import { C, F, letrista, CATEGORIAS, textoCategoria, tieneCategoria, precio, cuadras, R, ESTILO } from './tema';
+import { C, F, letrista, CATEGORIAS, textoCategoria, tieneCategoria, precio, cuadras, R, ESTILO, sobrio } from './tema';
 import { Ola, Brillo, Pildora, EtiquetaPrecio, Boton, FondoBauhaus, PuntosPop, GloboPop, Estallido, ONOMATOPEYAS } from './componentes';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR, categoriaTur, SelectorIdioma } from './idioma';
 import Logo from './Logo';
@@ -77,19 +77,19 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
         <Logo ancho={190} style={{ marginLeft: 22, marginTop: 4, marginBottom: 2 }} />
         <Text style={{ fontFamily: F.negrita, fontSize: 13, lineHeight: 17, marginLeft: 22, width: 190 }}>{visita ? t(`Vas a ${visita.nombre} · ${visita.comuna}`, `Going to ${visita.nombre} · ${visita.comuna}`) : t(`${lugar} · tu barrio te tiene ofertas`, `${lugar} · ofertas like a local`)}</Text>
         <Pressable onPress={() => setVerIdiomas(!verIdiomas)} accessibilityRole="button" accessibilityLabel="Idioma · Language"
-          style={{ position: 'absolute', right: 68, top: 14, height: 44, paddingHorizontal: 12, borderRadius: R(16), borderWidth: 2.5, borderColor: C.negro, backgroundColor: tur ? C.negro : C.papel, justifyContent: 'center' }}>
+          style={{ position: 'absolute', right: 68, top: 14, height: 44, paddingHorizontal: 12, borderRadius: R(16), borderWidth: 2.5, borderColor: C.borde, backgroundColor: tur ? C.negro : C.papel, justifyContent: 'center' }}>
           <Text style={{ fontFamily: F.negrita, fontSize: 12, color: tur ? C.amarillo : C.negro }}>{tur ? `🌍 ${lang.toUpperCase()}` : 'Tourist?'}</Text>
         </Pressable>
         {verIdiomas ? <SelectorIdioma alElegir={() => setVerIdiomas(false)} style={{ paddingLeft: 26, paddingTop: 8, paddingBottom: 6 }} /> : null}
         <Pressable onPress={alAyuda} accessibilityRole="button" accessibilityLabel={t('¿Cómo funciona Droper?', "¿Cómo funciona Droper?")}
-          style={{ position: 'absolute', right: 16, top: 14, minWidth: 44, height: 44, paddingHorizontal: 14, borderRadius: R(16), borderWidth: 2.5, borderColor: C.negro, backgroundColor: C.papel, alignItems: 'center', justifyContent: 'center' }}>
+          style={{ position: 'absolute', right: 16, top: 14, minWidth: 44, height: 44, paddingHorizontal: 14, borderRadius: R(16), borderWidth: 2.5, borderColor: C.borde, backgroundColor: C.papel, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ ...letrista, fontSize: 20 }}>?</Text>
         </Pressable>
       </View>
       <Ola color={C.amarillo} />
 
       {lejos ? (
-        <View style={{ marginHorizontal: 16, marginBottom: 6, backgroundColor: C.papel, borderWidth: 2, borderColor: C.negro, borderRadius: R(16), padding: 10 }}>
+        <View style={{ marginHorizontal: 16, marginBottom: 6, backgroundColor: C.papel, borderWidth: 2, borderColor: C.borde, borderRadius: R(16), padding: 10 }}>
           <Text style={{ fontFamily: F.media, fontSize: 13 }}>
             {t(`No hay drops cerca de ti: te mostramos los de ${barrioLejos || nombreBarrio}. Para canjear, tienes que llegar al local.`,
                `No drops cerca de ti: these are the ones de ${barrioLejos || nombreBarrio}. Para canjear, tienes que estar en el local.`)}
@@ -109,7 +109,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
       )}
 
       {(avisos === 'pendiente' || avisos === 'bloqueado') && (
-        <View style={{ marginHorizontal: 16, marginTop: 12, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: R(16), padding: 14, gap: 8 }}>
+        <View style={{ marginHorizontal: 16, marginTop: 12, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.borde, borderRadius: R(16), padding: 14, gap: 8 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
             <Svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke={C.rojo} strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" accessibilityElementsHidden importantForAccessibility="no">
               <Path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0" />
@@ -172,8 +172,8 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
           )}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 16, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 6 }}>
             {visibles.map((d, k) => (
-              ESTILO === 'clasico' ? (
-              <Pressable key={d.drop_id} onPress={() => alAbrir(d)} style={{ width: 216, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: R(16), padding: 14, gap: 6 }}>
+              sobrio() ? (
+              <Pressable key={d.drop_id} onPress={() => alAbrir(d)} style={{ width: 216, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.borde, borderRadius: R(16), padding: 14, gap: 6 }}>
                 <EtiquetaPrecio valor={d.tipo === 'sorpresa' ? '¿?' : precio(d.precio)} giro={k % 2 ? '-4deg' : '5deg'} />
                 <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.rojoTexto, textTransform: 'uppercase' }}>{tur ? categoriaTur(d.categoria, lang) || textoCategoria(d.categoria) : textoCategoria(d.categoria)} · {t('quedan', "quedan:")} {d.quedan}</Text>
                 <Text style={{ fontFamily: F.negrita, fontSize: 17 }} numberOfLines={1}>{d.local_nombre}</Text>
@@ -184,8 +184,8 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
                 {d.tipo === 'grupal' && d.nivel_actual ? <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.azul }}>{t('Nivel actual', "Ahora")}: {d.nivel_actual}</Text> : null}
               </Pressable>
               ) : (
-              <Pressable key={d.drop_id} onPress={() => alAbrir(d)} style={{ width: 236, borderWidth: 3, borderColor: C.negro, backgroundColor: C.papel, shadowColor: C.negro, shadowOffset: { width: 5, height: 5 }, shadowOpacity: 1, shadowRadius: 0 }}>
-                <View style={{ height: 118, borderBottomWidth: 3, borderColor: C.negro, overflow: 'hidden', padding: 10, justifyContent: 'flex-start' }}>
+              <Pressable key={d.drop_id} onPress={() => alAbrir(d)} style={{ width: 236, borderWidth: 3, borderColor: C.borde, backgroundColor: C.papel, shadowColor: C.sombra, shadowOffset: { width: 5, height: 5 }, shadowOpacity: 1, shadowRadius: 0 }}>
+                <View style={{ height: 118, borderBottomWidth: 3, borderColor: C.borde, overflow: 'hidden', padding: 10, justifyContent: 'flex-start' }}>
                   <PuntosPop color={k % 2 ? C.azul : C.rojo} fondo={k % 2 ? '#DDE8F6' : '#FFE3E3'} />
                   <GloboPop>
                     <FraseGlosario texto={d.frase || d.titulo} colorAyuda={C.rojoTexto} numberOfLines={3} style={{ fontFamily: F.negrita, fontSize: 13, lineHeight: 16, textTransform: 'uppercase' }} />
@@ -220,7 +220,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                 {gustos.map((g) => (
                   <Pressable key={g.id} onPress={() => alternar(g)} accessibilityRole="switch" accessibilityState={{ checked: g.activo }}
-                    style={{ minHeight: 38, paddingHorizontal: 14, borderRadius: 19, borderWidth: 2.5, borderColor: C.negro, backgroundColor: g.activo ? C.papel : 'transparent', justifyContent: 'center' }}>
+                    style={{ minHeight: 38, paddingHorizontal: 14, borderRadius: 19, borderWidth: 2.5, borderColor: C.borde, backgroundColor: g.activo ? C.papel : 'transparent', justifyContent: 'center' }}>
                     <Text style={{ fontFamily: F.negrita, fontSize: 13, textDecorationLine: g.activo ? 'none' : 'line-through' }}>{g.etiqueta}</Text>
                   </Pressable>
                 ))}

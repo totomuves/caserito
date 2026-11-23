@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { supabase, explicar } from './supabase';
-import { C, F, letrista, textoCategoria, R, ESTILO } from './tema';
+import { C, F, letrista, textoCategoria, R, ESTILO, sobrio } from './tema';
 import { Ola, Brillo, IconoCategoria, Boton, FondoBauhaus, Figura, figuraDe, colorDe, PuntosPop } from './componentes';
 import { useIdioma } from './idioma';
 import { identidadDe, Motivo } from './identidad';
@@ -35,7 +35,7 @@ const POSICIONES = [
 function ArteBauhaus({ local, alto = 80 }) {
   // Arte único por local (composición Bauhaus generada desde su id)
   return (
-    <View style={{ height: alto, borderWidth: 2, borderColor: C.negro, overflow: 'hidden' }}>
+    <View style={{ height: alto, borderWidth: 2, borderColor: C.borde, overflow: 'hidden' }}>
       <ArteLocal id={local.id} categoria={local.categoria} ancho="100%" alto={alto} borde={false} />
     </View>
   );
@@ -114,21 +114,21 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
 
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 110 }}>
-      <View style={{ backgroundColor: ESTILO === 'clasico' ? C.amarillo : C.azul, paddingHorizontal: 18, paddingTop: 14, paddingBottom: 12 }}>
+      <View style={{ backgroundColor: sobrio() ? C.amarillo : C.azul, paddingHorizontal: 18, paddingTop: 14, paddingBottom: 12 }}>
         <FondoBauhaus variante="album" />
-        <Text style={{ fontFamily: F.negrita, fontSize: 11, letterSpacing: 2, color: ESTILO === 'clasico' ? C.negro : C.amarillo, textTransform: 'uppercase' }}>{t('Álbum de Chile · ', 'Álbum de Chile · ')}{ide.edicion}</Text>
-        <Text style={{ ...letrista, fontSize: 34, color: ESTILO === 'clasico' ? C.rojo : C.papel, textShadowColor: ESTILO === 'clasico' ? C.azul : C.negro, textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 0, maxWidth: 250 }}>{(barrio ? barrio.nombre : 'Barrio Italia').toUpperCase()}</Text>
-        {barrio ? <Text style={{ fontFamily: F.negrita, fontSize: 12, color: ESTILO === 'clasico' ? C.negro : C.papel }}>{barrio.comuna} · {Object.keys(mias).length} {t('láminas en todo Chile', 'láminas en todo Chile')}</Text> : null}
+        <Text style={{ fontFamily: F.negrita, fontSize: 11, letterSpacing: 2, color: sobrio() ? C.negro : C.amarillo, textTransform: 'uppercase' }}>{t('Álbum de Chile · ', 'Álbum de Chile · ')}{ide.edicion}</Text>
+        <Text style={{ ...letrista, fontSize: 34, color: sobrio() ? C.rojo : C.papel, textShadowColor: sobrio() ? C.azul : C.negro, textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 0, maxWidth: 250 }}>{(barrio ? barrio.nombre : 'Barrio Italia').toUpperCase()}</Text>
+        {barrio ? <Text style={{ fontFamily: F.negrita, fontSize: 12, color: sobrio() ? C.negro : C.papel }}>{barrio.comuna} · {Object.keys(mias).length} {t('láminas en todo Chile', 'láminas en todo Chile')}</Text> : null}
         <View style={{ marginTop: 6, width: 120 }}><Motivo tipo={ide.motivo} a={ide.principal} b={ide.acento} alto={8} /></View>
       </View>
-      <Ola color={ESTILO === 'clasico' ? C.amarillo : C.azul} />
+      <Ola color={sobrio() ? C.amarillo : C.azul} />
       {barrios.length > 1 && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingBottom: 10 }}>
           {barrios.map((x) => {
             const activo = x.id === barrioSel;
             return (
               <Pressable key={x.id} onPress={() => setBarrioSel(x.id)} accessibilityRole="button" accessibilityState={{ selected: activo }}
-                style={{ minHeight: 44, paddingHorizontal: 14, borderRadius: R(16), borderWidth: 2.5, borderColor: C.negro, backgroundColor: activo ? C.negro : C.papel, justifyContent: 'center' }}>
+                style={{ minHeight: 44, paddingHorizontal: 14, borderRadius: R(16), borderWidth: 2.5, borderColor: C.borde, backgroundColor: activo ? C.negro : C.papel, justifyContent: 'center' }}>
                 <Text style={{ fontFamily: F.negrita, fontSize: 14, color: activo ? C.amarillo : C.negro }}>
                   {x.nombre.replace(/^Barrio /, '')}{!x.lanzado ? t(' · pronto', ' · soon') : ''}
                 </Text>
@@ -139,7 +139,7 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
       )}
 
       {total === 0 && (
-        <View style={{ marginHorizontal: 16, marginTop: 6, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: R(16), padding: 16, gap: 6 }}>
+        <View style={{ marginHorizontal: 16, marginTop: 6, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.borde, borderRadius: R(16), padding: 16, gap: 6 }}>
           <Text style={{ ...letrista, fontSize: 20 }}>{t('¡LLEGAMOS PRONTO!', '¡LLEGAMOS PRONTO! SOON')}</Text>
           <Text style={{ fontFamily: F.normal, fontSize: 14 }}>
             {t(`Todavía no hay locales de ${barrio ? barrio.nombre : 'este barrio'} en Droper. Cuando se sumen, aquí aparecen sus láminas.`,
@@ -196,7 +196,7 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
             <Pressable key={l.id} onPress={() => setSel(k)} accessibilityLabel={`${t('Lámina', "Lámina")} ${k + 1}, ${ganada ? l.nombre + t(', ganada', ", ¡la tienes!") + (rep[l.id] && rep[l.id].repetidas ? `, ${rep[l.id].repetidas} ${t('repetidas', 'repetidas')}` : '') : textoCategoria(l.categoria) + t(', te falta', ", te falta")}`}
               style={{ width: '30.5%', transform: [{ rotate: ganada ? GIROS[k % 4] : '0deg' }] }}>
               {ganada ? (
-                <View style={{ backgroundColor: C.papel, borderWidth: 3, borderColor: activa ? C.rojo : C.negro, padding: 5, shadowColor: C.negro, shadowOffset: { width: 4, height: 4 }, shadowOpacity: 1, shadowRadius: 0, elevation: 0 }}>
+                <View style={{ backgroundColor: C.papel, borderWidth: 3, borderColor: activa ? C.rojo : C.negro, padding: 5, shadowColor: C.sombra, shadowOffset: { width: 4, height: 4 }, shadowOpacity: 1, shadowRadius: 0, elevation: 0 }}>
                   <ArteBauhaus local={l} k={k} alto={80} />
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
                     <Text style={{ ...letrista, fontSize: 11, color: C.rojo }}>N° {String(k + 1).padStart(2, '0')}{letraLamina(l)}</Text>
@@ -224,13 +224,13 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
       </View>
 
       {elegido && (
-        <View style={{ margin: 16, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro, borderRadius: R(16), padding: 16, gap: 8 }}>
+        <View style={{ margin: 16, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.borde, borderRadius: R(16), padding: 16, gap: 8 }}>
           <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.rojoTexto, textTransform: 'uppercase' }}>
             {t('Lámina', "Lámina")} {sel + 1} · {mias[elegido.id] ? t('ganada', "¡la tienes!") : t('te falta', "te falta")}
           </Text>
           {mias[elegido.id] ? (
             <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-              {ESTILO === 'clasico' ? <Monstruito categoria={elegido.categoria} local={elegido} tam={72} /> : <View style={{ width: 90, borderWidth: 3, borderColor: C.negro, padding: 4, backgroundColor: C.papel }}><ArteBauhaus local={elegido} k={sel} alto={90} /></View>}
+              {ESTILO === 'clasico' ? <Monstruito categoria={elegido.categoria} local={elegido} tam={72} /> : <View style={{ width: 90, borderWidth: 3, borderColor: C.borde, padding: 4, backgroundColor: C.papel }}><ArteBauhaus local={elegido} k={sel} alto={90} /></View>}
               <View style={{ flex: 1 }}>
                 <Text style={{ ...letrista, fontSize: 22 }}>{apodoLamina(elegido).toUpperCase()}</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -266,7 +266,7 @@ function Repetidas({ r, t, pidiendo, msg, alPedir }) {
       {!premio ? (
         <Text style={{ fontFamily: F.normal, fontSize: 13, color: C.gris }}>{t('Cada canje extra en este local es una repetida. Este local todavía no las cambia por nada.', 'Cada canje extra here es una repetida. Este local no las cambia yet.')}</Text>
       ) : r.codigo ? (
-        <View style={{ alignItems: 'center', gap: 8, backgroundColor: '#FFFFFF', borderRadius: R(16), borderWidth: 2, borderColor: C.negro, padding: 14 }}>
+        <View style={{ alignItems: 'center', gap: 8, backgroundColor: '#FFFFFF', borderRadius: R(16), borderWidth: 2, borderColor: C.borde, padding: 14 }}>
           <Text style={{ ...letrista, fontSize: 18, textAlign: 'center' }}>{t('CAMBIO LISTO', 'CAMBIO LISTO · READY')}</Text>
           <Text style={{ fontFamily: F.negrita, fontSize: 15, textAlign: 'center' }}>{r.premio}</Text>
           <QRCode value={r.codigo} size={170} />
@@ -278,7 +278,7 @@ function Repetidas({ r, t, pidiendo, msg, alPedir }) {
       ) : (
         <>
           <Text style={{ fontFamily: F.normal, fontSize: 14 }}>{t(`Con ${r.necesarias} repetidas te dan: `, `Con ${r.necesarias} repetidas you get: `)}<Text style={{ fontFamily: F.negrita }}>{r.premio}</Text></Text>
-          <View style={{ height: 12, borderRadius: 6, backgroundColor: '#E7DCC4', borderWidth: 2, borderColor: C.negro, overflow: 'hidden' }}>
+          <View style={{ height: 12, borderRadius: 6, backgroundColor: '#E7DCC4', borderWidth: 2, borderColor: C.borde, overflow: 'hidden' }}>
             <View style={{ width: `${Math.min(100, (r.repetidas / r.necesarias) * 100)}%`, height: '100%', backgroundColor: C.amarillo }} />
           </View>
           {r.repetidas >= r.necesarias
@@ -298,14 +298,14 @@ function ArteBarrio({ a, t, msg, alPedir }) {
     <View style={{ marginHorizontal: 16, marginTop: 14, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.azul, borderRadius: R(16), padding: 16, gap: 8 }}>
       <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.azul, textTransform: 'uppercase' }}>{t('Arte del barrio', 'Arte del barrio · local art')}</Text>
       <Text style={{ ...letrista, fontSize: 22 }}>{a.nombre.toUpperCase()}</Text>
-      {a.imagen ? <Image source={{ uri: a.imagen }} style={{ width: '100%', height: 170, borderRadius: R(16), borderWidth: 2, borderColor: C.negro }} resizeMode="cover" accessibilityIgnoresInvertColors accessibilityLabel={a.nombre} /> : null}
+      {a.imagen ? <Image source={{ uri: a.imagen }} style={{ width: '100%', height: 170, borderRadius: R(16), borderWidth: 2, borderColor: C.borde }} resizeMode="cover" accessibilityIgnoresInvertColors accessibilityLabel={a.nombre} /> : null}
       {a.descripcion ? <Text style={{ fontFamily: F.normal, fontSize: 14 }}>{a.descripcion}</Text> : null}
       {a.canjeado_at ? (
         <Text style={{ fontFamily: F.negrita, fontSize: 15 }}>{t('¡Ya es tuyo! Lo retiraste el', '¡Ya es tuyo! Lo retiraste el')} {new Date(a.canjeado_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' })}.</Text>
       ) : a.codigo ? (
         <>
         <Text style={{ fontFamily: F.negrita, fontSize: 15, color: C.rojoTexto }}>{t('¡GANASTE! Fuiste el primero del barrio.', '¡GANASTE! You were the first one.')}</Text>
-        <View style={{ alignItems: 'center', gap: 8, backgroundColor: '#FFFFFF', borderRadius: R(16), borderWidth: 2, borderColor: C.negro, padding: 14 }}>
+        <View style={{ alignItems: 'center', gap: 8, backgroundColor: '#FFFFFF', borderRadius: R(16), borderWidth: 2, borderColor: C.borde, padding: 14 }}>
           <QRCode value={a.codigo} size={170} />
           <Text style={{ fontFamily: F.negrita, fontSize: 20, letterSpacing: 3 }}>{a.codigo}</Text>
           <Text style={{ fontFamily: F.normal, fontSize: 13, textAlign: 'center' }}>{t(`Retíralo en ${a.punto || 'el local del barrio'}: muestra este QR en la caja.`, `Retíralo en ${a.punto || 'el local del barrio'}: show this QR en la caja.`)}</Text>
@@ -326,7 +326,7 @@ function ArteBarrio({ a, t, msg, alPedir }) {
           <Text style={{ fontFamily: F.normal, fontSize: 14 }}>
             {t(`Hay uno solo: se lo lleva el primero que junte ${a.necesarias} láminas de este barrio`, `Only one: the first to collect ${a.necesarias} láminas de este barrio wins it`)}{a.punto ? t(` (se retira en ${a.punto}).`, ` (pick it up en ${a.punto}).`) : '.'}
           </Text>
-          <View style={{ height: 12, borderRadius: 6, backgroundColor: '#E7DCC4', borderWidth: 2, borderColor: C.negro, overflow: 'hidden' }}>
+          <View style={{ height: 12, borderRadius: 6, backgroundColor: '#E7DCC4', borderWidth: 2, borderColor: C.borde, overflow: 'hidden' }}>
             <View style={{ width: `${Math.min(100, (a.tengo / a.necesarias) * 100)}%`, height: '100%', backgroundColor: C.azul }} />
           </View>
           <Text style={{ fontFamily: F.negrita, fontSize: 13 }}>{Math.min(a.tengo, a.necesarias)} {t('de', 'de')} {a.necesarias}</Text>
@@ -355,7 +355,7 @@ function EdicionEspecial({ ide, barrio, tengo, necesarias, t }) {
   return (
     <View style={{ marginHorizontal: 16, marginTop: 16, flexDirection: 'row', gap: 16, alignItems: 'center' }}>
       <View accessibilityLabel={lista ? `${t('Lámina edición especial de', 'Edición especial de')} ${nombre}` : `${t('Edición especial', 'Edición especial')}: ${tengo} ${t('de', 'de')} ${necesarias}`}
-        style={{ width: 140, height: 196, backgroundColor: C.papel, borderWidth: 3, borderColor: C.negro, shadowColor: lista ? '#C9A227' : C.negro, shadowOffset: { width: 6, height: 6 }, shadowOpacity: 1, shadowRadius: 0, overflow: 'hidden' }}>
+        style={{ width: 140, height: 196, backgroundColor: C.papel, borderWidth: 3, borderColor: C.borde, shadowColor: lista ? '#C9A227' : C.negro, shadowOffset: { width: 6, height: 6 }, shadowOpacity: 1, shadowRadius: 0, overflow: 'hidden' }}>
         {/* grilla */}
         <View style={{ position: 'absolute', left: 0, right: 0, top: 150, height: 3, backgroundColor: C.negro }} />
         <View style={{ position: 'absolute', left: 92, top: 0, height: 150, width: 3, backgroundColor: C.negro }} />

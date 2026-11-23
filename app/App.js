@@ -216,7 +216,7 @@ function Caserito() {
           )}
 
           {!dropAbierto && (
-            <View style={{ position: 'absolute', left: 12, right: 12, bottom: 14, height: 64, backgroundColor: C.papel, borderWidth: 3, borderColor: C.negro, borderRadius: R(22), overflow: 'hidden', flexDirection: 'row', zIndex: 5000, elevation: 20, shadowColor: C.negro, shadowOffset: { width: 5, height: 5 }, shadowOpacity: 1, shadowRadius: 0 }}>
+            <View style={{ position: 'absolute', left: 12, right: 12, bottom: 14, height: 64, backgroundColor: C.papel, borderWidth: estilo === 'moderno' ? 1 : 3, borderColor: C.borde, borderRadius: R(22), overflow: 'hidden', flexDirection: 'row', zIndex: 5000, elevation: 20, shadowColor: C.sombra, shadowOffset: estilo === 'moderno' ? { width: 0, height: 6 } : { width: 5, height: 5 }, shadowOpacity: 1, shadowRadius: estilo === 'moderno' ? 14 : 0 }}>
               <Tab id="inicio" texto={t("Inicio", "Inicio")} actual={pestana} setear={setPestana} figura="cuadrado" fondo={C.amarillo} />
               <Tab id="mapa" texto={t("Mapa", "Mapa")} actual={pestana} setear={setPestana} figura="circulo" fondo={C.rojo} />
               <Tab id="album" texto={t("Álbum", "Álbum")} actual={pestana} setear={setPestana} figura="triangulo" fondo={C.azul} />
@@ -245,6 +245,17 @@ const FIGURAS = {
 function Tab({ id, texto, actual, setear, figura, fondo }) {
   const activa = id === actual;
   const { estilo } = useEstilo();
+  if (estilo === 'moderno') {
+    return (
+      <Pressable onPress={() => setear(id)} accessibilityRole="tab" accessibilityState={{ selected: activa }}
+        style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+        <View style={{ paddingHorizontal: 16, paddingVertical: 4, borderRadius: 16, backgroundColor: activa ? C.amarillo : 'transparent' }}>
+          <Svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke={C.negro} strokeWidth={activa ? 2.4 : 1.8} strokeLinecap="round" strokeLinejoin="round"><Path d={ICONOS_CLASICOS[id]} /></Svg>
+        </View>
+        <Text style={{ color: activa ? C.negro : C.gris, fontFamily: activa ? F.negrita : F.media, fontSize: 11 }}>{texto}</Text>
+      </Pressable>
+    );
+  }
   if (estilo === 'clasico') {
     const color = activa ? C.amarillo : C.papel;
     return (
@@ -265,7 +276,7 @@ function Tab({ id, texto, actual, setear, figura, fondo }) {
   }
   return (
     <Pressable onPress={() => setear(id)} accessibilityRole="tab" accessibilityState={{ selected: activa }}
-      style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3, backgroundColor: activa ? C.amarillo : 'transparent', borderRightWidth: id === 'tu' ? 0 : 3, borderColor: C.negro }}>
+      style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3, backgroundColor: activa ? C.amarillo : 'transparent', borderRightWidth: id === 'tu' ? 0 : 3, borderColor: C.borde }}>
       <Svg width={22} height={22} viewBox="0 0 24 24"><Path d={FIGURAS[figura]} fill={activa ? fondo : C.papel} stroke={C.negro} strokeWidth={2.5} strokeLinejoin="miter" /></Svg>
       <Text style={{ color: C.negro, fontFamily: activa ? F.negrita : F.media, fontSize: 11 }}>{texto}</Text>
     </Pressable>

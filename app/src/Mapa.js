@@ -53,7 +53,7 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null,
         {locales.filter((l) => !conDrop.has(l.id)).map((l, k) => (
           <Marker key={'l' + l.id + (cerca ? 'c' : 'l')} anchor={cerca ? { x: 0.5, y: 0.92 } : { x: 0.5, y: 0.5 }} coordinate={{ latitude: l.punto.lat, longitude: l.punto.lng }} title={l.nombre}
             description={`${textoCategoria(l.categoria)}${l.producto_estrella ? ' · ★ ' + l.producto_estrella : ''} · sin drop ahora`} tracksViewChanges={false}>
-            {cerca ? <LaminaMapa l={l} k={k} /> : <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: C.papel, borderWidth: 3, borderColor: C.negro }} />}
+            {cerca ? <LaminaMapa l={l} k={k} /> : <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: C.papel, borderWidth: 3, borderColor: C.borde }} />}
           </Marker>
         ))}
         {visibles.map((d) => coords[d.local_id] && (
@@ -79,7 +79,7 @@ function LaminaMapa({ l, k }) {
         <View style={{ position: 'absolute', left: 4, top: 6, right: -4, bottom: -6, backgroundColor: C.negro }} />
         <TarjetaLamina l={l} />
       </View>
-      <View style={{ flex: 1, width: 2, marginTop: 4, borderLeftWidth: 2, borderColor: C.negro, borderStyle: 'dashed' }} />
+      <View style={{ flex: 1, width: 2, marginTop: 4, borderLeftWidth: 2, borderColor: C.borde, borderStyle: 'dashed' }} />
       <View style={{ width: 22, height: 22, borderTopLeftRadius: 11, borderTopRightRadius: 11, borderBottomRightRadius: 11, borderBottomLeftRadius: 2, transform: [{ rotate: '-45deg' }], backgroundColor: C.negro, borderWidth: 2, borderColor: C.papel, alignItems: 'center', justifyContent: 'center', marginBottom: 2 }}>
         <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: C.amarillo }} />
       </View>
@@ -89,8 +89,8 @@ function LaminaMapa({ l, k }) {
 }
 function TarjetaLamina({ l }) {
   return (
-    <View style={{ width: 88, padding: 3, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.negro }}>
-      <View style={{ height: 44, borderWidth: 2, borderColor: C.negro, overflow: 'hidden' }}>
+    <View style={{ width: 88, padding: 3, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.borde }}>
+      <View style={{ height: 44, borderWidth: 2, borderColor: C.borde, overflow: 'hidden' }}>
         <ArteLocal id={l.id} categoria={l.categoria} ancho="100%" alto={44} borde={false} />
       </View>
       <Text numberOfLines={1} style={{ fontSize: 9.5, fontWeight: '800', marginTop: 2 }}>{l.nombre}</Text>
@@ -112,7 +112,7 @@ function Pin({ d }) {
           <Text style={{ ...letrista, fontSize: 15, color: sorpresa ? C.amarillo : C.negro }}>{etiquetaTag(d)}</Text>
         </View>
         {d.dentro_del_radio ? (
-          <View style={{ position: 'absolute', top: -10, right: -12, backgroundColor: '#1F9D55', borderWidth: 2, borderColor: C.negro, paddingHorizontal: 4 }}>
+          <View style={{ position: 'absolute', top: -10, right: -12, backgroundColor: '#1F9D55', borderWidth: 2, borderColor: C.borde, paddingHorizontal: 4 }}>
             <Text style={{ fontSize: 9, fontWeight: '800', color: '#FFFFFF' }}>¡AQUÍ!</Text>
           </View>
         ) : null}
