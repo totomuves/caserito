@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { C, F, R, precio } from './tema';
+import { C, F, R, precio, ESTILO } from './tema';
 import { useCoordenadas, useLocalesMapa, especialidad } from './MapaComun';
 import { arteHtml } from './arteLocal';
 
@@ -21,6 +21,8 @@ function estilos() {
   st.textContent = `
     .droper-mini { background:#FFF3B0; }
     .droper-mini .leaflet-tile-pane { filter: sepia(.55) saturate(1.6) hue-rotate(-8deg) brightness(1.04) contrast(1.05); }
+    .droper-mini.moderno { background:#FFFFFF; }
+    .droper-mini.moderno .leaflet-tile-pane { filter: grayscale(1) brightness(1.1) contrast(1.08); }
     .droper-mini .leaflet-control-attribution { font-size:8px; background:rgba(255,255,255,.7); }
     .mini-yo { width:18px; height:18px; border-radius:9px; background:#1D4ED8; border:3px solid #fff; box-shadow:0 0 0 8px rgba(29,78,216,.18), 0 1px 4px rgba(0,0,0,.35); box-sizing:border-box; }
     .mini-lam { display:flex; flex-direction:column; align-items:center; cursor:pointer; }
@@ -45,6 +47,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
     estilos();
     if (!caja.current || mapa.current || !centro) return;
     caja.current.classList.add('droper-mini');
+    if (ESTILO === 'moderno') caja.current.classList.add('moderno');
     const m = L.map(caja.current, { zoomControl: false, attributionControl: true, dragging: false, scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false, boxZoom: false, keyboard: false, zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false });
     L.tileLayer(LLAVE_CARTO
       ? `https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${LLAVE_CARTO}`
@@ -84,7 +87,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
   }, [drops, coords, locales, !!mapa.current]);
 
   return (
-    <View style={{ marginHorizontal: 16, marginTop: 14, height: 300, borderRadius: R(20), overflow: 'hidden', borderWidth: 1, borderColor: C.borde, backgroundColor: '#FFF3B0' }}>
+    <View style={{ marginHorizontal: 16, marginTop: 14, height: 300, borderRadius: R(20), overflow: 'hidden', borderWidth: 1, borderColor: C.borde, backgroundColor: ESTILO === 'moderno' ? '#FFFFFF' : '#FFF3B0' }}>
       <div ref={caja} style={{ position: 'absolute', inset: 0 }} />
       {yo ? <div className="mini-yo" style={{ position: 'absolute', left: '50%', top: '50%', marginLeft: -9, marginTop: -9, zIndex: 450, pointerEvents: 'none' }} /> : null}
       <View style={{ position: 'absolute', left: 10, top: 10, backgroundColor: C.papel, borderRadius: 14, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: C.borde, zIndex: 500 }}>

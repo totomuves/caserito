@@ -6,6 +6,7 @@ import { LaminaLocal } from './arteLocal.jsx';
 import { formatoPrecio } from './frases.js';
 import { textoCategoria } from './categorias.js';
 import Qr, { URL_APP } from './Qr.jsx';
+import Lugares from './Lugares.jsx';
 
 const SECCIONES = [
   { id: 'resumen', texto: 'Resumen' },
@@ -15,6 +16,7 @@ const SECCIONES = [
   { id: 'comentarios', texto: 'Comentarios beta' },
   { id: 'invitar', texto: 'Invitar locales' },
   { id: 'barrios', texto: 'Barrios y arte' },
+  { id: 'lugares', texto: 'Patios y malls' },
   { id: 'qr', texto: 'QR' },
   { id: 'estilo', texto: 'Estilo de la app' },
 ];
@@ -35,6 +37,7 @@ export default function Admin({ usuario, alEntrarLocal }) {
       {seccion === 'resenas' && <Resenas />}
       {seccion === 'comentarios' && <Comentarios />}
       {seccion === 'barrios' && <Barrios />}
+      {seccion === 'lugares' && <Lugares />}
       {seccion === 'estilo' && <EstiloApp />}
       {seccion === 'invitar' && <Invitar />}
       {seccion === 'qr' && (

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
-import { C, F, R, precio } from './tema';
+import { C, F, R, precio, ESTILO as SKIN } from './tema';
 import { useCoordenadas, useLocalesMapa } from './MapaComun';
 import { ArteLocal } from './arteLocal';
 import { ESTILO as ESTILO_MAPA } from './Mapa';
@@ -14,9 +14,9 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
   if (!centro) return null;
   const delta = 0.0045; // como el zoom 17 del mapa
   return (
-    <View style={{ marginHorizontal: 16, marginTop: 14, height: 300, borderRadius: R(20), overflow: 'hidden', borderWidth: 1, borderColor: C.borde, backgroundColor: '#FFF3B0' }}>
+    <View style={{ marginHorizontal: 16, marginTop: 14, height: 300, borderRadius: R(20), overflow: 'hidden', borderWidth: 1, borderColor: C.borde, backgroundColor: SKIN === 'moderno' ? '#FFFFFF' : '#FFF3B0' }}>
       <MapView style={{ flex: 1 }} scrollEnabled={false} zoomEnabled={false} rotateEnabled={false} pitchEnabled={false}
-        showsUserLocation={!!yo} showsPointsOfInterest={false} toolbarEnabled={false} customMapStyle={ESTILO_MAPA}
+        showsUserLocation={!!yo} showsPointsOfInterest={false} toolbarEnabled={false} customMapStyle={SKIN === 'moderno' ? [] : ESTILO_MAPA}
         region={{ latitude: centro.lat, longitude: centro.lng, latitudeDelta: delta, longitudeDelta: delta }}>
         {(() => {
           const dropDe = {};

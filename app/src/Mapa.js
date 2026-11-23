@@ -3,7 +3,7 @@ import { Text, View } from 'react-native';
 import MapView, { Marker, Polygon } from 'react-native-maps';
 import Svg, { Path } from 'react-native-svg';
 import { puntosDe } from './barrios';
-import { C, letrista, cuadras, textoCategoria } from './tema';
+import { C, letrista, cuadras, textoCategoria, ESTILO as SKIN } from './tema';
 import { figuraDe } from './componentes';
 import { ArteLocal } from './arteLocal';
 import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa } from './MapaComun';
@@ -24,7 +24,7 @@ export const ESTILO = [
 ];
 
 // Mapa en el teléfono (Apple Maps / Google Maps). En la web se usa Mapa.web.js
-export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null, alVisitar = () => {} }) {
+export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null, alVisitar = () => {}, lugares = [], alAbrirLugar = () => {} }) {
   const vista = visita;
   const setVista = alVisitar;
   const mapa = useRef(null);
@@ -44,11 +44,23 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null,
 
   return (
     <View style={{ flex: 1, zIndex: 0 }}>
-      <MapView ref={mapa} onRegionChangeComplete={(r) => setCerca(r.latitudeDelta < 0.012)} style={{ flex: 1, backgroundColor: '#FFF3B0' }} showsUserLocation customMapStyle={ESTILO} showsPointsOfInterest={false}
+      <MapView ref={mapa} onRegionChangeComplete={(r) => setCerca(r.latitudeDelta < 0.012)} style={{ flex: 1, backgroundColor: SKIN === 'moderno' ? '#FFFFFF' : '#FFF3B0' }} showsUserLocation customMapStyle={SKIN === 'moderno' ? [] : ESTILO} showsPointsOfInterest={false}
         initialRegion={{ latitude: pos.lat, longitude: pos.lng, latitudeDelta: 0.012, longitudeDelta: 0.012 }}>
         {barrios.map((b) => (
           <Polygon key={b.id} coordinates={puntosDe(b.limite).map((p) => ({ latitude: p.lat, longitude: p.lng }))}
             strokeColor={C.azul} strokeWidth={2} lineDashPattern={[8, 6]} fillColor="rgba(255,209,0,0.10)" tappable={false} />
+        ))}
+        {lugares.map((lg) => (
+          <Marker key={'g' + lg.id} coordinate={{ latitude: lg.lat, longitude: lg.lng }} anchor={{ x: 0.5, y: 1 }} onPress={() => alAbrirLugar(lg)} tracksViewChanges={false} zIndex={800}>
+            <View style={{ alignItems: 'center' }}>
+              <View style={{ backgroundColor: C.negro, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6, minWidth: 110 }}>
+                <Text style={{ fontFamily: 'Archivo_800ExtraBold', fontSize: 9, letterSpacing: 1.5, color: C.amarillo }}>{lg.tipo === 'mall' ? 'MALL' : 'PATIO'}</Text>
+                <Text style={{ fontFamily: 'Archivo_800ExtraBold', fontSize: 14, color: '#FFFFFF' }} numberOfLines={1}>{lg.nombre}</Text>
+                <Text style={{ fontFamily: 'Archivo_600SemiBold', fontSize: 10, color: '#DDDDDD' }}>{Number(lg.locales || 0)} locales · ver plano</Text>
+              </View>
+              <View style={{ width: 0, height: 0, borderLeftWidth: 8, borderRightWidth: 8, borderTopWidth: 10, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderTopColor: C.negro }} />
+            </View>
+          </Marker>
         ))}
         {locales.filter((l) => !conDrop.has(l.id)).map((l, k) => (
           <Marker key={'l' + l.id + (cerca ? 'c' : 'l')} anchor={cerca ? { x: 0.5, y: 0.92 } : { x: 0.5, y: 0.5 }} coordinate={{ latitude: l.punto.lat, longitude: l.punto.lng }} title={l.nombre}

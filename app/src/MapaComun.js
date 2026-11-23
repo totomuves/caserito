@@ -235,3 +235,24 @@ export function HojaMapa({ drops, pos, sel, alAbrir, coords = {} }) {
     </>
   );
 }
+
+// Patios y malls (lugares con plano propio). Si el SQL 026 no está corrido, simplemente no hay.
+export function useLugares() {
+  const [lugares, setLugares] = useState([]);
+  useEffect(() => {
+    supabase.rpc('lugares_mapa').then(({ data, error }) => { if (!error && data) setLugares(data); });
+  }, []);
+  return lugares;
+}
+// El patio o mall donde estás parado (o null)
+export function lugarDe(pos, lugares) {
+  if (!pos || pos.aprox || !lugares || !lugares.length) return null;
+  const dentro = lugares.filter((g) => metrosEntre(pos, g) <= (g.radio_m || 60));
+  return dentro.sort((a, b) => metrosEntre(pos, a) - metrosEntre(pos, b))[0] || null;
+}
+function metrosEntre(a, b) {
+  const r = 6371000, rad = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * rad, dLng = (b.lng - a.lng) * rad;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) ** 2;
+  return 2 * r * Math.asin(Math.sqrt(h));
+}

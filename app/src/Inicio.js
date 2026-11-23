@@ -5,10 +5,11 @@ import { C, F, letrista, CATEGORIAS, textoCategoria, tieneCategoria, precio, cua
 import { Ola, Brillo, Pildora, EtiquetaPrecio, Boton, FondoBauhaus, PuntosPop, GloboPop, Estallido, ONOMATOPEYAS, Seguro } from './componentes';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR, categoriaTur, SelectorIdioma } from './idioma';
 import Logo from './Logo';
-import { SelectorBarrios, useCoordenadas } from './MapaComun';
+import { SelectorBarrios, useCoordenadas, lugarDe } from './MapaComun';
 import { useEstilo } from './estilo';
 import Portada from './Portada';
 import MiniMapa from './MiniMapa';
+import { PlanoLugar } from './Plano';
 import Svg, { Path } from 'react-native-svg';
 
 function etiquetaPara(d, hora, t, cuad) {
@@ -20,7 +21,7 @@ function etiquetaPara(d, hora, t, cuad) {
   return cuad(d.cuadras).toUpperCase();
 }
 
-export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda, avisos, avisoMotivo, alPrenderAvisos, alCerrarAvisos, avisoQr, alCerrarAvisoQr, barrioActual, barrioLejos, barrios = [], visita = null, alVisitar = () => {}, pos = null, alVerMapa = () => {} }) {
+export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda, avisos, avisoMotivo, alPrenderAvisos, alCerrarAvisos, avisoQr, alCerrarAvisoQr, barrioActual, barrioLejos, barrios = [], visita = null, alVisitar = () => {}, pos = null, alVerMapa = () => {}, lugares = [], alAbrirLugar = () => {} }) {
   const b = barrioActual && barrioActual.barrio;
   const nombreBarrio = (b && b.nombre) || 'Barrio Italia';
   const lugar = b ? (barrioActual.dentro ? `${b.nombre} · ${b.comuna}` : b.nombre) : 'Barrio Italia';
@@ -71,6 +72,14 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
   }
 
   const moderno = estilo === 'moderno';
+  // ¿Estás dentro de un patio o mall? Se muestra su plano en vez del mapa de calles
+  const enLugar = visita ? null : lugarDe(pos, lugares);
+  const bloqueLugar = enLugar ? (
+    <View style={{ marginHorizontal: 16, marginTop: 14, gap: 8 }}>
+      <Text style={{ fontFamily: F.negrita, fontSize: 12, letterSpacing: 1.2, color: C.gris }}>{t(`ESTÁS EN ${enLugar.nombre.toUpperCase()}`, `YOU'RE AT ${enLugar.nombre.toUpperCase()}`)}</Text>
+      <Seguro><PlanoLugar lugar={enLugar} drops={drops} alAbrir={alAbrir} compacto alVerTodo={() => alAbrirLugar(enLugar)} /></Seguro>
+    </View>
+  ) : null;
   const bloqueBarrios = (
     <>
       <SelectorBarrios barrios={barrios} vista={visita} alElegir={alVisitar} flotante={false} titulo={t('¿A qué barrio vas?', '¿A qué barrio vas? Pick a barrio')} />
@@ -225,13 +234,14 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
 
       {moderno ? (
         <>
-          <Seguro><MiniMapa pos={visita ? { lat: visita.lat, lng: visita.lng } : pos} yo={!visita && pos && !pos.aprox ? pos : null} drops={drops} alAbrir={alAbrir} alVerMapa={alVerMapa} t={t} /></Seguro>
+          {enLugar ? bloqueLugar : <Seguro><MiniMapa pos={visita ? { lat: visita.lat, lng: visita.lng } : pos} yo={!visita && pos && !pos.aprox ? pos : null} drops={drops} alAbrir={alAbrir} alVerMapa={alVerMapa} t={t} /></Seguro>}
           {bloqueDrops}
           {bloqueFrase}
           {bloqueBarrios}
         </>
       ) : (
         <>
+          {bloqueLugar}
           {bloqueBarrios}
           {bloqueFrase}
           {bloqueDrops}

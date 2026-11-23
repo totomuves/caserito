@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { C, cuadras, textoCategoria } from './tema';
+import { C, cuadras, textoCategoria, ESTILO } from './tema';
 import { figuraDe } from './componentes';
 import { arteHtml } from './arteLocal';
+import { lugarHtml } from './Plano';
 import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa } from './MapaComun';
 
 const L = require('leaflet');
@@ -22,7 +23,15 @@ function prepararEstilos() {
   st.textContent = `
     .caserito-mapa { background:#FFF3B0; }
     .caserito-mapa .leaflet-tile-pane { filter: sepia(.55) saturate(1.6) hue-rotate(-8deg) brightness(1.04) contrast(1.05); }
+    .caserito-mapa.moderno { background:#FFFFFF; }
+    .caserito-mapa.moderno .leaflet-tile-pane { filter: grayscale(1) brightness(1.1) contrast(1.08); }
     .caserito-pin { background: none; border: none; }
+    .lugar-pin { display:flex; flex-direction:column; align-items:center; cursor:pointer; }
+    .lugar-carta { background:${C.negro}; color:#fff; border:2.5px solid ${C.negro}; border-radius:12px; padding:6px 10px; box-shadow:0 6px 14px rgba(17,17,17,.3); font-family:Archivo, sans-serif; min-width:110px; }
+    .lugar-carta i { display:block; font-style:normal; font:800 9px Archivo, sans-serif; letter-spacing:1.5px; color:${C.amarillo}; }
+    .lugar-carta b { display:block; font:800 14px Archivo, sans-serif; white-space:nowrap; }
+    .lugar-carta span { display:block; font:600 10px Archivo, sans-serif; color:#ddd; white-space:nowrap; }
+    .lugar-punta { width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:10px solid ${C.negro}; }
     .lam-flota { position:relative; width:94px; height:150px; display:flex; flex-direction:column; align-items:center; perspective:320px; }
     .lam-flota .lam-mapa { transform:rotateX(16deg) rotateY(-14deg) rotateZ(var(--rot,-2deg)); box-shadow:4px 6px 0 ${C.negro}; transform-origin:50% 100%; }
     .lam-flota:hover .lam-mapa { transform:rotateX(0) rotateY(0) scale(1.08); }
@@ -81,7 +90,8 @@ function escapar(t) {
   return String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], visita = null, alVisitar = () => {} }) {
+export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], visita = null, alVisitar = () => {}, lugares = [], alAbrirLugar = () => {} }) {
+  const capaLugares = useRef(null);
   const marcaYo = useRef(null);
   const vista = visita;
   const setVista = alVisitar;
@@ -102,6 +112,7 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
     const nodo = caja.current;
     if (!nodo || mapa.current) return;
     nodo.classList.add('caserito-mapa');
+    if (ESTILO === 'moderno') nodo.classList.add('moderno');
     const m = L.map(nodo, { zoomControl: false, attributionControl: true }).setView([pos.lat, pos.lng], 16);
     m.on('zoomend', () => setCerca(m.getZoom() >= 16));
     // CARTO ahora pide una llave gratis (carto.com/basemaps/apikey). Sin llave, usamos OpenStreetMap.
@@ -118,6 +129,7 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
     }
     capaBarrios.current = L.layerGroup().addTo(m);
     capa.current = L.layerGroup().addTo(m);
+    capaLugares.current = L.layerGroup().addTo(m);
     mapa.current = m;
     setTimeout(() => m.invalidateSize(), 50);
     return () => { m.remove(); mapa.current = null; };
@@ -157,6 +169,17 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
       L.marker([b.lat, b.lng], { interactive: false, icon: L.divIcon({ className: '', html: `<div class="caserito-barrio">${String(b.nombre).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))}</div>`, iconSize: [140, 22], iconAnchor: [70, 11] }) }).addTo(g);
     });
   }, [barrios]);
+
+  // Patios y malls: tarjeta negra; al tocarla se abre su plano
+  useEffect(() => {
+    const g = capaLugares.current;
+    if (!g) return;
+    g.clearLayers();
+    lugares.forEach((lg) => {
+      L.marker([lg.lat, lg.lng], { icon: L.divIcon({ className: 'caserito-pin', html: lugarHtml(lg), iconSize: [150, 70], iconAnchor: [75, 68] }), title: lg.nombre, keyboard: true, zIndexOffset: 800 })
+        .on('click', () => alAbrirLugar(lg)).addTo(g);
+    });
+  }, [lugares, !!mapa.current]);
 
   // Pines: locales sin drop ahora (chicos, color papel) y drops en vivo encima
   useEffect(() => {

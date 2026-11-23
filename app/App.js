@@ -20,6 +20,8 @@ import Inicio from './src/Inicio';
 import Mapa from './src/Mapa';
 import Album from './src/Album';
 import Drop from './src/Drop';
+import Plano from './src/Plano';
+import { useLugares } from './src/MapaComun';
 import Ayuda from './src/Ayuda';
 import Cuenta from './src/Cuenta';
 import { barrioDe } from './src/barrios';
@@ -59,6 +61,8 @@ function Caserito() {
   const [drops, setDrops] = useState([]);
   const [pestana, setPestana] = useState('inicio');
   const [abierto, setAbierto] = useState(null);
+  const [lugarAbierto, setLugarAbierto] = useState(null);
+  const lugares = useLugares();
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(true);
   const [lejos, setLejos] = useState(false);
@@ -227,27 +231,29 @@ function Caserito() {
             <Cargando fuente={F.negrita} texto={t('Buscando drops cerca…', 'Buscando drops cerca… · Finding drops')} />
           ) : dropAbierto ? (
             <Drop drop={dropAbierto} usuario={usuario} alCerrar={() => { setAbierto(null); cargar(); }} />
+          ) : lugarAbierto ? (
+            <Plano lugar={lugarAbierto} drops={drops} alAbrir={abrir} alCerrar={() => setLugarAbierto(null)} />
           ) : pestana === 'ayuda' ? (
             <Ayuda alCerrar={() => setPestana('inicio')} />
           ) : pestana === 'inicio' ? (
             <Inicio drops={drops} usuario={usuario} pos={pos} alVerMapa={() => setPestana('mapa')} lejos={lejos} alAbrir={abrir} alRefrescar={cargar} alAyuda={() => setPestana('ayuda')}
               avisoQr={avisoQr} alCerrarAvisoQr={() => setAvisoQr('')} barrioActual={barrioDe(pos, barrios)} barrioLejos={centroLejos && centroLejos.nombre}
-              barrios={barrios} visita={visita} alVisitar={setVisita}
+              barrios={barrios} visita={visita} alVisitar={setVisita} lugares={lugares} alAbrirLugar={setLugarAbierto}
               avisos={avisos} avisoMotivo={avisoMotivo} alPrenderAvisos={prenderAvisos} alCerrarAvisos={cerrarAvisos} />
           ) : pestana === 'tu' ? (
             <Cuenta key={usuario.id} usuario={usuario} alAyuda={() => setPestana('ayuda')} />
           ) : pestana === 'mapa' ? (
-            <Mapa drops={drops} pos={visita ? { lat: visita.lat, lng: visita.lng } : lejos ? (centroLejos || { ...BARRIO_ITALIA }) : pos} yo={pos && !pos.aprox ? pos : null} alAbrir={abrir} barrios={barrios} visita={visita} alVisitar={setVisita} />
+            <Mapa drops={drops} pos={visita ? { lat: visita.lat, lng: visita.lng } : lejos ? (centroLejos || { ...BARRIO_ITALIA }) : pos} yo={pos && !pos.aprox ? pos : null} alAbrir={abrir} barrios={barrios} visita={visita} alVisitar={setVisita} lugares={lugares} alAbrirLugar={setLugarAbierto} />
           ) : (
             <Album usuario={usuario} alIrAlMapa={() => setPestana('mapa')} barrios={barrios} barrioInicial={(visita || barrioDe(pos, barrios).barrio || {}).id} />
           )}
 
           {!dropAbierto && (
             <View style={{ position: 'absolute', left: 12, right: 12, bottom: 14, height: 64, backgroundColor: C.papel, borderWidth: estilo === 'moderno' ? 1 : 3, borderColor: C.borde, borderRadius: R(22), overflow: 'hidden', flexDirection: 'row', zIndex: 5000, elevation: 20, shadowColor: C.sombra, shadowOffset: estilo === 'moderno' ? { width: 0, height: 6 } : { width: 5, height: 5 }, shadowOpacity: 1, shadowRadius: estilo === 'moderno' ? 14 : 0 }}>
-              <Tab id="inicio" texto={t("Inicio", "Inicio")} actual={pestana} setear={setPestana} figura="cuadrado" fondo={C.amarillo} />
-              <Tab id="mapa" texto={t("Mapa", "Mapa")} actual={pestana} setear={setPestana} figura="circulo" fondo={C.rojo} />
-              <Tab id="album" texto={t("Álbum", "Álbum")} actual={pestana} setear={setPestana} figura="triangulo" fondo={C.azul} />
-              <Tab id="tu" texto={t("Tú", "Tú")} actual={pestana} setear={setPestana} figura="cuarto" fondo={C.negro} />
+              <Tab id="inicio" texto={t("Inicio", "Inicio")} actual={pestana} setear={(p) => { setLugarAbierto(null); setPestana(p); }} figura="cuadrado" fondo={C.amarillo} />
+              <Tab id="mapa" texto={t("Mapa", "Mapa")} actual={pestana} setear={(p) => { setLugarAbierto(null); setPestana(p); }} figura="circulo" fondo={C.rojo} />
+              <Tab id="album" texto={t("Álbum", "Álbum")} actual={pestana} setear={(p) => { setLugarAbierto(null); setPestana(p); }} figura="triangulo" fondo={C.azul} />
+              <Tab id="tu" texto={t("Tú", "Tú")} actual={pestana} setear={(p) => { setLugarAbierto(null); setPestana(p); }} figura="cuarto" fondo={C.negro} />
             </View>
           )}
         </View>
