@@ -17,6 +17,15 @@ function useLocalesDelLugar(lugar) {
   }, [ids.join(',')]);
   return locales;
 }
+function useTiendasDelLugar(lugar) {
+  const [tiendas, setTiendas] = useState([]);
+  useEffect(() => {
+    if (!lugar || !lugar.id) return;
+    supabase.from('tiendas_osm').select('osm_id, nombre, piso_id, plano_x, plano_y').eq('lugar_id', lugar.id).is('local_id', null).eq('oculta', false)
+      .then(({ data, error }) => { if (!error) setTiendas(data || []); });
+  }, [lugar && lugar.id]);
+  return tiendas;
+}
 
 const TIPO = { patio: 'PATIO', mall: 'MALL' };
 
@@ -27,6 +36,8 @@ export function PlanoLugar({ lugar, drops = [], alAbrir = () => {}, compacto = f
   const [pisoId, setPisoId] = useState(pisos[0] && pisos[0].id);
   const piso = pisos.find((p) => p.id === pisoId) || pisos[0];
   const locales = useLocalesDelLugar(lugar);
+  const tiendas = useTiendasDelLugar(lugar);
+  const grises = tiendas.filter((x) => piso && x.piso_id === piso.id && x.plano_x != null);
   const [ancho, setAncho] = useState(0);
   const dropDe = useMemo(() => { const m = {}; drops.forEach((d) => { if (!m[d.local_id]) m[d.local_id] = d; }); return m; }, [drops]);
   const aca = locales.filter((l) => piso && l.piso_id === piso.id && l.plano_x != null);
@@ -52,13 +63,24 @@ export function PlanoLugar({ lugar, drops = [], alAbrir = () => {}, compacto = f
 
       <View onLayout={(e) => setAncho(e.nativeEvent.layout.width)}
         style={{ width: '100%', height: alto || 220, borderRadius: R(18), overflow: 'hidden', borderWidth: 1, borderColor: C.borde, backgroundColor: '#FFF3B0' }}>
+        {piso && !piso.plano_url && grises.length ? (
+          <View pointerEvents="none" style={{ position: 'absolute', left: 6, bottom: 4 }}>
+            <Text style={{ fontFamily: F.media, fontSize: 9, color: '#777' }}>{t('Tiendas: © OpenStreetMap', 'Shops: © OpenStreetMap')}</Text>
+          </View>
+        ) : null}
         {piso && piso.plano_url ? (
           <Image source={{ uri: piso.plano_url }} resizeMode="stretch" style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' }} accessibilityLabel={t(`Plano de ${lugar.nombre}`, `Map of ${lugar.nombre}`)} />
         ) : (
           <View style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontFamily: F.media, fontSize: 13, color: C.gris }}>{t('Plano en preparación', 'Map coming soon')}</Text>
+            {grises.length ? null : <Text style={{ fontFamily: F.media, fontSize: 13, color: C.gris }}>{t('Plano en preparación', 'Map coming soon')}</Text>}
           </View>
         )}
+        {alto ? grises.map((x) => (
+          <View key={x.osm_id} pointerEvents="none" style={{ position: 'absolute', left: x.plano_x * ancho - 4, top: x.plano_y * alto - 4, flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#9A9A9A', borderWidth: 1, borderColor: '#FFFFFF' }} />
+            {compacto ? null : <Text numberOfLines={1} style={{ fontFamily: F.media, fontSize: 8, color: '#666', maxWidth: 70 }}>{x.nombre}</Text>}
+          </View>
+        )) : null}
         {alto ? aca.map((l) => {
           const d = dropDe[l.id];
           return (

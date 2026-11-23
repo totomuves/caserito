@@ -256,3 +256,13 @@ function metrosEntre(a, b) {
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) ** 2;
   return 2 * r * Math.asin(Math.sqrt(h));
 }
+
+// Tiendas del barrio traídas de OpenStreetMap que aún no están en Droper (puntos grises en el mapa)
+export function useTiendasOsm() {
+  const [tiendas, setTiendas] = useState([]);
+  useEffect(() => {
+    supabase.from('tiendas_osm').select('osm_id, nombre, tipo, lat, lng').is('local_id', null).is('lugar_id', null).eq('oculta', false).limit(3000)
+      .then(({ data, error }) => { if (!error && data) setTiendas(data); });
+  }, []);
+  return tiendas;
+}

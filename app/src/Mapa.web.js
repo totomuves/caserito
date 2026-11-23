@@ -5,7 +5,7 @@ import { figuraDe } from './componentes';
 import { arteHtml } from './arteLocal';
 import { lugarHtml } from './Plano';
 import { conectarCalles, CSS_CALLES } from './callesWeb';
-import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa } from './MapaComun';
+import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, useTiendasOsm, SelectorBarrios, FiltrosMapa, HojaMapa } from './MapaComun';
 
 const L = require('leaflet');
 
@@ -92,6 +92,8 @@ function escapar(t) {
 
 export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], visita = null, alVisitar = () => {}, lugares = [], alAbrirLugar = () => {} }) {
   const capaLugares = useRef(null);
+  const capaTiendas = useRef(null);
+  const tiendas = useTiendasOsm();
   const marcaYo = useRef(null);
   const vista = visita;
   const setVista = alVisitar;
@@ -130,6 +132,7 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
     capaBarrios.current = L.layerGroup().addTo(m);
     capa.current = L.layerGroup().addTo(m);
     capaLugares.current = L.layerGroup().addTo(m);
+    capaTiendas.current = L.layerGroup().addTo(m);
     const soltarCalles = ESTILO === 'moderno' ? conectarCalles(L, m) : null;
     mapa.current = m;
     setTimeout(() => m.invalidateSize(), 50);
@@ -170,6 +173,19 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
       L.marker([b.lat, b.lng], { interactive: false, icon: L.divIcon({ className: '', html: `<div class="caserito-barrio">${String(b.nombre).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))}</div>`, iconSize: [140, 22], iconAnchor: [70, 11] }) }).addTo(g);
     });
   }, [barrios]);
+
+  // Tiendas que aún no están en Droper (de OpenStreetMap): puntos grises, solo de cerca
+  useEffect(() => {
+    const g = capaTiendas.current;
+    if (!g) return;
+    g.clearLayers();
+    if (!cerca) return;
+    tiendas.forEach((t) => {
+      L.circleMarker([t.lat, t.lng], { radius: 4.5, color: '#FFFFFF', weight: 1.5, fillColor: '#8A8A8A', fillOpacity: 1 })
+        .bindTooltip(`${escapar(t.nombre)}<br><span style="color:#777">Aún no está en Droper</span>`, { direction: 'top', offset: [0, -4] })
+        .addTo(g);
+    });
+  }, [tiendas, cerca, !!mapa.current]);
 
   // Patios y malls: tarjeta negra; al tocarla se abre su plano
   useEffect(() => {

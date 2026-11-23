@@ -7,6 +7,7 @@ import { formatoPrecio } from './frases.js';
 import { textoCategoria } from './categorias.js';
 import Qr, { URL_APP } from './Qr.jsx';
 import Lugares from './Lugares.jsx';
+import Prospectos from './Prospectos.jsx';
 
 const SECCIONES = [
   { id: 'resumen', texto: 'Resumen' },
@@ -505,6 +506,7 @@ function BarrioForm({ b, alGuardar }) {
       )}
       {msg && <span role="status" style={{ fontWeight: 700 }}>{msg}</span>}
       <button className="boton">Guardar {b.nombre}</button>
+      <Prospectos barrio={b} locales={b.locales} />
     </form>
   );
 }

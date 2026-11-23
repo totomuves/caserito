@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { C, F, R, precio, ESTILO } from './tema';
-import { useCoordenadas, useLocalesMapa, especialidad } from './MapaComun';
+import { useCoordenadas, useLocalesMapa, useTiendasOsm, especialidad } from './MapaComun';
 import { arteHtml } from './arteLocal';
 import { conectarCalles, CSS_CALLES } from './callesWeb';
 
@@ -41,6 +41,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
   const capa = useRef(null);
   const coords = useCoordenadas(drops);
   const locales = useLocalesMapa();
+  const tiendas = useTiendasOsm();
   const centro = yo || pos;
 
   useEffect(() => {
@@ -72,6 +73,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
     const g = capa.current;
     if (!m || !g || !m.hasLayer(g)) return;
     g.clearLayers();
+    tiendas.forEach((t) => L.circleMarker([t.lat, t.lng], { radius: 4, color: '#FFFFFF', weight: 1.5, fillColor: '#8A8A8A', fillOpacity: 1 }).bindTooltip(t.nombre, { direction: 'top' }).addTo(g));
     const dropDe = {};
     drops.forEach((d) => { if (!dropDe[d.local_id]) dropDe[d.local_id] = d; });
     const puntos = locales.map((l) => ({ l, p: l.punto }));
@@ -85,7 +87,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
       L.marker([p.lat, p.lng], { icon: L.divIcon({ className: '', html, iconSize: [46, d ? 78 : 62], iconAnchor: [23, d ? 76 : 60] }), zIndexOffset: d ? 500 : 0 })
         .on('click', () => (d ? alAbrir(d) : alVerMapa())).addTo(g);
     });
-  }, [drops, coords, locales, !!mapa.current]);
+  }, [drops, coords, locales, tiendas, !!mapa.current]);
 
   return (
     <View style={{ marginHorizontal: 16, marginTop: 14, height: 300, borderRadius: R(20), overflow: 'hidden', borderWidth: 1, borderColor: C.borde, backgroundColor: ESTILO === 'moderno' ? '#FFFFFF' : '#FFF3B0' }}>

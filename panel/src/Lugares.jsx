@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, explicar } from './supabase.js';
+import { traerTiendas, mismoNombre } from './osm.js';
 
 // Admin · Patios y malls: lugares con plano propio (patio de comida, mercado, galería, mall con pisos)
 export default function Lugares() {
   const [lugares, setLugares] = useState(null);
   const [barrios, setBarrios] = useState([]);
   const [locales, setLocales] = useState([]);
+  const [tiendas, setTiendas] = useState([]);
   const [error, setError] = useState('');
   const [n, setN] = useState(0);
   const recargar = () => setN(n + 1);
@@ -20,6 +22,8 @@ export default function Lugares() {
       setBarrios(b.data || []);
       const l = await supabase.from('locales').select('id, nombre, barrio_id, piso_id, plano_x, plano_y').eq('aprobado', true).order('nombre');
       setLocales(l.data || []);
+      const t = await supabase.from('tiendas_osm').select('osm_id, nombre, piso_id, plano_x, plano_y, local_id').not('piso_id', 'is', null).eq('oculta', false);
+      setTiendas(t.data || []);
     })();
   }, [n]);
 
@@ -29,7 +33,7 @@ export default function Lugares() {
     <>
       <p className="ayuda">Un patio de comida, mercado, galería o mall tiene su propio plano. En la app aparece en el mapa como una tarjeta negra, y cuando alguien está adentro, el inicio muestra el plano en vez de las calles. Los malls pueden tener varios pisos.</p>
       <NuevoLugar barrios={barrios} alCrear={recargar} />
-      {lugares.map((g) => <Lugar key={g.id} g={g} barrios={barrios} locales={locales} alCambiar={recargar} />)}
+      {lugares.map((g) => <Lugar key={g.id} g={g} barrios={barrios} locales={locales} tiendas={tiendas} alCambiar={recargar} />)}
     </>
   );
 }
@@ -83,7 +87,7 @@ function NuevoLugar({ barrios, alCrear }) {
   );
 }
 
-function Lugar({ g, barrios, locales, alCambiar }) {
+function Lugar({ g, barrios, locales, tiendas, alCambiar }) {
   const [pisoId, setPisoId] = useState(g.pisos[0] && g.pisos[0].id);
   const piso = g.pisos.find((p) => p.id === pisoId) || g.pisos[0];
   const [msg, setMsg] = useState('');
@@ -97,6 +101,63 @@ function Lugar({ g, barrios, locales, alCambiar }) {
     const { error } = await supabase.from('pisos').insert({ lugar_id: g.id, nivel: nv, nombre: nv < 0 ? `Subterráneo ${-nv}` : `Piso ${nv}` });
     if (error) setMsg(explicar(error)); else { setNivel(''); alCambiar(); }
   }
+  const [trayendo, setTrayendo] = useState(false);
+  // Trae las tiendas del mall desde OpenStreetMap: crea los pisos, arma el plano base y ubica a los locales de Droper que calcen por nombre
+  async function traerDeOsm() {
+    setTrayendo(true); setMsg('Buscando tiendas en OpenStreetMap…');
+    try {
+      const tiendas = await traerTiendas({ centro: { lat: g.lat, lng: g.lng }, radio: Math.max(g.radio_m, 40) });
+      if (!tiendas.length) { setMsg('OpenStreetMap no tiene tiendas con nombre en este lugar. Tendrás que ubicarlas a mano.'); setTrayendo(false); return; }
+      // Pisos: los niveles que vengan; lo que no trae piso va al piso más bajo que exista (o al 1)
+      const niveles = [...new Set(tiendas.map((t) => t.nivel).filter((n) => n != null))].sort((a, b) => a - b);
+      const sinPiso = tiendas.filter((t) => t.nivel == null).length;
+      const existentes = new Map(g.pisos.map((p) => [p.nivel, p]));
+      for (const n of niveles) {
+        if (existentes.has(n)) continue;
+        const r = await supabase.from('pisos').insert({ lugar_id: g.id, nivel: n, nombre: n < 0 ? `Subterráneo ${-n}` : `Nivel ${n}` }).select('*').single();
+        if (r.error) throw r.error;
+        existentes.set(n, r.data);
+      }
+      if (!existentes.size) {
+        const r = await supabase.from('pisos').insert({ lugar_id: g.id, nivel: 1, nombre: 'Planta' }).select('*').single();
+        if (r.error) throw r.error;
+        existentes.set(1, r.data);
+      }
+      const nivelBase = [...existentes.keys()].sort((a, b) => a - b).find((n) => n >= 0) ?? [...existentes.keys()][0];
+      // Plano base: posiciones reales normalizadas a la caja de todas las tiendas (con un margen)
+      const lats = tiendas.map((t) => t.lat), lngs = tiendas.map((t) => t.lng);
+      let s0 = Math.min(...lats), n0 = Math.max(...lats), w0 = Math.min(...lngs), e0 = Math.max(...lngs);
+      const mLat = 111320, mLng = 111320 * Math.cos((g.lat * Math.PI) / 180);
+      let alto = (n0 - s0) * mLat, ancho = (e0 - w0) * mLng;
+      const minimo = 30; // metros
+      if (alto < minimo) { const d = (minimo - alto) / 2 / mLat; s0 -= d; n0 += d; alto = minimo; }
+      if (ancho < minimo) { const d = (minimo - ancho) / 2 / mLng; w0 -= d; e0 += d; ancho = minimo; }
+      const pad = 0.08;
+      const xy = (t) => ({ x: pad + (1 - 2 * pad) * ((t.lng - w0) / (e0 - w0)), y: pad + (1 - 2 * pad) * ((n0 - t.lat) / (n0 - s0)) });
+      const proporcion = Math.min(2.5, Math.max(0.6, ancho / alto));
+      for (const p of existentes.values()) if (!p.plano_url) await supabase.from('pisos').update({ proporcion }).eq('id', p.id);
+      // Locales de Droper que calzan por nombre
+      let ubicados = 0;
+      const filas = tiendas.map((t) => {
+        const p = existentes.get(t.nivel != null ? t.nivel : nivelBase);
+        const { x, y } = xy(t);
+        const local = locales.find((l) => mismoNombre(l.nombre, t.nombre));
+        return { ...t, lugar_id: g.id, barrio_id: g.barrio_id, piso_id: p.id, plano_x: x, plano_y: y, local_id: local ? local.id : null, actualizado_at: new Date().toISOString() };
+      });
+      for (const f of filas.filter((f) => f.local_id)) {
+        const r = await supabase.rpc('ubicar_en_plano', { p_local: f.local_id, p_piso: f.piso_id, p_x: f.plano_x, p_y: f.plano_y });
+        if (!r.error) ubicados++;
+      }
+      const up = await supabase.from('tiendas_osm').upsert(filas, { onConflict: 'osm_id' });
+      if (up.error) throw up.error;
+      setMsg(`Listo ✓ ${tiendas.length} tiendas en ${existentes.size} ${existentes.size === 1 ? 'piso' : 'pisos'}${sinPiso ? ` (${sinPiso} sin piso en OpenStreetMap: quedaron en ${existentes.get(nivelBase).nombre})` : ''}. ${ubicados} locales de Droper ubicados solos.`);
+      alCambiar();
+    } catch (e) {
+      setMsg(/tiendas_osm/.test(e.message || '') ? 'Falta correr el SQL 028 (tiendas de OpenStreetMap).' : explicar(e));
+    }
+    setTrayendo(false);
+  }
+
   async function activar() {
     const { error } = await supabase.from('lugares').update({ activo: !g.activo }).eq('id', g.id);
     if (error) setMsg(explicar(error)); else alCambiar();
@@ -112,6 +173,7 @@ function Lugar({ g, barrios, locales, alCambiar }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
         <b>{g.nombre} <span className="ayuda" style={{ fontWeight: 600 }}>· {g.tipo === 'mall' ? 'Mall' : 'Patio'}{barrio ? ` · ${barrio.nombre}` : ''} · {g.radio_m} m{g.activo ? '' : ' · OCULTO'}</span></b>
         <span style={{ display: 'flex', gap: 8 }}>
+          <button type="button" className="pildora" onClick={traerDeOsm} disabled={trayendo}>{trayendo ? 'Trayendo…' : 'Traer tiendas de OpenStreetMap'}</button>
           <button type="button" className="pildora" onClick={activar}>{g.activo ? 'Ocultar' : 'Mostrar'}</button>
           <button type="button" className="pildora" onClick={borrar}>Borrar</button>
         </span>
@@ -127,13 +189,13 @@ function Lugar({ g, barrios, locales, alCambiar }) {
           </form>
         )}
       </div>
-      {piso && <EditorPiso key={piso.id} piso={piso} g={g} locales={locales} alCambiar={alCambiar} />}
+      {piso && <EditorPiso key={piso.id} piso={piso} g={g} locales={locales} tiendas={tiendas} alCambiar={alCambiar} />}
       {msg && <span role="status" style={{ fontWeight: 700 }}>{msg}</span>}
     </div>
   );
 }
 
-function EditorPiso({ piso, g, locales, alCambiar }) {
+function EditorPiso({ piso, g, locales, tiendas = [], alCambiar }) {
   const [elegido, setElegido] = useState('');
   const [msg, setMsg] = useState('');
   const [subiendo, setSubiendo] = useState(false);
@@ -199,6 +261,11 @@ function EditorPiso({ piso, g, locales, alCambiar }) {
         {piso.plano_url
           ? <img src={piso.plano_url} alt={`Plano ${piso.nombre}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'fill' }} />
           : <span className="ayuda" style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>Sin plano todavía (igual puedes ubicar locales)</span>}
+        {tiendas.filter((t) => t.piso_id === piso.id && !t.local_id && t.plano_x != null).map((t) => (
+          <span key={t.osm_id} title={t.nombre} style={{ position: 'absolute', left: `${t.plano_x * 100}%`, top: `${t.plano_y * 100}%`, transform: 'translate(-50%, -50%)', display: 'flex', alignItems: 'center', gap: 3, pointerEvents: 'none', font: '600 9px Archivo, sans-serif', color: '#555', whiteSpace: 'nowrap' }}>
+            <i style={{ width: 7, height: 7, borderRadius: 4, background: '#9A9A9A', display: 'inline-block' }} />{t.nombre}
+          </span>
+        ))}
         {enEste.map((l) => (
           <span key={l.id} style={{ position: 'absolute', left: `${l.plano_x * 100}%`, top: `${l.plano_y * 100}%`, transform: 'translate(-50%, -100%)', background: '#111', color: '#FFD100', font: '800 11px Archivo, sans-serif', padding: '3px 7px', borderRadius: 8, whiteSpace: 'nowrap', pointerEvents: 'none' }}>
             {l.nombre}
