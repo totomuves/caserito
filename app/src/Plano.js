@@ -4,6 +4,7 @@ import { supabase } from './supabase';
 import { C, F, R, letrista, precio, textoCategoria } from './tema';
 import { ArteLocal } from './arteLocal';
 import { useIdioma } from './idioma';
+import { PosterLugar } from './Poster';
 
 // Locales ubicados en los pisos de un patio o mall
 function useLocalesDelLugar(lugar) {
@@ -38,6 +39,8 @@ export function PlanoLugar({ lugar, drops = [], alAbrir = () => {}, compacto = f
   const locales = useLocalesDelLugar(lugar);
   const tiendas = useTiendasDelLugar(lugar);
   const grises = tiendas.filter((x) => piso && x.piso_id === piso.id && x.plano_x != null);
+  const [tocada, setTocada] = useState(null);
+  const conNombres = !compacto && grises.length <= 20;
   const [ancho, setAncho] = useState(0);
   const dropDe = useMemo(() => { const m = {}; drops.forEach((d) => { if (!m[d.local_id]) m[d.local_id] = d; }); return m; }, [drops]);
   const aca = locales.filter((l) => piso && l.piso_id === piso.id && l.plano_x != null);
@@ -76,11 +79,18 @@ export function PlanoLugar({ lugar, drops = [], alAbrir = () => {}, compacto = f
           </View>
         )}
         {alto ? grises.map((x) => (
-          <View key={x.osm_id} pointerEvents="none" style={{ position: 'absolute', left: x.plano_x * ancho - 4, top: x.plano_y * alto - 4, flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#9A9A9A', borderWidth: 1, borderColor: '#FFFFFF' }} />
-            {compacto ? null : <Text numberOfLines={1} style={{ fontFamily: F.media, fontSize: 8, color: '#666', maxWidth: 70 }}>{x.nombre}</Text>}
-          </View>
+          <Pressable key={x.osm_id} onPress={() => setTocada(tocada && tocada.osm_id === x.osm_id ? null : x)} hitSlop={8} accessibilityLabel={x.nombre}
+            style={{ position: 'absolute', left: x.plano_x * ancho - 4, top: x.plano_y * alto - 4, flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: tocada && tocada.osm_id === x.osm_id ? C.negro : '#9A9A9A', borderWidth: 1, borderColor: '#FFFFFF' }} />
+            {conNombres ? <Text numberOfLines={1} style={{ fontFamily: F.media, fontSize: 8, color: '#666', maxWidth: 70 }}>{x.nombre}</Text> : null}
+          </Pressable>
         )) : null}
+        {tocada && alto ? (
+          <View pointerEvents="none" style={{ position: 'absolute', left: Math.min(Math.max(tocada.plano_x * ancho - 70, 6), ancho - 146), top: Math.max(tocada.plano_y * alto - 40, 4), width: 140, backgroundColor: C.negro, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 5, zIndex: 5 }}>
+            <Text numberOfLines={2} style={{ fontFamily: F.negrita, fontSize: 11, color: '#FFFFFF' }}>{tocada.nombre}</Text>
+            <Text style={{ fontFamily: F.media, fontSize: 9, color: '#CCCCCC' }}>{t('Aún no está en Droper', 'Not on Droper yet')}</Text>
+          </View>
+        ) : null}
         {alto ? aca.map((l) => {
           const d = dropDe[l.id];
           return (
@@ -92,7 +102,7 @@ export function PlanoLugar({ lugar, drops = [], alAbrir = () => {}, compacto = f
                 </View>
               ) : null}
               <View style={{ backgroundColor: '#FFFFFF', borderRadius: 7, padding: 2, borderWidth: d ? 2 : 1, borderColor: d ? '#111111' : '#D9D9DF' }}>
-                <ArteLocal id={l.id} categoria={l.categoria} ancho={lam} alto={lam} borde={false} />
+                <ArteLocal id={l.id} categoria={l.categoria} pista={l.nombre} ancho={lam} alto={lam} borde={false} />
               </View>
               <Text numberOfLines={1} style={{ fontFamily: F.negrita, fontSize: 8, maxWidth: lam + 10, marginTop: 1 }}>{l.nombre}</Text>
             </Pressable>
@@ -114,7 +124,7 @@ export function PlanoLugar({ lugar, drops = [], alAbrir = () => {}, compacto = f
             return (
               <Pressable key={l.id} onPress={() => (d ? alAbrir(d) : null)}
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: C.papel, borderRadius: R(14), borderWidth: 1, borderColor: C.borde, padding: 10 }}>
-                <ArteLocal id={l.id} categoria={l.categoria} ancho={40} alto={40} borde={false} />
+                <ArteLocal id={l.id} categoria={l.categoria} pista={l.nombre} ancho={40} alto={40} borde={false} />
                 <View style={{ flex: 1 }}>
                   <Text style={{ fontFamily: F.negrita, fontSize: 15 }} numberOfLines={1}>{l.nombre}</Text>
                   <Text style={{ fontFamily: F.media, fontSize: 12, color: C.gris }} numberOfLines={1}>{l.producto_estrella ? `★ ${l.producto_estrella}` : textoCategoria(l.categoria)}</Text>
@@ -144,6 +154,9 @@ export default function Plano({ lugar, drops, alAbrir, alCerrar }) {
           <Text style={{ fontFamily: F.negrita, fontSize: 11, letterSpacing: 1.5 }}>{TIPO[lugar.tipo] || 'PATIO'} · {n} {n === 1 ? 'local' : 'locales'}</Text>
           <Text style={{ ...letrista, fontSize: 24 }} numberOfLines={1}>{lugar.nombre}</Text>
         </View>
+      </View>
+      <View style={{ alignItems: 'center', paddingTop: 16 }}>
+        <PosterLugar lugar={lugar} ancho={170} />
       </View>
       <View style={{ padding: 16 }}>
         <PlanoLugar lugar={lugar} drops={drops} alAbrir={alAbrir} />

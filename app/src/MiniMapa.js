@@ -69,7 +69,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
                     </View>
                   ) : null}
                   <View style={{ backgroundColor: '#FFFFFF', borderRadius: 8, padding: 2, borderWidth: d ? 2 : 1, borderColor: d ? '#111111' : '#D9D9DF' }}>
-                    <ArteLocal id={l.id} categoria={l.categoria} ancho={36} alto={36} borde={false} />
+                    <ArteLocal id={l.id} categoria={l.categoria} pista={l.nombre} ancho={36} alto={36} borde={false} />
                   </View>
                   <Text numberOfLines={1} style={{ fontFamily: F.negrita, fontSize: 8, maxWidth: 48, marginTop: 1 }}>{l.nombre}</Text>
                   <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#111111', marginTop: 2 }} />

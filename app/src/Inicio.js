@@ -10,6 +10,7 @@ import { useEstilo } from './estilo';
 import Portada from './Portada';
 import MiniMapa from './MiniMapa';
 import { PlanoLugar } from './Plano';
+import { marcarVisitado } from './Poster';
 import { ArteLocal } from './arteLocal';
 import { caminar } from './Drop';
 import Svg, { Path } from 'react-native-svg';
@@ -135,7 +136,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
               <View key={d.drop_id} style={{ width: 240, backgroundColor: '#FFFFFF', borderRadius: 22, borderWidth: 1, borderColor: C.borde, shadowColor: '#111111', shadowOpacity: 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 3 }}>
                 <Pressable onPress={() => alAbrir(d)} accessibilityRole="button" accessibilityLabel={`${d.local_nombre}, ${d.frase || d.titulo}`}>
                   <View style={{ height: 120, borderTopLeftRadius: 22, borderTopRightRadius: 22, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: C.crema }}>
-                    <ArteLocal id={d.local_id} categoria={d.categoria} ancho={240} alto={240} borde={false} />
+                    <ArteLocal id={d.local_id} categoria={d.categoria} pista={d.local_nombre} ancho={240} alto={240} borde={false} />
                     <View style={{ position: 'absolute', left: 12, top: 12, backgroundColor: C.negro, borderRadius: 10, paddingHorizontal: 9, paddingVertical: 4 }}>
                       <Text style={{ fontFamily: F.negrita, fontSize: 11, color: C.amarillo }}>{t('QUEDAN', 'QUEDAN')} {d.quedan}</Text>
                     </View>
@@ -171,6 +172,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
   );
   // ¿Estás dentro de un patio o mall? Se muestra su plano en vez del mapa de calles
   const enLugar = visita ? null : lugarDe(pos, lugares);
+  if (enLugar) marcarVisitado(enLugar.id);
   const bloqueLugar = enLugar ? (
     <View style={{ marginHorizontal: 16, marginTop: 14, gap: 8 }}>
       <Text style={{ fontFamily: F.negrita, fontSize: 12, letterSpacing: 1.2, color: C.gris }}>{t(`ESTÁS EN ${enLugar.nombre.toUpperCase()}`, `YOU'RE AT ${enLugar.nombre.toUpperCase()}`)}</Text>

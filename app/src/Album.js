@@ -9,6 +9,8 @@ import { identidadDe, Motivo } from './identidad';
 import { Monstruito, apodoLamina, letraLamina } from './monstruito';
 import { ArteLocal } from './arteLocal';
 import Honor from './Honor';
+import { PosterLugar, useVisitados } from './Poster';
+import { useLugares } from './MapaComun';
 
 const MARCOS = [
   { fondo: C.amarillo, num: C.negro, texto: C.negro },
@@ -36,7 +38,7 @@ function ArteBauhaus({ local, alto = 80 }) {
   // Arte único por local (composición Bauhaus generada desde su id)
   return (
     <View style={{ height: alto, borderWidth: 2, borderColor: C.borde, overflow: 'hidden' }}>
-      <ArteLocal id={local.id} categoria={local.categoria} ancho="100%" alto={alto} borde={false} />
+      <ArteLocal id={local.id} categoria={local.categoria} pista={local.nombre} ancho="100%" alto={alto} borde={false} />
     </View>
   );
 }
@@ -160,6 +162,7 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
 
       {total > 0 ? <EdicionEspecial ide={ide} barrio={barrio} tengo={tengo} necesarias={Math.min(total, (arte && arte.necesarias) || 5)} t={t} /> : null}
       {arte ? <ArteBarrio a={arte} t={t} msg={msgArte} alPedir={pedirArte} /> : null}
+      <Posters t={t} />
       <Honor usuario={usuario} t={t} />
 
       <Text style={{ ...letrista, fontSize: 20, marginHorizontal: 16, marginTop: 18, marginBottom: 10 }}>{t('LAS LÁMINAS', "LAS LÁMINAS · STICKERS")}</Text>
@@ -386,3 +389,22 @@ function EdicionEspecial({ ide, barrio, tengo, necesarias, t }) {
   );
 }
 
+
+// Pósters de patios y malls: se ganan al estar adentro
+function Posters({ t }) {
+  const lugares = useLugares();
+  const vistos = useVisitados();
+  if (!lugares.length) return null;
+  const ganados = lugares.filter((g) => vistos.includes(g.id)).length;
+  return (
+    <View style={{ marginTop: 18, gap: 10 }}>
+      <View style={{ paddingHorizontal: 16 }}>
+        <Text style={{ ...letrista, fontSize: 22 }}>{t('PÓSTERS', 'PÓSTERS · POSTERS')}</Text>
+        <Text style={{ fontFamily: F.media, fontSize: 13, color: C.gris }}>{t(`Uno por cada patio y mall. Entra y es tuyo · ${ganados} de ${lugares.length}`, `One per mall · ${ganados}/${lugares.length}`)}</Text>
+      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 14, paddingHorizontal: 16, paddingBottom: 6 }}>
+        {lugares.map((g) => <PosterLugar key={g.id} lugar={g} ancho={150} bloqueado={!vistos.includes(g.id)} />)}
+      </ScrollView>
+    </View>
+  );
+}

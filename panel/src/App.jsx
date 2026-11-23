@@ -207,7 +207,7 @@ function Marco({ local, rol, children, alAyuda }) {
       <header className="barra">
         <div>
           <span className="marca"><img src="/logo.svg" alt="Droper" style={{ height: 30, display: 'block' }} /><small style={{ color: 'var(--amarillo)', fontWeight: 800 }}>Local</small></span>
-          {local && <small style={{ display: 'flex', alignItems: 'center', gap: 6 }}><LaminaLocal id={local.id} categoria={local.categoria} tam={22} />{local.nombre}{rol && rol !== 'Dueño' ? ` · ${rol}` : ''}</small>}
+          {local && <small style={{ display: 'flex', alignItems: 'center', gap: 6 }}><LaminaLocal id={local.id} categoria={local.categoria} pista={local.nombre} tam={22} />{local.nombre}{rol && rol !== 'Dueño' ? ` · ${rol}` : ''}</small>}
           {correo && <small className="correo-sesion" title={correo}>Conectado como {correo}</small>}
         </div>
         <div style={{ display: 'flex', gap: 6 }}>

@@ -129,7 +129,7 @@ export default function ConfigurarLocal({ usuario, local, alGuardar, alCancelar,
         </div>
       )}
       <div className="tarjeta" style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-        {local ? <LaminaLocal id={local.id} categoria={categorias[0] || local.categoria} tam={72} /> : (
+        {local ? <LaminaLocal id={local.id} categoria={categorias[0] || local.categoria} pista={nombre} tam={72} /> : (
           <span style={{ width: 72, height: 72, border: '2.5px dashed var(--negro)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 26 }}>?</span>
         )}
         <span className="ayuda" style={{ fontSize: 14 }}>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, explicar } from './supabase.js';
-import { traerTiendas, mismoNombre } from './osm.js';
+import { traerTiendas, mismoNombre, traerEstructura, dibujarPlano } from './osm.js';
 import MapaAdmin from './MapaAdmin.jsx';
 
 // Admin · Patios y malls: lugares con plano propio (patio de comida, mercado, galería, mall con pisos)
@@ -125,18 +125,38 @@ function Lugar({ g, barrios, locales, tiendas, alCambiar }) {
         existentes.set(1, r.data);
       }
       const nivelBase = [...existentes.keys()].sort((a, b) => a - b).find((n) => n >= 0) ?? [...existentes.keys()][0];
-      // Plano base: posiciones reales normalizadas a la caja de todas las tiendas (con un margen)
-      const lats = tiendas.map((t) => t.lat), lngs = tiendas.map((t) => t.lng);
+      // Plano base: contorno real del edificio (y salas/pasillos si OpenStreetMap los tiene) + tiendas en su posición
+      setMsg('Dibujando el plano del edificio…');
+      const estructura = await traerEstructura({ lat: g.lat, lng: g.lng }, Math.max(g.radio_m, 40)).catch(() => ({ edificios: [], salas: [], pasillos: [] }));
+      const puntosCaja = estructura.edificios.length ? estructura.edificios.flatMap((x) => x.pts) : tiendas.map((t) => [t.lat, t.lng]);
+      // solo los edificios cerca del centro (no todo el radio de calles vecinas)
+      const lats = puntosCaja.map((p) => p[0]).concat(tiendas.map((t) => t.lat));
+      const lngs = puntosCaja.map((p) => p[1]).concat(tiendas.map((t) => t.lng));
       let s0 = Math.min(...lats), n0 = Math.max(...lats), w0 = Math.min(...lngs), e0 = Math.max(...lngs);
       const mLat = 111320, mLng = 111320 * Math.cos((g.lat * Math.PI) / 180);
       let alto = (n0 - s0) * mLat, ancho = (e0 - w0) * mLng;
       const minimo = 30; // metros
       if (alto < minimo) { const d = (minimo - alto) / 2 / mLat; s0 -= d; n0 += d; alto = minimo; }
       if (ancho < minimo) { const d = (minimo - ancho) / 2 / mLng; w0 -= d; e0 += d; ancho = minimo; }
-      const pad = 0.08;
+      // proporción entre 0.6 y 2.5: si el edificio es más largo, se agranda la caja (no se deforma)
+      let proporcion = ancho / alto;
+      if (proporcion > 2.5) { const extra = (ancho / 2.5 - alto) / 2 / mLat; s0 -= extra; n0 += extra; alto = ancho / 2.5; proporcion = 2.5; }
+      if (proporcion < 0.6) { const extra = (alto * 0.6 - ancho) / 2 / mLng; w0 -= extra; e0 += extra; ancho = alto * 0.6; proporcion = 0.6; }
+      const pad = 0.05;
+      const caja = { s: s0, w: w0, n: n0, e: e0, proporcion, pad };
       const xy = (t) => ({ x: pad + (1 - 2 * pad) * ((t.lng - w0) / (e0 - w0)), y: pad + (1 - 2 * pad) * ((n0 - t.lat) / (n0 - s0)) });
-      const proporcion = Math.min(2.5, Math.max(0.6, ancho / alto));
-      for (const p of existentes.values()) if (!p.plano_url) await supabase.from('pisos').update({ proporcion }).eq('id', p.id);
+      let dibujados = 0;
+      for (const p of existentes.values()) {
+        if (p.plano_url && !p.plano_url.includes('/osm-')) continue; // no pisamos un plano que subiste tú
+        if (!estructura.edificios.length) { await supabase.from('pisos').update({ proporcion }).eq('id', p.id); continue; }
+        const { blob, proporcion: prop } = await dibujarPlano({ estructura, nivel: p.nivel, caja });
+        const ruta = `${g.id}/osm-${p.id}-${Date.now()}.png`;
+        const up = await supabase.storage.from('caserito-planos').upload(ruta, blob, { contentType: 'image/png', upsert: true });
+        if (up.error) throw up.error;
+        const url = supabase.storage.from('caserito-planos').getPublicUrl(ruta).data.publicUrl;
+        await supabase.from('pisos').update({ plano_url: url, proporcion: Math.round(prop * 1000) / 1000 }).eq('id', p.id);
+        dibujados++;
+      }
       // Locales de Droper que calzan por nombre
       let ubicados = 0;
       const filas = tiendas.map((t) => {
@@ -151,7 +171,7 @@ function Lugar({ g, barrios, locales, tiendas, alCambiar }) {
       }
       const up = await supabase.from('tiendas_osm').upsert(filas, { onConflict: 'osm_id' });
       if (up.error) throw up.error;
-      setMsg(`Listo ✓ ${tiendas.length} tiendas en ${existentes.size} ${existentes.size === 1 ? 'piso' : 'pisos'}${sinPiso ? ` (${sinPiso} sin piso en OpenStreetMap: quedaron en ${existentes.get(nivelBase).nombre})` : ''}. ${ubicados} locales de Droper ubicados solos.`);
+      setMsg(`Listo ✓ ${dibujados ? `Plano del edificio dibujado en ${dibujados} ${dibujados === 1 ? 'piso' : 'pisos'}. ` : 'OpenStreetMap no tiene el contorno del edificio: quedó un plano solo con puntos. '}${tiendas.length} tiendas en ${existentes.size} ${existentes.size === 1 ? 'piso' : 'pisos'}${sinPiso ? ` (${sinPiso} sin piso en OpenStreetMap: quedaron en ${existentes.get(nivelBase).nombre})` : ''}. ${ubicados} locales de Droper ubicados solos.`);
       alCambiar();
     } catch (e) {
       setMsg(/tiendas_osm/.test(e.message || '') ? 'Falta correr el SQL 028 (tiendas de OpenStreetMap).' : explicar(e));
@@ -207,6 +227,12 @@ function EditorPiso({ piso, g, locales, tiendas = [], alCambiar }) {
   const [subiendo, setSubiendo] = useState(false);
   const [nombre, setNombre] = useState(piso.nombre);
   const enEste = locales.filter((l) => l.piso_id === piso.id && l.plano_x != null);
+  const grises = tiendas.filter((t) => t.piso_id === piso.id && !t.local_id && t.plano_x != null);
+  const [verTiendas, setVerTiendas] = useState(false);
+  async function moverTienda(t, nuevoPiso) {
+    const { error } = await supabase.from('tiendas_osm').update(nuevoPiso === 'ocultar' ? { oculta: true } : { piso_id: nuevoPiso }).eq('osm_id', t.osm_id);
+    if (error) setMsg(explicar(error)); else alCambiar();
+  }
   const candidatos = locales.filter((l) => l.piso_id !== piso.id && (!g.barrio_id || l.barrio_id === g.barrio_id || !l.barrio_id));
 
   async function subirPlano(e) {
@@ -267,9 +293,9 @@ function EditorPiso({ piso, g, locales, tiendas = [], alCambiar }) {
         {piso.plano_url
           ? <img src={piso.plano_url} alt={`Plano ${piso.nombre}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'fill' }} />
           : <span className="ayuda" style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>Sin plano todavía (igual puedes ubicar locales)</span>}
-        {tiendas.filter((t) => t.piso_id === piso.id && !t.local_id && t.plano_x != null).map((t) => (
+        {grises.map((t) => (
           <span key={t.osm_id} title={t.nombre} style={{ position: 'absolute', left: `${t.plano_x * 100}%`, top: `${t.plano_y * 100}%`, transform: 'translate(-50%, -50%)', display: 'flex', alignItems: 'center', gap: 3, pointerEvents: 'none', font: '600 9px Archivo, sans-serif', color: '#555', whiteSpace: 'nowrap' }}>
-            <i style={{ width: 7, height: 7, borderRadius: 4, background: '#9A9A9A', display: 'inline-block' }} />{t.nombre}
+            <i style={{ width: 7, height: 7, borderRadius: 4, background: '#9A9A9A', display: 'inline-block' }} />{grises.length <= 30 ? t.nombre : null}
           </span>
         ))}
         {enEste.map((l) => (
@@ -278,6 +304,29 @@ function EditorPiso({ piso, g, locales, tiendas = [], alCambiar }) {
           </span>
         ))}
       </div>
+      {grises.length > 0 && (
+        <div style={{ display: 'grid', gap: 6 }}>
+          <button type="button" className="pildora" onClick={() => setVerTiendas(!verTiendas)}>
+            {verTiendas ? 'Esconder' : 'Ordenar'} las {grises.length} tiendas de OpenStreetMap de este piso
+          </button>
+          {verTiendas && (
+            <>
+              <span className="ayuda">OpenStreetMap no siempre dice el piso. Mueve cada tienda a su piso o escóndela si ya no existe.</span>
+              <div style={{ display: 'grid', gap: 4, maxHeight: 360, overflow: 'auto' }}>
+                {grises.map((t) => (
+                  <div key={t.osm_id} style={{ display: 'flex', gap: 8, alignItems: 'center', borderBottom: '1px solid #eee', padding: '4px 0' }}>
+                    <span style={{ flex: 1 }}>{t.nombre}</span>
+                    <select value={piso.id} onChange={(e) => moverTienda(t, e.target.value)} aria-label={`Piso de ${t.nombre}`} style={{ minHeight: 36 }}>
+                      {g.pisos.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+                      <option value="ocultar">Esconder (ya no existe)</option>
+                    </select>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
       {enEste.length > 0 && (
         <div className="pildoras">
           {enEste.map((l) => <button key={l.id} type="button" className="pildora" onClick={() => quitar(l.id)}>Quitar {l.nombre} ✕</button>)}

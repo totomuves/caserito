@@ -258,7 +258,7 @@ function Locales({ usuario, alEntrarLocal }) {
         && (!estado || (estado === 'pendiente' ? !l.aprobado : estado === 'activo' ? l.aprobado && l.activo : l.aprobado && !l.activo))).map((l) => (
         <div className="tarjeta" key={l.id} style={{ borderColor: l.aprobado ? 'var(--negro)' : 'var(--rojo)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-            <b style={{ display: 'flex', alignItems: 'center', gap: 8 }}><LaminaLocal id={l.id} categoria={l.categoria} tam={34} />{l.nombre}{l.barrio ? <span className="ayuda" style={{ fontWeight: 600 }}> · {l.barrio}</span> : null}</b>
+            <b style={{ display: 'flex', alignItems: 'center', gap: 8 }}><LaminaLocal id={l.id} categoria={l.categoria} pista={l.nombre} tam={34} />{l.nombre}{l.barrio ? <span className="ayuda" style={{ fontWeight: 600 }}> · {l.barrio}</span> : null}</b>
             <span style={{ fontSize: 12, fontWeight: 800, color: l.aprobado ? (l.activo ? 'var(--azul)' : 'var(--gris)') : '#C20826' }}>
               {!l.aprobado ? 'POR APROBAR' : l.activo ? 'ACTIVO' : 'PAUSADO'}
             </span>

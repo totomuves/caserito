@@ -135,7 +135,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
       const esc = (x) => String(x || '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
       const html = `<div class="mini-lam${d ? ' con-drop' : ''}" title="${esc(l.nombre)} · ${esc(especialidad(l))}">`
         + (d ? `<div class="precio">${d.tipo === 'sorpresa' ? '¿?' : esc(precio(d.precio) || 'DROP')}</div>` : '')
-        + `<div class="carta">${arteHtml(l.id, l.categoria)}</div><div class="nom">${esc(l.nombre)}</div><div class="punta"></div></div>`;
+        + `<div class="carta">${arteHtml(l.id, l.categoria, l.nombre)}</div><div class="nom">${esc(l.nombre)}</div><div class="punta"></div></div>`;
       L.marker([p.lat, p.lng], { icon: L.divIcon({ className: '', html, iconSize: [46, d ? 78 : 62], iconAnchor: [23, d ? 76 : 60] }), zIndexOffset: d ? 500 : 0 })
         .on('click', () => (d ? alAbrir(d) : alVerMapa())).addTo(g);
     });

@@ -66,7 +66,7 @@ export default function Drop({ drop, usuario, alCerrar }) {
           <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={C.negro} strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round"><Path d="M15 18l-6-6 6-6" /></Svg>
         </Pressable>
         <View accessibilityLabel={`Lámina de ${drop.local_nombre}`} style={{ width: 44, height: 44, borderWidth: 2.5, borderColor: C.borde, overflow: 'hidden', backgroundColor: C.papel }}>
-          <ArteLocal id={drop.local_id} categoria={drop.categoria} ancho={39} alto={39} borde={false} />
+          <ArteLocal id={drop.local_id} categoria={drop.categoria} pista={drop.local_nombre} ancho={39} alto={39} borde={false} />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={{ ...letrista, fontSize: 22, color: sobrio() ? C.negro : C.papel, textShadowColor: C.negro, textShadowOffset: { width: sobrio() ? 0 : 2, height: sobrio() ? 0 : 2 }, textShadowRadius: 0 }} numberOfLines={1}>{drop.local_nombre}</Text>
