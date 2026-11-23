@@ -226,3 +226,11 @@ export function Estallido({ texto = '¡ZAS!', tam = 74, color = C.amarillo, colo
   );
 }
 export const ONOMATOPEYAS = ['¡ZAS!', '¡PUM!', '¡YA!', '¡WOW!', '¡PAF!'];
+
+// Protege una parte de la pantalla: si falla, desaparece sola en vez de botar la app entera
+export class Seguro extends React.Component {
+  constructor(p) { super(p); this.state = { error: false }; }
+  static getDerivedStateFromError() { return { error: true }; }
+  componentDidCatch(e) { console.warn('Parte de la pantalla falló:', e && e.message); }
+  render() { return this.state.error ? null : this.props.children; }
+}

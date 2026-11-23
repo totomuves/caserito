@@ -40,22 +40,24 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
     estilos();
     if (!caja.current || mapa.current || !centro) return;
     caja.current.classList.add('droper-mini');
-    const m = L.map(caja.current, { zoomControl: false, attributionControl: true, dragging: false, scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false, boxZoom: false, keyboard: false });
+    const m = L.map(caja.current, { zoomControl: false, attributionControl: true, dragging: false, scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false, boxZoom: false, keyboard: false, zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false });
     L.tileLayer(LLAVE_CARTO
       ? `https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${LLAVE_CARTO}`
       : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(m);
     capa.current = L.layerGroup().addTo(m);
     mapa.current = m;
     setTimeout(() => m.invalidateSize(), 50);
-    return () => { m.remove(); mapa.current = null; };
+    return () => { m.remove(); mapa.current = null; capa.current = null; };
   }, [!!centro]);
 
   useEffect(() => {
     const m = mapa.current;
-    if (!m || !centro) return;
-    const g = capa.current; g.clearLayers();
-    const circulo = L.circle([centro.lat, centro.lng], { radius: RADIO, color: '#111', weight: 1.5, dashArray: '6 6', fillColor: C.amarillo, fillOpacity: 0.16 }).addTo(g);
-    m.fitBounds(circulo.getBounds(), { padding: [8, 8] });
+    const g = capa.current;
+    if (!m || !g || !centro || !m.hasLayer(g)) return;
+    g.clearLayers();
+    // Encuadre calculado sin depender del círculo (getBounds del círculo se cae si aún no está pegado al mapa)
+    try { m.fitBounds(L.latLng(centro.lat, centro.lng).toBounds(RADIO * 2), { padding: [8, 8], animate: false }); } catch (e) { m.setView([centro.lat, centro.lng], 16, { animate: false }); }
+    L.circle([centro.lat, centro.lng], { radius: RADIO, color: '#111', weight: 1.5, dashArray: '6 6', fillColor: C.amarillo, fillOpacity: 0.16 }).addTo(g);
     if (yo) L.marker([yo.lat, yo.lng], { icon: L.divIcon({ className: '', html: '<div class="mini-yo"></div>', iconSize: [18, 18] }), interactive: false, zIndexOffset: 1000 }).addTo(g);
     drops.forEach((d) => {
       const p = coords[d.local_id];

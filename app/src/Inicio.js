@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { supabase } from './supabase';
 import { C, F, letrista, CATEGORIAS, textoCategoria, tieneCategoria, precio, cuadras, R, ESTILO, sobrio } from './tema';
-import { Ola, Brillo, Pildora, EtiquetaPrecio, Boton, FondoBauhaus, PuntosPop, GloboPop, Estallido, ONOMATOPEYAS } from './componentes';
+import { Ola, Brillo, Pildora, EtiquetaPrecio, Boton, FondoBauhaus, PuntosPop, GloboPop, Estallido, ONOMATOPEYAS, Seguro } from './componentes';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR, categoriaTur, SelectorIdioma } from './idioma';
 import Logo from './Logo';
 import { SelectorBarrios, useCoordenadas } from './MapaComun';
@@ -225,7 +225,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
 
       {moderno ? (
         <>
-          <MiniMapa pos={visita ? { lat: visita.lat, lng: visita.lng } : pos} yo={!visita && pos && !pos.aprox ? pos : null} drops={drops} alAbrir={alAbrir} alVerMapa={alVerMapa} t={t} />
+          <Seguro><MiniMapa pos={visita ? { lat: visita.lat, lng: visita.lng } : pos} yo={!visita && pos && !pos.aprox ? pos : null} drops={drops} alAbrir={alAbrir} alVerMapa={alVerMapa} t={t} /></Seguro>
           {bloqueDrops}
           {bloqueFrase}
           {bloqueBarrios}
