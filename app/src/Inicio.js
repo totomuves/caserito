@@ -58,8 +58,8 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
       texto: (d.frase || `${d.titulo} ${precio(d.precio)} en ${d.local_nombre}, ${cuad(d.cuadras)}.`).toUpperCase(),
       drop: d,
     }));
-    return lista.length ? lista : [{ tag: 'BARRIO ITALIA', texto: t('TODAVÍA NO HAY DROPS CERCA. DATE UNA VUELTA, QUE LOS LOCALES SUELTAN SORPRESAS DURANTE EL DÍA.', "NO DROPS CERCA YET. ¡DATE UNA VUELTA! LOS LOCALES SUELTAN SORPRESAS ALL DAY."), drop: null }];
-  }, [drops, gustos, tur]);
+    return lista.length ? lista : [{ tag: nombreBarrio.toUpperCase(), texto: t('TODAVÍA NO HAY DROPS CERCA. DATE UNA VUELTA, QUE LOS LOCALES SUELTAN SORPRESAS DURANTE EL DÍA.', "NO DROPS CERCA YET. ¡DATE UNA VUELTA! LOS LOCALES SUELTAN SORPRESAS ALL DAY."), drop: null }];
+  }, [drops, gustos, tur, nombreBarrio]);
 
   useEffect(() => {
     const t = setInterval(() => setI((x) => x + 1), 5000);
@@ -99,7 +99,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
       {verIdiomas ? <SelectorIdioma alElegir={() => setVerIdiomas(false)} style={{ paddingTop: 10 }} /> : null}
       <Text style={{ fontFamily: F.negrita, fontSize: 26, lineHeight: 28, letterSpacing: -0.8, marginTop: 12, color: tintaBanner('cabecera') }}>
         {apodo ? t(`Hola, ${apodo}.`, `Hi, ${apodo}.`) : t('Hola.', 'Hi.')}{'\n'}
-        {cercanos ? t(`${cercanos} ${cercanos === 1 ? 'drop' : 'drops'} a 2 cuadras.`, `${cercanos} drops a 2 cuadras.`) : drops.length ? t(`${drops.length} ${drops.length === 1 ? 'drop' : 'drops'} en el barrio.`, `${drops.length} drops en el barrio.`) : t('Hoy el barrio está tranquilo.', 'El barrio está tranqui today.')}
+        {lejos ? t(`Nada a 2 cuadras: mira lo de ${barrioLejos || 'otro barrio'}.`, `Nada cerca: mira ${barrioLejos || 'otro barrio'}.`) : cercanos ? t(`${cercanos} ${cercanos === 1 ? 'drop' : 'drops'} a 2 cuadras.`, `${cercanos} drops a 2 cuadras.`) : drops.length ? t(`${drops.length} ${drops.length === 1 ? 'drop' : 'drops'} en el barrio.`, `${drops.length} drops en el barrio.`) : t('Hoy el barrio está tranquilo.', 'El barrio está tranqui today.')}
       </Text>
       <Text style={{ fontFamily: F.negrita, fontSize: 13, marginTop: 6, color: tintaBanner('cabecera') }}>
         📍 {visita ? t(`Vas a ${visita.nombre} · ${visita.comuna}`, `Going to ${visita.nombre}`) : lugar}
