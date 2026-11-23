@@ -9,7 +9,7 @@ const PROPORCION_PINCEL = 47.8 / 12.8;
 const PROPORCION = 707 / 140;
 
 export default function Logo({ ancho = 220, style, claro = false }) {
-  const pincel = ESTILO === 'clasico';
+  const pincel = false; // el logo de pincel decía el nombre antiguo: todos los estilos usan el Bauhaus de Dropper
   return (
     <SvgXml xml={pincel ? XML_PINCEL : claro ? XML.replace(/#111\b/g, '#FFFFFF') : XML} width={ancho} height={ancho / (pincel ? PROPORCION_PINCEL : PROPORCION)} style={style}
       accessible accessibilityRole="image" accessibilityLabel="Dropper" />
