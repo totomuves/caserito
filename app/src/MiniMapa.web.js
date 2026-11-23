@@ -25,7 +25,7 @@ function estilos() {
     ${CSS_CALLES('.droper-mini.moderno')}
     .droper-mini .leaflet-control-attribution { font-size:8px; background:rgba(255,255,255,.7); }
     .mini-yo { width:18px; height:18px; border-radius:9px; background:#1D4ED8; border:3px solid #fff; box-shadow:0 0 0 8px rgba(29,78,216,.18), 0 1px 4px rgba(0,0,0,.35); box-sizing:border-box; }
-    .droper-mini .mini-lam { transform: rotate(var(--contra, 0deg)); transition: transform .25s linear; }
+    .droper-mini .mini-lam { transform: rotate(var(--contra, 0deg)); transition: transform .3s ease-out; will-change: transform; }
     .mini-lam { display:flex; flex-direction:column; align-items:center; cursor:pointer; }
     .mini-lam .carta { position:relative; width:40px; height:40px; box-sizing:border-box; overflow:hidden; background:#fff; border:1px solid #D9D9DF; border-radius:8px; padding:2px; box-shadow:0 3px 8px rgba(17,17,17,.18); }
     .mini-lam.con-drop .carta { border:2px solid #111; }
@@ -51,21 +51,24 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
   const [avisoBrujula, setAvisoBrujula] = useState('');
   useEffect(() => {
     if (!brujula) { setRumbo(0); return; }
-    let ultimo = null;
+    let ultimo = null, mostrado = null, cuadro = 0;
     const leer = (e) => {
       let h = null;
       if (typeof e.webkitCompassHeading === 'number') h = e.webkitCompassHeading; // iPhone
       else if (e.absolute && typeof e.alpha === 'number') h = 360 - e.alpha; // Android
       if (h == null) return;
-      // Suavizado (y sin saltos al cruzar el norte)
+      // Suavizado fuerte (los sensores tiemblan) y sin saltos al cruzar el norte
       if (ultimo == null) ultimo = h;
-      let d = ((h - ultimo + 540) % 360) - 180;
-      ultimo = ultimo + d * 0.25;
-      setRumbo(ultimo);
+      const d = ((h - ultimo + 540) % 360) - 180;
+      ultimo = ultimo + d * 0.12;
+      // Solo movemos el mapa si cambió más de 3°, y como máximo una vez por cuadro
+      if (mostrado != null && Math.abs(((ultimo - mostrado + 540) % 360) - 180) < 3) return;
+      if (cuadro) return;
+      cuadro = requestAnimationFrame(() => { cuadro = 0; mostrado = ultimo; setRumbo(ultimo); });
     };
     window.addEventListener('deviceorientationabsolute', leer, true);
     window.addEventListener('deviceorientation', leer, true);
-    return () => { window.removeEventListener('deviceorientationabsolute', leer, true); window.removeEventListener('deviceorientation', leer, true); };
+    return () => { if (cuadro) cancelAnimationFrame(cuadro); window.removeEventListener('deviceorientationabsolute', leer, true); window.removeEventListener('deviceorientation', leer, true); };
   }, [brujula]);
   async function alternarBrujula() {
     setAvisoBrujula('');
@@ -98,9 +101,14 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
   }, [!!centro]);
 
   // Tú siempre al centro: el mapa se mueve contigo (2 cuadras a cada lado)
+  const ultimoCentro = useRef(null);
   useEffect(() => {
     const m = mapa.current;
     if (!m || !centro) return;
+    // El GPS tiembla unos metros aunque estés quieto: solo recentramos si te moviste de verdad (> 6 m)
+    const u = ultimoCentro.current;
+    if (u && L.latLng(u).distanceTo([centro.lat, centro.lng]) < 6) return;
+    ultimoCentro.current = [centro.lat, centro.lng];
     m.setView([centro.lat, centro.lng], m.getZoom() || 17, { animate: false }); // mantiene el zoom que elegiste con los dedos
   }, [centro && centro.lat, centro && centro.lng, !!mapa.current]);
 
@@ -127,7 +135,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
 
   return (
     <View style={{ marginHorizontal: 16, marginTop: 14, height: 300, borderRadius: R(20), overflow: 'hidden', borderWidth: 1, borderColor: C.borde, backgroundColor: ESTILO === 'moderno' ? '#FFFFFF' : '#FFF3B0' }}>
-      <div ref={caja} style={{ position: 'absolute', left: '-25%', top: '-25%', width: '150%', height: '150%', transform: `rotate(${-rumbo}deg)`, transition: 'transform .25s linear', '--contra': `${rumbo}deg` }} />
+      <div ref={caja} style={{ position: 'absolute', left: '-25%', top: '-25%', width: '150%', height: '150%', transform: `rotate(${-rumbo}deg)`, transition: 'transform .3s ease-out', '--contra': `${rumbo}deg` }} />
       <Pressable onPress={alternarBrujula} accessibilityRole="switch" accessibilityState={{ checked: brujula }} accessibilityLabel={t('Brújula: girar el mapa con el teléfono', 'Compass: rotate the map')}
         style={{ position: 'absolute', left: 10, bottom: 10, height: 34, paddingHorizontal: 12, borderRadius: 16, backgroundColor: brujula ? C.amarillo : C.papel, borderWidth: 1, borderColor: C.borde, flexDirection: 'row', alignItems: 'center', gap: 6, zIndex: 500 }}>
         <Text style={{ fontSize: 14, transform: [{ rotate: `${-rumbo}deg` }] }}>🧭</Text>

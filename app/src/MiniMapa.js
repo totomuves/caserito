@@ -14,17 +14,24 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
   const centro = yo || pos;
   const mapa = useRef(null);
   // Te sigue sin cambiar el zoom que elegiste con los dedos
+  const ultimoCentro = useRef(null);
   useEffect(() => {
-    if (mapa.current && centro) mapa.current.animateCamera({ center: { latitude: centro.lat, longitude: centro.lng } }, { duration: 400 });
+    if (!centro) return;
+    const u = ultimoCentro.current;
+    if (u && Math.hypot((u.lat - centro.lat) * 111320, (u.lng - centro.lng) * 93000) < 6) return; // el GPS tiembla
+    ultimoCentro.current = centro;
+    if (mapa.current) mapa.current.animateCamera({ center: { latitude: centro.lat, longitude: centro.lng } }, { duration: 400 });
   }, [centro && centro.lat, centro && centro.lng]);
   // Brújula: el mapa gira con el teléfono
   const [brujula, setBrujula] = useState(false);
   useEffect(() => {
     if (!brujula) { if (mapa.current) mapa.current.animateCamera({ heading: 0 }, { duration: 300 }); return; }
-    let sub;
+    let sub, mostrado = null;
     Location.watchHeadingAsync((h) => {
       const rumbo = h.trueHeading >= 0 ? h.trueHeading : h.magHeading;
-      if (mapa.current) mapa.current.animateCamera({ heading: rumbo }, { duration: 250 });
+      if (mostrado != null && Math.abs(((rumbo - mostrado + 540) % 360) - 180) < 3) return; // ignora el temblor del sensor
+      mostrado = rumbo;
+      if (mapa.current) mapa.current.animateCamera({ heading: rumbo }, { duration: 300 });
     }).then((s) => { sub = s; }).catch(() => setBrujula(false));
     return () => sub && sub.remove();
   }, [brujula]);
