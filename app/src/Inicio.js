@@ -10,6 +10,8 @@ import { useEstilo } from './estilo';
 import Portada from './Portada';
 import MiniMapa from './MiniMapa';
 import { PlanoLugar } from './Plano';
+import { ArteLocal } from './arteLocal';
+import { caminar } from './Drop';
 import Svg, { Path } from 'react-native-svg';
 
 function etiquetaPara(d, hora, t, cuad) {
@@ -32,7 +34,12 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
   const { tur, lang, t, cuad, setTur } = useIdioma();
   const [verIdiomas, setVerIdiomas] = useState(false);
   const { estilo } = useEstilo();
-  const coords = useCoordenadas(estilo === 'diario' ? drops : []);
+  const coords = useCoordenadas(estilo === 'diario' || estilo === 'moderno' ? drops : []);
+  const [apodo, setApodo] = useState('');
+  useEffect(() => {
+    if (estilo !== 'moderno') return;
+    supabase.rpc('mi_perfil').then(({ data }) => setApodo(((data && data.nombre) || '').trim().split(' ')[0]));
+  }, [estilo, usuario.id]);
 
   useEffect(() => {
     supabase.from('gustos').select('*').eq('usuario_id', usuario.id).order('creado_at')
@@ -72,6 +79,83 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
   }
 
   const moderno = estilo === 'moderno';
+  const hora12 = (d) => new Date(d.termina_at).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+  const cercanos = drops.filter((d) => d.dentro_del_radio || d.cuadras <= 2).length;
+  const cabeceraModerna = (
+    <View style={{ backgroundColor: fondoBanner('cabecera'), paddingHorizontal: 18, paddingTop: 12, paddingBottom: 18, borderBottomLeftRadius: 28, borderBottomRightRadius: 28 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Logo ancho={132} claro={!bannerClaro('cabecera')} />
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Pressable onPress={() => setVerIdiomas(!verIdiomas)} accessibilityRole="button" accessibilityLabel="Idioma · Language"
+            style={{ height: 36, paddingHorizontal: 12, borderRadius: 14, backgroundColor: tur ? C.negro : '#FFFFFF', justifyContent: 'center' }}>
+            <Text style={{ fontFamily: F.negrita, fontSize: 12, color: tur ? C.amarillo : C.negro }}>{tur ? `🌍 ${lang.toUpperCase()}` : 'Tourist?'}</Text>
+          </Pressable>
+          <Pressable onPress={alAyuda} accessibilityRole="button" accessibilityLabel={t('¿Cómo funciona Droper?', '¿Cómo funciona Droper?')}
+            style={{ width: 36, height: 36, borderRadius: 14, backgroundColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={{ fontFamily: F.negrita, fontSize: 16, color: C.amarillo }}>?</Text>
+          </Pressable>
+        </View>
+      </View>
+      {verIdiomas ? <SelectorIdioma alElegir={() => setVerIdiomas(false)} style={{ paddingTop: 10 }} /> : null}
+      <Text style={{ fontFamily: F.negrita, fontSize: 26, lineHeight: 28, letterSpacing: -0.8, marginTop: 12, color: tintaBanner('cabecera') }}>
+        {apodo ? t(`Hola, ${apodo}.`, `Hi, ${apodo}.`) : t('Hola.', 'Hi.')}{'\n'}
+        {cercanos ? t(`${cercanos} ${cercanos === 1 ? 'drop' : 'drops'} a 2 cuadras.`, `${cercanos} drops a 2 cuadras.`) : drops.length ? t(`${drops.length} ${drops.length === 1 ? 'drop' : 'drops'} en el barrio.`, `${drops.length} drops en el barrio.`) : t('Hoy el barrio está tranquilo.', 'El barrio está tranqui today.')}
+      </Text>
+      <Text style={{ fontFamily: F.negrita, fontSize: 13, marginTop: 6, color: tintaBanner('cabecera') }}>
+        📍 {visita ? t(`Vas a ${visita.nombre} · ${visita.comuna}`, `Going to ${visita.nombre}`) : lugar}
+      </Text>
+    </View>
+  );
+  const dropsModernos = (
+    <>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', paddingHorizontal: 18, paddingTop: 20 }}>
+        <Text style={{ fontFamily: F.negrita, fontSize: 22, letterSpacing: -0.6 }}>{t('Cerca de ti', 'Cerca · Near you')}</Text>
+        <Pressable onPress={alVerMapa} accessibilityRole="button"><Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.gris }}>{t('Ver en el mapa', 'Ver mapa')}</Text></Pressable>
+      </View>
+      {visibles.length === 0 ? (
+        <Text style={{ fontFamily: F.media, fontSize: 14, color: C.gris, paddingHorizontal: 18, paddingTop: 8 }}>{t('No hay drops por aquí ahora. Vuelve más rato: los locales sueltan sorpresas durante el día.', 'No drops right now. Vuelve más rato.')}</Text>
+      ) : (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 14, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 20 }}>
+          {visibles.map((d) => {
+            const p = coords[d.local_id];
+            return (
+              <View key={d.drop_id} style={{ width: 240, backgroundColor: '#FFFFFF', borderRadius: 22, borderWidth: 1, borderColor: C.borde, shadowColor: '#111111', shadowOpacity: 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 3 }}>
+                <Pressable onPress={() => alAbrir(d)} accessibilityRole="button" accessibilityLabel={`${d.local_nombre}, ${d.frase || d.titulo}`}>
+                  <View style={{ height: 120, borderTopLeftRadius: 22, borderTopRightRadius: 22, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: C.crema }}>
+                    <ArteLocal id={d.local_id} categoria={d.categoria} ancho={240} alto={240} borde={false} />
+                    <View style={{ position: 'absolute', left: 12, top: 12, backgroundColor: C.negro, borderRadius: 10, paddingHorizontal: 9, paddingVertical: 4 }}>
+                      <Text style={{ fontFamily: F.negrita, fontSize: 11, color: C.amarillo }}>{t('QUEDAN', 'QUEDAN')} {d.quedan}</Text>
+                    </View>
+                  </View>
+                  <View style={{ position: 'absolute', right: 12, top: 102, backgroundColor: C.amarillo, borderRadius: 14, paddingHorizontal: 12, paddingVertical: 4, shadowColor: '#111111', shadowOpacity: 0.2, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 4 }}>
+                    <Text style={{ fontFamily: F.negrita, fontSize: 20, color: C.negro }}>{d.tipo === 'sorpresa' ? '¿?' : precio(d.precio) || 'DROP'}</Text>
+                  </View>
+                  <View style={{ paddingHorizontal: 14, paddingTop: 14, gap: 2 }}>
+                    <Text style={{ fontFamily: F.negrita, fontSize: 11, letterSpacing: 1, color: C.rojoTexto, textTransform: 'uppercase' }}>
+                      {tur ? categoriaTur(d.categoria, lang) || textoCategoria(d.categoria) : textoCategoria(d.categoria)} · {cuad(d.cuadras)}
+                    </Text>
+                    <Text style={{ fontFamily: F.negrita, fontSize: 18, letterSpacing: -0.4 }} numberOfLines={1}>{d.local_nombre}</Text>
+                    <FraseGlosario texto={d.frase || d.titulo} colorAyuda={C.rojoTexto} numberOfLines={2} style={{ fontFamily: F.media, fontSize: 14, lineHeight: 18, color: '#444444' }} />
+                    <Text style={{ fontFamily: F.media, fontSize: 12, color: C.gris }}>{t('Hasta las', 'Hasta')} {hora12(d)}</Text>
+                  </View>
+                </Pressable>
+                <View style={{ flexDirection: 'row', gap: 8, padding: 14, paddingTop: 10 }}>
+                  <Pressable onPress={() => alAbrir(d)} accessibilityRole="button" style={{ flex: 1, height: 42, borderRadius: 14, backgroundColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ fontFamily: F.negrita, fontSize: 13, color: '#FFFFFF' }}>{t('Lo quiero', 'Lo quiero · I want it')}</Text>
+                  </Pressable>
+                  {p ? (
+                    <Pressable onPress={() => caminar(p)} accessibilityRole="button" style={{ height: 42, paddingHorizontal: 12, borderRadius: 14, backgroundColor: C.crema, alignItems: 'center', justifyContent: 'center' }}>
+                      <Text style={{ fontFamily: F.negrita, fontSize: 13 }}>{t('Cómo llegar', 'Directions')}</Text>
+                    </Pressable>
+                  ) : null}
+                </View>
+              </View>
+            );
+          })}
+        </ScrollView>
+      )}
+    </>
+  );
   // ¿Estás dentro de un patio o mall? Se muestra su plano en vez del mapa de calles
   const enLugar = visita ? null : lugarDe(pos, lugares);
   const bloqueLugar = enLugar ? (
@@ -171,6 +255,8 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 110 }}
       refreshControl={<RefreshControl refreshing={refrescando} onRefresh={async () => { setRefrescando(true); await alRefrescar(); setRefrescando(false); }} />}>
+      {moderno ? cabeceraModerna : (
+        <>
       <View style={{ backgroundColor: fondoBanner('cabecera'), paddingHorizontal: 18, paddingTop: 10, paddingBottom: 4 }}>
         <FondoBauhaus variante="inicio" />
         <Logo ancho={190} claro={!bannerClaro('cabecera')} style={{ marginLeft: 22, marginTop: 4, marginBottom: 2 }} />
@@ -186,6 +272,8 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
         </Pressable>
       </View>
       <Ola color={fondoBanner('cabecera')} />
+        </>
+      )}
 
       {lejos ? (
         <View style={{ marginHorizontal: 16, marginBottom: 6, backgroundColor: C.papel, borderWidth: 2, borderColor: C.borde, borderRadius: R(16), padding: 10 }}>
@@ -235,7 +323,10 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
       {moderno ? (
         <>
           {enLugar ? bloqueLugar : <Seguro><MiniMapa pos={visita ? { lat: visita.lat, lng: visita.lng } : pos} yo={!visita && pos && !pos.aprox ? pos : null} drops={drops} alAbrir={alAbrir} alVerMapa={alVerMapa} t={t} /></Seguro>}
-          {bloqueDrops}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingTop: 16 }}>
+            {CATEGORIAS.map((c) => <Pildora key={c.id} texto={tur ? categoriaTur(c.id, lang) || c.texto : c.texto} categoria={c.id} activa={filtro === c.id} onPress={() => setFiltro(c.id)} />)}
+          </ScrollView>
+          {dropsModernos}
           {bloqueFrase}
           {bloqueBarrios}
         </>
