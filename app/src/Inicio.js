@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { supabase } from './supabase';
-import { C, F, letrista, CATEGORIAS, textoCategoria, tieneCategoria, precio, cuadras, R, ESTILO, sobrio } from './tema';
+import { C, F, letrista, CATEGORIAS, textoCategoria, tieneCategoria, precio, cuadras, R, ESTILO, sobrio, fondoBanner, tintaBanner, acentoBanner, bannerClaro } from './tema';
 import { Ola, Brillo, Pildora, EtiquetaPrecio, Boton, FondoBauhaus, PuntosPop, GloboPop, Estallido, ONOMATOPEYAS, Seguro } from './componentes';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR, categoriaTur, SelectorIdioma } from './idioma';
 import Logo from './Logo';
@@ -96,18 +96,18 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
   );
   const bloqueFrase = (
     <>
-      <View style={{ marginHorizontal: 16, marginTop: 14, backgroundColor: C.negro, borderRadius: R(16), padding: 16, gap: 10 }}>
+      <View style={{ marginHorizontal: 16, marginTop: 14, backgroundColor: fondoBanner('frase'), borderRadius: R(16), padding: 16, gap: 10, borderWidth: bannerClaro('frase') ? 1 : 0, borderColor: C.borde }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <FraseGlosario texto={f.tag} style={{ ...letrista, fontSize: 16, color: C.amarillo }} />
+          <FraseGlosario texto={f.tag} style={{ ...letrista, fontSize: 16, color: acentoBanner('frase') }} />
           <Pressable onPress={() => setI(i + 1)} accessibilityRole="button" accessibilityLabel="Otra sugerencia"
-            style={{ height: 32, paddingHorizontal: 12, borderRadius: R(16), borderWidth: 1.5, borderColor: '#FFFFFF66', justifyContent: 'center' }}>
-            <Text style={{ fontFamily: F.negrita, fontSize: 12, color: '#FFFFFF' }}>{t('Otra', "Siguiente")}</Text>
+            style={{ height: 32, paddingHorizontal: 12, borderRadius: R(16), borderWidth: 1.5, borderColor: bannerClaro('frase') ? '#11111166' : '#FFFFFF66', justifyContent: 'center' }}>
+            <Text style={{ fontFamily: F.negrita, fontSize: 12, color: tintaBanner('frase') }}>{t('Otra', "Siguiente")}</Text>
           </Pressable>
         </View>
-        <FraseGlosario texto={f.texto} style={{ ...letrista, fontSize: 20, lineHeight: 26, color: '#FFFFFF', minHeight: 78 }} />
+        <FraseGlosario texto={f.texto} style={{ ...letrista, fontSize: 20, lineHeight: 26, color: tintaBanner('frase'), minHeight: 78 }} />
         {f.drop && (
-          <Pressable onPress={() => alAbrir(f.drop)} style={{ alignSelf: 'flex-start', height: 40, paddingHorizontal: 16, borderRadius: R(16), backgroundColor: C.amarillo, justifyContent: 'center' }}>
-            <Text style={{ fontFamily: F.negrita, fontSize: 14 }}>{t('Ir al drop →', "Ver drop →")}</Text>
+          <Pressable onPress={() => alAbrir(f.drop)} style={{ alignSelf: 'flex-start', height: 40, paddingHorizontal: 16, borderRadius: R(16), backgroundColor: bannerClaro('frase') ? C.negro : C.amarillo, justifyContent: 'center' }}>
+            <Text style={{ fontFamily: F.negrita, fontSize: 14, color: bannerClaro('frase') ? C.amarillo : C.negro }}>{t('Ir al drop →', "Ver drop →")}</Text>
           </Pressable>
         )}
       </View>
@@ -121,11 +121,11 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
       </ScrollView>
 
       <View style={{ marginTop: 14 }}>
-        <Ola color={C.rojo} abajo={false} />
-        <View style={{ backgroundColor: C.rojo, paddingTop: 4, paddingBottom: 18, gap: 12 }}>
-          <Text style={{ ...letrista, fontSize: 24, color: C.amarillo, paddingHorizontal: 20 }}>{t('CERCA DE TI', "CERCA · NEAR YOU")}</Text>
+        <Ola color={fondoBanner('cerca')} abajo={false} />
+        <View style={{ backgroundColor: fondoBanner('cerca'), paddingTop: 4, paddingBottom: 18, gap: 12 }}>
+          <Text style={{ ...letrista, fontSize: 24, color: acentoBanner('cerca'), paddingHorizontal: 20 }}>{t('CERCA DE TI', "CERCA · NEAR YOU")}</Text>
           {visibles.length === 0 && (
-            <Text style={{ fontFamily: F.media, color: '#FFFFFF', paddingHorizontal: 20 }}>{t(`No hay drops de ${textoCategoria(filtro).toLowerCase()} ahora. Vuelve más rato.`, "No drops acá right now. Vuelve más rato.")}</Text>
+            <Text style={{ fontFamily: F.media, color: tintaBanner('cerca'), paddingHorizontal: 20 }}>{t(`No hay drops de ${textoCategoria(filtro).toLowerCase()} ahora. Vuelve más rato.`, "No drops acá right now. Vuelve más rato.")}</Text>
           )}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 16, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 6 }}>
             {visibles.map((d, k) => (
@@ -162,7 +162,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
             ))}
           </ScrollView>
         </View>
-        <Ola color={C.rojo} />
+        <Ola color={fondoBanner('cerca')} />
       </View>
 
     </>
@@ -171,10 +171,10 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 110 }}
       refreshControl={<RefreshControl refreshing={refrescando} onRefresh={async () => { setRefrescando(true); await alRefrescar(); setRefrescando(false); }} />}>
-      <View style={{ backgroundColor: C.amarillo, paddingHorizontal: 18, paddingTop: 10, paddingBottom: 4 }}>
+      <View style={{ backgroundColor: fondoBanner('cabecera'), paddingHorizontal: 18, paddingTop: 10, paddingBottom: 4 }}>
         <FondoBauhaus variante="inicio" />
-        <Logo ancho={190} style={{ marginLeft: 22, marginTop: 4, marginBottom: 2 }} />
-        <Text style={{ fontFamily: F.negrita, fontSize: 13, lineHeight: 17, marginLeft: 22, width: 190 }}>{visita ? t(`Vas a ${visita.nombre} · ${visita.comuna}`, `Going to ${visita.nombre} · ${visita.comuna}`) : t(`${lugar} · tu barrio te tiene ofertas`, `${lugar} · ofertas like a local`)}</Text>
+        <Logo ancho={190} claro={!bannerClaro('cabecera')} style={{ marginLeft: 22, marginTop: 4, marginBottom: 2 }} />
+        <Text style={{ fontFamily: F.negrita, fontSize: 13, lineHeight: 17, marginLeft: 22, width: 190, color: tintaBanner('cabecera') }}>{visita ? t(`Vas a ${visita.nombre} · ${visita.comuna}`, `Going to ${visita.nombre} · ${visita.comuna}`) : t(`${lugar} · tu barrio te tiene ofertas`, `${lugar} · ofertas like a local`)}</Text>
         <Pressable onPress={() => setVerIdiomas(!verIdiomas)} accessibilityRole="button" accessibilityLabel="Idioma · Language"
           style={{ position: 'absolute', right: 68, top: 14, height: 44, paddingHorizontal: 12, borderRadius: R(16), borderWidth: 2.5, borderColor: C.borde, backgroundColor: tur ? C.negro : C.papel, justifyContent: 'center' }}>
           <Text style={{ fontFamily: F.negrita, fontSize: 12, color: tur ? C.amarillo : C.negro }}>{tur ? `🌍 ${lang.toUpperCase()}` : 'Tourist?'}</Text>
@@ -185,7 +185,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
           <Text style={{ ...letrista, fontSize: 20 }}>?</Text>
         </Pressable>
       </View>
-      <Ola color={C.amarillo} />
+      <Ola color={fondoBanner('cabecera')} />
 
       {lejos ? (
         <View style={{ marginHorizontal: 16, marginBottom: 6, backgroundColor: C.papel, borderWidth: 2, borderColor: C.borde, borderRadius: R(16), padding: 10 }}>
@@ -249,14 +249,14 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
       )}
 
       <View style={{ marginTop: 18 }}>
-        <Ola color={C.amarillo} abajo={false} />
-        <View style={{ backgroundColor: C.amarillo, paddingHorizontal: 16, paddingBottom: 20, gap: 10 }}>
-          <Text style={{ ...letrista, fontSize: 21 }}>{t('DROPER APRENDIÓ QUE…', "DROPER APRENDIÓ QUE…")}</Text>
+        <Ola color={fondoBanner('aprendio')} abajo={false} />
+        <View style={{ backgroundColor: fondoBanner('aprendio'), paddingHorizontal: 16, paddingBottom: 20, gap: 10 }}>
+          <Text style={{ ...letrista, fontSize: 21, color: acentoBanner('aprendio') }}>{t('DROPER APRENDIÓ QUE…', "DROPER APRENDIÓ QUE…")}</Text>
           {gustos.length === 0 ? (
-            <Text style={{ fontFamily: F.normal, fontSize: 14 }}>{t('Todavía te estamos conociendo. Súmate a un drop y aquí aparece lo que te tinca.', "Todavía te estamos conociendo. Súmate a un drop y tus gustos show up here.")}</Text>
+            <Text style={{ fontFamily: F.normal, fontSize: 14, color: tintaBanner('aprendio') }}>{t('Todavía te estamos conociendo. Súmate a un drop y aquí aparece lo que te tinca.', "Todavía te estamos conociendo. Súmate a un drop y tus gustos show up here.")}</Text>
           ) : (
             <>
-              <Text style={{ fontFamily: F.normal, fontSize: 13 }}>{t('Con esto elegimos qué mostrarte primero. Toca uno para apagarlo.', "Con esto te mostramos lo bueno first. Toca uno para apagarlo.")}</Text>
+              <Text style={{ fontFamily: F.normal, fontSize: 13, color: tintaBanner('aprendio') }}>{t('Con esto elegimos qué mostrarte primero. Toca uno para apagarlo.', "Con esto te mostramos lo bueno first. Toca uno para apagarlo.")}</Text>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                 {gustos.map((g) => (
                   <Pressable key={g.id} onPress={() => alternar(g)} accessibilityRole="switch" accessibilityState={{ checked: g.activo }}

@@ -8,10 +8,10 @@ const XML_PINCEL = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"108.3 24
 const PROPORCION_PINCEL = 47.8 / 12.8;
 const PROPORCION = 623 / 140;
 
-export default function Logo({ ancho = 220, style }) {
+export default function Logo({ ancho = 220, style, claro = false }) {
   const pincel = ESTILO === 'clasico';
   return (
-    <SvgXml xml={pincel ? XML_PINCEL : XML} width={ancho} height={ancho / (pincel ? PROPORCION_PINCEL : PROPORCION)} style={style}
+    <SvgXml xml={pincel ? XML_PINCEL : claro ? XML.replace(/#111\b/g, '#FFFFFF') : XML} width={ancho} height={ancho / (pincel ? PROPORCION_PINCEL : PROPORCION)} style={style}
       accessible accessibilityRole="image" accessibilityLabel="Droper" />
   );
 }

@@ -38,7 +38,7 @@ export default function Admin({ usuario, alEntrarLocal }) {
       {seccion === 'comentarios' && <Comentarios />}
       {seccion === 'barrios' && <Barrios />}
       {seccion === 'lugares' && <Lugares />}
-      {seccion === 'estilo' && <EstiloApp />}
+      {seccion === 'estilo' && <><EstiloApp /><ColoresBanners /></>}
       {seccion === 'invitar' && <Invitar />}
       {seccion === 'qr' && (
         <Qr url={URL_APP} titulo="DROPER" archivo="caserito-qr-app.png"
@@ -617,6 +617,71 @@ function EstiloApp() {
             </div>
           </button>
         ))}
+      </div>
+      {msg && <p style={{ margin: 0, fontWeight: 700 }}>{msg}</p>}
+    </div>
+  );
+}
+
+// Colores de los banners del inicio (paleta Bauhaus)
+const PALETA = [
+  { id: 'amarillo', hex: '#FFD100', nombre: 'Amarillo' },
+  { id: 'rojo', hex: '#E30A2F', nombre: 'Rojo' },
+  { id: 'azul', hex: '#1E5AA8', nombre: 'Azul' },
+  { id: 'negro', hex: '#111111', nombre: 'Negro' },
+  { id: 'blanco', hex: '#FFFFFF', nombre: 'Blanco' },
+];
+const BANNERS = [
+  { id: 'cabecera', nombre: 'Cabecera (logo arriba)', base: 'amarillo' },
+  { id: 'cerca', nombre: '"Cerca de ti" (los drops)', base: 'rojo' },
+  { id: 'frase', nombre: 'La frase del momento', base: 'negro' },
+  { id: 'aprendio', nombre: '"Droper aprendió que…"', base: 'amarillo' },
+];
+function ColoresBanners() {
+  const [b, setB] = useState(null);
+  const [msg, setMsg] = useState('');
+  useEffect(() => {
+    supabase.from('ajustes').select('valor').eq('clave', 'banners').maybeSingle().then(({ data }) => {
+      let v = {};
+      try { v = data ? JSON.parse(data.valor) : {}; } catch (e) { v = {}; }
+      setB(Object.fromEntries(BANNERS.map((x) => [x.id, v[x.id] || x.base])));
+    });
+  }, []);
+  async function elegir(banner, color) {
+    const nuevo = { ...b, [banner]: color };
+    setB(nuevo); setMsg('');
+    const { error } = await supabase.rpc('fijar_banners', { p_banners: nuevo });
+    if (error) setMsg(/fijar_banners/.test(error.message || '') ? 'Falta correr el SQL 027 (colores de banners).' : error.message);
+    else setMsg('Guardado ✓ La app cambia al abrirla de nuevo.');
+  }
+  if (!b) return null;
+  const hex = (id) => PALETA.find((p) => p.id === id).hex;
+  const claro = (id) => id === 'amarillo' || id === 'blanco';
+  return (
+    <div className="tarjeta" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <h2 className="letrista" style={{ margin: 0 }}>Colores de los banners</h2>
+      <p style={{ margin: 0 }}>Paleta Bauhaus. El texto encima se ajusta solo (negro sobre claro, blanco y amarillo sobre oscuro). Vale para Clásico, Bauhaus y Moderno.</p>
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+        <div style={{ display: 'grid', gap: 12, flex: '1 1 320px' }}>
+          {BANNERS.map((x) => (
+            <div key={x.id} style={{ display: 'grid', gap: 6 }}>
+              <b>{x.nombre}</b>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }} role="radiogroup" aria-label={x.nombre}>
+                {PALETA.map((p) => (
+                  <button key={p.id} type="button" role="radio" aria-checked={b[x.id] === p.id} aria-label={p.nombre} title={p.nombre} onClick={() => elegir(x.id, p.id)}
+                    style={{ width: 44, height: 44, borderRadius: 12, background: p.hex, border: '2px solid #111', cursor: 'pointer', outline: b[x.id] === p.id ? '3px solid #E30A2F' : 'none', outlineOffset: 3 }} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div aria-label="Vista previa" style={{ width: 220, border: '2px solid #111', borderRadius: 18, overflow: 'hidden', background: '#F4F4F6', fontFamily: 'Archivo, sans-serif' }}>
+          <div style={{ background: hex(b.cabecera), padding: '14px 12px', fontWeight: 800, fontSize: 20, color: claro(b.cabecera) ? '#111' : '#fff' }}>DROPER</div>
+          <div style={{ height: 70, background: '#fff', margin: 10, borderRadius: 12, border: '1px solid #ddd' }} />
+          <div style={{ background: hex(b.cerca), padding: '10px 12px', fontWeight: 800, color: b.cerca === 'blanco' ? '#E30A2F' : claro(b.cerca) ? '#111' : '#FFD100' }}>CERCA DE TI</div>
+          <div style={{ background: hex(b.frase), margin: 10, borderRadius: 12, padding: 10, border: '1px solid #ddd', fontWeight: 800, fontSize: 12, color: claro(b.frase) ? '#111' : '#fff' }}>MENÚ DEL DÍA A $5.990…</div>
+          <div style={{ background: hex(b.aprendio), padding: '10px 12px', fontWeight: 800, fontSize: 12, color: claro(b.aprendio) ? '#111' : '#fff' }}>DROPER APRENDIÓ QUE…</div>
+        </div>
       </div>
       {msg && <p style={{ margin: 0, fontWeight: 700 }}>{msg}</p>}
     </div>

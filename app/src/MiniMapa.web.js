@@ -3,6 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 import { C, F, R, precio, ESTILO } from './tema';
 import { useCoordenadas, useLocalesMapa, especialidad } from './MapaComun';
 import { arteHtml } from './arteLocal';
+import { conectarCalles, CSS_CALLES } from './callesWeb';
 
 const L = require('leaflet');
 const LLAVE_CARTO = process.env.EXPO_PUBLIC_CARTO_KEY || '';
@@ -21,8 +22,7 @@ function estilos() {
   st.textContent = `
     .droper-mini { background:#FFF3B0; }
     .droper-mini .leaflet-tile-pane { filter: sepia(.5) saturate(1.5) hue-rotate(-8deg) brightness(1.02) contrast(1.3); }
-    .droper-mini.moderno { background:#FFFFFF; }
-    .droper-mini.moderno .leaflet-tile-pane { filter: grayscale(1) contrast(1.55) brightness(1.06); }
+    ${CSS_CALLES('.droper-mini.moderno')}
     .droper-mini .leaflet-control-attribution { font-size:8px; background:rgba(255,255,255,.7); }
     .mini-yo { width:18px; height:18px; border-radius:9px; background:#1D4ED8; border:3px solid #fff; box-shadow:0 0 0 8px rgba(29,78,216,.18), 0 1px 4px rgba(0,0,0,.35); box-sizing:border-box; }
     .mini-lam { display:flex; flex-direction:column; align-items:center; cursor:pointer; }
@@ -54,9 +54,10 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
       : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(m);
     m.setView([centro.lat, centro.lng], 17, { animate: false });
     capa.current = L.layerGroup().addTo(m);
+    const soltarCalles = ESTILO === 'moderno' ? conectarCalles(L, m) : null;
     mapa.current = m;
     setTimeout(() => m.invalidateSize(), 50);
-    return () => { m.remove(); mapa.current = null; capa.current = null; };
+    return () => { if (soltarCalles) soltarCalles(); m.remove(); mapa.current = null; capa.current = null; };
   }, [!!centro]);
 
   // Tú siempre al centro: el mapa se mueve contigo (2 cuadras a cada lado)

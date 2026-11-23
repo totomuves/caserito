@@ -11,13 +11,13 @@ import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin,
 // Estilo amarillo pálido del diseño "pantallas" (Google Maps en Android)
 // Moderno: fondo gris muy claro, calles blancas con borde marcado y nombres oscuros
 export const ESTILO_MODERNO = [
-  { elementType: 'geometry', stylers: [{ color: '#EDEDED' }] },
+  { elementType: 'geometry', stylers: [{ color: '#F4F4F4' }] },
   { elementType: 'labels.text.fill', stylers: [{ color: '#222222' }] },
   { elementType: 'labels.text.stroke', stylers: [{ color: '#FFFFFF' }, { weight: 3 }] },
-  { featureType: 'road', elementType: 'geometry.fill', stylers: [{ color: '#FFFFFF' }] },
+  { featureType: 'road', elementType: 'geometry.fill', stylers: [{ color: '#FFD100' }] },
   { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#8A8A8A' }, { weight: 1.2 }] },
-  { featureType: 'road.arterial', elementType: 'geometry.fill', stylers: [{ color: '#FFFFFF' }, { weight: 3 }] },
-  { featureType: 'road.highway', elementType: 'geometry.fill', stylers: [{ color: '#FFE680' }] },
+  { featureType: 'road.arterial', elementType: 'geometry.fill', stylers: [{ color: '#FFD100' }, { weight: 3 }] },
+  { featureType: 'road.highway', elementType: 'geometry.fill', stylers: [{ color: '#FFC400' }] },
   { featureType: 'poi', stylers: [{ visibility: 'off' }] },
   { featureType: 'transit', stylers: [{ visibility: 'off' }] },
   { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#CFE3F3' }] },

@@ -37,6 +37,21 @@ export function aplicarEstilo(e) {
   else if (e === 'diario') Object.assign(letrista, { fontFamily: F.titular, fontStyle: 'normal', letterSpacing: 0 });
   else Object.assign(letrista, { fontFamily: F.letrista, fontStyle: 'normal', letterSpacing: -0.3 });
 }
+// Colores de los banners del inicio: los elige el admin, siempre de la paleta Bauhaus
+export const PALETA = { amarillo: '#FFD100', rojo: '#E30A2F', azul: '#1E5AA8', negro: '#111111', blanco: '#FFFFFF' };
+export const BANNERS_BASE = { cabecera: 'amarillo', cerca: 'rojo', frase: 'negro', aprendio: 'amarillo' };
+export const BANNERS = { ...BANNERS_BASE };
+export function aplicarBanners(b) {
+  Object.assign(BANNERS, BANNERS_BASE);
+  if (b && typeof b === 'object') Object.keys(BANNERS_BASE).forEach((k) => { if (PALETA[b[k]]) BANNERS[k] = b[k]; });
+}
+export const fondoBanner = (k) => PALETA[BANNERS[k]];
+export const bannerClaro = (k) => BANNERS[k] === 'amarillo' || BANNERS[k] === 'blanco';
+// Texto normal sobre el banner
+export const tintaBanner = (k) => (bannerClaro(k) ? '#111111' : '#FFFFFF');
+// Títulos y detalles sobre el banner (amarillo sobre oscuro, negro o rojo sobre claro)
+export const acentoBanner = (k) => (BANNERS[k] === 'blanco' ? '#E30A2F' : bannerClaro(k) ? '#111111' : '#FFD100');
+
 // Radio de esquinas: redondeado solo en el clásico
 export const R = (n) => (ESTILO === 'moderno' ? Math.max(n, 14) : ESTILO === 'clasico' ? n : 0);
 // Estilos 'sobrios' (Clásico y Moderno): tarjetas simples, sin pop art

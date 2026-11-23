@@ -4,6 +4,7 @@ import { C, cuadras, textoCategoria, ESTILO } from './tema';
 import { figuraDe } from './componentes';
 import { arteHtml } from './arteLocal';
 import { lugarHtml } from './Plano';
+import { conectarCalles, CSS_CALLES } from './callesWeb';
 import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa } from './MapaComun';
 
 const L = require('leaflet');
@@ -23,8 +24,7 @@ function prepararEstilos() {
   st.textContent = `
     .caserito-mapa { background:#FFF3B0; }
     .caserito-mapa .leaflet-tile-pane { filter: sepia(.5) saturate(1.5) hue-rotate(-8deg) brightness(1.02) contrast(1.3); }
-    .caserito-mapa.moderno { background:#FFFFFF; }
-    .caserito-mapa.moderno .leaflet-tile-pane { filter: grayscale(1) contrast(1.55) brightness(1.06); }
+    ${CSS_CALLES('.caserito-mapa.moderno')}
     .caserito-pin { background: none; border: none; }
     .lugar-pin { display:flex; flex-direction:column; align-items:center; cursor:pointer; }
     .lugar-carta { background:${C.negro}; color:#fff; border:2.5px solid ${C.negro}; border-radius:12px; padding:6px 10px; box-shadow:0 6px 14px rgba(17,17,17,.3); font-family:Archivo, sans-serif; min-width:110px; }
@@ -130,9 +130,10 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
     capaBarrios.current = L.layerGroup().addTo(m);
     capa.current = L.layerGroup().addTo(m);
     capaLugares.current = L.layerGroup().addTo(m);
+    const soltarCalles = ESTILO === 'moderno' ? conectarCalles(L, m) : null;
     mapa.current = m;
     setTimeout(() => m.invalidateSize(), 50);
-    return () => { m.remove(); mapa.current = null; };
+    return () => { if (soltarCalles) soltarCalles(); m.remove(); mapa.current = null; };
   }, []);
 
   // Tu ubicación real (punto azul): se mueve contigo. Si no diste permiso, no se dibuja.

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { C, F, aplicarEstilo } from './tema';
+import { C, F, aplicarEstilo, aplicarBanners } from './tema';
 import { supabase } from './supabase';
 
 // Estilo gráfico de la app: 'bauhaus' (por defecto) o 'diario' (diario popular del barrio)
@@ -12,6 +12,7 @@ export function EstiloProvider({ children }) {
   const [general, setEstiloState] = useState('bauhaus');
   const [deBarrio, setEstiloBarrio] = useState(null); // el barrio donde estás (o al que vas) puede tener su propio estilo
   const estilo = deBarrio || general;
+  const [banners, setBanners] = useState(null);
   // El admin elige el estilo (tabla caserito.ajustes). Se guarda una copia para partir rápido la próxima vez.
   useEffect(() => {
     const valido = (v) => ['clasico', 'bauhaus', 'diario', 'moderno'].includes(v);
@@ -19,10 +20,18 @@ export function EstiloProvider({ children }) {
     supabase.from('ajustes').select('valor').eq('clave', 'estilo').maybeSingle().then(({ data }) => {
       if (data && valido(data.valor)) { setEstiloState(data.valor); AsyncStorage.setItem(CLAVE, data.valor).catch(() => {}); }
     });
+    // Colores de los banners (paleta Bauhaus) que elige el admin
+    const leer = (v) => { try { return JSON.parse(v); } catch (e) { return null; } };
+    AsyncStorage.getItem(CLAVE + '_banners').then((v) => { const b = v && leer(v); if (b) setBanners(b); }).catch(() => {});
+    supabase.from('ajustes').select('valor').eq('clave', 'banners').maybeSingle().then(({ data }) => {
+      const b = data && leer(data.valor);
+      if (b) { setBanners(b); AsyncStorage.setItem(CLAVE + '_banners', data.valor).catch(() => {}); }
+    });
   }, []);
   const setEstilo = (v) => { setEstiloState(v); AsyncStorage.setItem(CLAVE, v).catch(() => {}); };
   aplicarEstilo(estilo);
-  return <Ctx.Provider value={{ estilo, general, setEstilo, setEstiloBarrio }}>{children}</Ctx.Provider>;
+  aplicarBanners(banners);
+  return <Ctx.Provider value={{ estilo, general, setEstilo, setEstiloBarrio, banners }}>{children}</Ctx.Provider>;
 }
 export const useEstilo = () => useContext(Ctx);
 
