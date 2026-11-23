@@ -109,6 +109,15 @@ function Caserito() {
   // 2) Ubicación (si no la da, usamos el centro de Barrio Italia)
   useEffect(() => {
     let sub;
+    // Solo cambiamos la posición si te moviste de verdad (> 8 m): el GPS tiembla y no queremos recargar por nada
+    const mover = (c) => {
+      const nueva = { lat: c.latitude, lng: c.longitude, precision: Math.round(c.accuracy || 0) };
+      setPos((x) => {
+        if (!x || x.aprox) return nueva;
+        const m = Math.hypot((x.lat - nueva.lat) * 111320, (x.lng - nueva.lng) * 93000);
+        return m > 8 ? nueva : x;
+      });
+    };
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') { setPos({ ...BARRIO_ITALIA, aprox: true }); return; }
@@ -118,26 +127,38 @@ function Caserito() {
       if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.geolocation) {
         // En el navegador vamos directo al GPS del teléfono (más confiable para seguirte mientras caminas)
         const id = navigator.geolocation.watchPosition(
-          (q) => setPos({ lat: q.coords.latitude, lng: q.coords.longitude }),
+          (q) => mover(q.coords),
           () => {},
           { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
         sub = { remove: () => navigator.geolocation.clearWatch(id) };
       } else {
         Location.watchPositionAsync({ accuracy: Location.Accuracy.High, distanceInterval: 5, timeInterval: 3000 },
-          (q) => setPos({ lat: q.coords.latitude, lng: q.coords.longitude })).then((s) => { sub = s; }).catch(() => {});
+          (q) => mover(q.coords)).then((s) => { sub = s; }).catch(() => {});
       }
       const u = await Location.getLastKnownPositionAsync().catch(() => null);
-      if (u) setPos((x) => (x && !x.aprox ? x : { lat: u.coords.latitude, lng: u.coords.longitude }));
+      if (u) setPos((x) => (x && !x.aprox ? x : { lat: u.coords.latitude, lng: u.coords.longitude, precision: Math.round(u.coords.accuracy || 0) }));
       const p = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }).catch(() => null);
-      if (p) setPos({ lat: p.coords.latitude, lng: p.coords.longitude });
+      if (p) mover(p.coords);
     })().catch(() => setPos({ ...BARRIO_ITALIA, aprox: true }));
     return () => sub && sub.remove();
   }, []);
 
   // 3) Drops vigentes cerca
-  const turno = useRef(0); // si llegan respuestas desordenadas, solo vale la última pedida
+  // La búsqueda de drops solo se rehace si te moviste más de 40 m (o cada 30 s)
+  const [posBusqueda, setPosBusqueda] = useState(null);
+  useEffect(() => {
+    if (!pos) return;
+    setPosBusqueda((b) => {
+      if (!b || b.aprox !== pos.aprox) return pos;
+      return Math.hypot((b.lat - pos.lat) * 111320, (b.lng - pos.lng) * 93000) > 40 ? pos : b;
+    });
+  }, [pos]);
+  const turno = useRef(0);
+  const dropsRef = useRef([]);
+  dropsRef.current = drops; // si llegan respuestas desordenadas, solo vale la última pedida
   const cargar = useCallback(async () => {
-    if (!usuario || !pos) return;
+    if (!usuario || !posBusqueda) return;
+    const pos = posBusqueda;
     const mio = ++turno.current;
     const vigente = () => mio === turno.current;
     // Visitando otro barrio: sus drops, medidos desde el centro del barrio
@@ -151,7 +172,12 @@ function Caserito() {
     }
     let data = [], error = null;
     if (!pos.aprox) {
-      const r = await supabase.rpc('drops_cerca', { lat: pos.lat, lng: pos.lng, radio_m: 3000 });
+      let r = await supabase.rpc('drops_cerca', { lat: pos.lat, lng: pos.lng, radio_m: 3000 });
+      // Si viene vacío pero ya estabas viendo drops cerca, confirmamos una vez más antes de borrarlos
+      if (!r.error && !(r.data || []).length && dropsRef.current.some((d) => !d.lejos_marca && new Date(d.termina_at) > new Date())) {
+        await new Promise((ok) => setTimeout(ok, 1500));
+        r = await supabase.rpc('drops_cerca', { lat: pos.lat, lng: pos.lng, radio_m: 3000 });
+      }
       data = r.data || []; error = r.error;
     }
     // Sin drops cerca (o sin tu ubicación): los del barrio más cercano que tenga, para que cualquiera pueda mirar
@@ -164,15 +190,16 @@ function Caserito() {
         const r = await supabase.rpc('drops_cerca', { lat: c.lat, lng: c.lng, radio_m: 2000 });
         if (!r.error && r.data && r.data.length) {
           lejos = true; mostrado = c;
-          data = r.data.map((d) => ({ ...d, dentro_del_radio: false, cuadras: Math.max(d.cuadras, 99) }));
+          data = r.data.map((d) => ({ ...d, dentro_del_radio: false, cuadras: Math.max(d.cuadras, 99), lejos_marca: true }));
           break;
         }
       }
     }
     if (!vigente()) return;
-    if (error) setError(explicar(error)); else { setError(''); setDrops(data || []); setLejos(lejos); setCentroLejos(mostrado); }
+    if (error) { if (!dropsRef.current.length) setError(explicar(error)); } // con un error de red no borramos lo que ya ves
+    else { setError(''); setDrops(data || []); setLejos(lejos); setCentroLejos(mostrado); }
     setCargando(false);
-  }, [usuario, pos, barrios, visita]);
+  }, [usuario, posBusqueda, barrios, visita]);
 
   // Si llegaste al barrio que ibas a visitar, la app vuelve sola a "Aquí" (para que se active tu QR)
   useEffect(() => {
