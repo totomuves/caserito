@@ -8,7 +8,7 @@ import { ArteLocal } from './arteLocal';
 import { ESTILO as ESTILO_MAPA, ESTILO_MODERNO } from './Mapa';
 
 
-export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVerMapa = () => {}, t = (a) => a }) {
+export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVerMapa = () => {}, t = (a) => a, lugares = [], alAbrirLugar = () => {} }) {
   const coords = useCoordenadas(drops);
   const locales = useLocalesMapa();
   const centro = yo || pos;
@@ -42,6 +42,17 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
       <MapView ref={mapa} style={{ flex: 1 }} scrollEnabled={false} zoomEnabled rotateEnabled={false} pitchEnabled={false}
         showsUserLocation={!!yo} showsPointsOfInterest={false} toolbarEnabled={false} customMapStyle={SKIN === 'moderno' ? ESTILO_MODERNO : ESTILO_MAPA}
         initialRegion={{ latitude: centro.lat, longitude: centro.lng, latitudeDelta: delta, longitudeDelta: delta }}>
+        {lugares.map((lg) => (
+          <Marker key={'g' + lg.id} coordinate={{ latitude: lg.lat, longitude: lg.lng }} anchor={{ x: 0.5, y: 1 }} onPress={() => alAbrirLugar(lg)} tracksViewChanges={false} zIndex={900}>
+            <View style={{ alignItems: 'center' }}>
+              <View style={{ backgroundColor: '#111111', borderRadius: 12, paddingHorizontal: 9, paddingVertical: 5 }}>
+                <Text style={{ fontFamily: F.negrita, fontSize: 8, letterSpacing: 1.5, color: C.amarillo }}>{lg.tipo === 'mall' ? 'MALL' : 'PATIO'}</Text>
+                <Text style={{ fontFamily: F.negrita, fontSize: 12, color: '#FFFFFF' }} numberOfLines={1}>{lg.nombre}</Text>
+              </View>
+              <View style={{ width: 0, height: 0, borderLeftWidth: 7, borderRightWidth: 7, borderTopWidth: 9, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderTopColor: '#111111' }} />
+            </View>
+          </Marker>
+        ))}
         {(() => {
           const dropDe = {};
           drops.forEach((d) => { if (!dropDe[d.local_id]) dropDe[d.local_id] = d; });

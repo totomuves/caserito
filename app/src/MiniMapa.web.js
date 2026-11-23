@@ -4,6 +4,7 @@ import { C, F, R, precio, ESTILO } from './tema';
 import { useCoordenadas, useLocalesMapa, useTiendasOsm, especialidad } from './MapaComun';
 import { arteHtml } from './arteLocal';
 import { conectarCalles, CSS_CALLES } from './callesWeb';
+import { lugarHtml } from './Plano';
 
 const L = require('leaflet');
 const LLAVE_CARTO = process.env.EXPO_PUBLIC_CARTO_KEY || '';
@@ -26,6 +27,12 @@ function estilos() {
     .droper-mini .leaflet-control-attribution { font-size:8px; background:rgba(255,255,255,.7); }
     .mini-yo { width:18px; height:18px; border-radius:9px; background:#1D4ED8; border:3px solid #fff; box-shadow:0 0 0 8px rgba(29,78,216,.18), 0 1px 4px rgba(0,0,0,.35); box-sizing:border-box; }
     .droper-mini .mini-lam { transform: rotate(var(--contra, 0deg)); transition: transform .3s ease-out; will-change: transform; }
+    .lugar-pin { display:flex; flex-direction:column; align-items:center; cursor:pointer; }
+    .lugar-carta { background:#111; color:#fff; border-radius:12px; padding:5px 9px; box-shadow:0 6px 14px rgba(17,17,17,.3); font-family:Archivo, sans-serif; }
+    .lugar-carta i { display:block; font-style:normal; font:800 8px Archivo, sans-serif; letter-spacing:1.5px; color:#FFD100; }
+    .lugar-carta b { display:block; font:800 12px Archivo, sans-serif; white-space:nowrap; }
+    .lugar-carta span { display:block; font:600 9px Archivo, sans-serif; color:#ddd; white-space:nowrap; }
+    .lugar-punta { width:0; height:0; border-left:7px solid transparent; border-right:7px solid transparent; border-top:9px solid #111; }
     .mini-lam { display:flex; flex-direction:column; align-items:center; cursor:pointer; }
     .mini-lam .carta { position:relative; width:40px; height:40px; box-sizing:border-box; overflow:hidden; background:#fff; border:1px solid #D9D9DF; border-radius:8px; padding:2px; box-shadow:0 3px 8px rgba(17,17,17,.18); }
     .mini-lam.con-drop .carta { border:2px solid #111; }
@@ -36,7 +43,7 @@ function estilos() {
   document.head.appendChild(st);
 }
 
-export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVerMapa = () => {}, t = (a) => a }) {
+export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVerMapa = () => {}, t = (a) => a, lugares = [], alAbrirLugar = () => {} }) {
   const caja = useRef(null);
   const mapa = useRef(null);
   const capa = useRef(null);
@@ -118,6 +125,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
     if (!m || !g || !m.hasLayer(g)) return;
     g.clearLayers();
     tiendas.forEach((t) => L.circleMarker([t.lat, t.lng], { radius: 4, color: '#FFFFFF', weight: 1.5, fillColor: '#8A8A8A', fillOpacity: 1 }).bindTooltip(t.nombre, { direction: 'top' }).addTo(g));
+    lugares.forEach((lg) => L.marker([lg.lat, lg.lng], { icon: L.divIcon({ className: '', html: `<div style="transform:rotate(var(--contra,0deg))">${lugarHtml(lg)}</div>`, iconSize: [150, 70], iconAnchor: [75, 68] }), zIndexOffset: 900 }).on('click', () => alAbrirLugar(lg)).addTo(g));
     const dropDe = {};
     drops.forEach((d) => { if (!dropDe[d.local_id]) dropDe[d.local_id] = d; });
     const puntos = locales.map((l) => ({ l, p: l.punto }));
@@ -131,7 +139,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
       L.marker([p.lat, p.lng], { icon: L.divIcon({ className: '', html, iconSize: [46, d ? 78 : 62], iconAnchor: [23, d ? 76 : 60] }), zIndexOffset: d ? 500 : 0 })
         .on('click', () => (d ? alAbrir(d) : alVerMapa())).addTo(g);
     });
-  }, [drops, coords, locales, tiendas, !!mapa.current]);
+  }, [drops, coords, locales, tiendas, lugares, !!mapa.current]);
 
   return (
     <View style={{ marginHorizontal: 16, marginTop: 14, height: 300, borderRadius: R(20), overflow: 'hidden', borderWidth: 1, borderColor: C.borde, backgroundColor: ESTILO === 'moderno' ? '#FFFFFF' : '#FFF3B0' }}>

@@ -79,6 +79,19 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
   }
 
   const moderno = estilo === 'moderno';
+  // Patios y malls: acceso directo a su plano (los más cercanos primero)
+  const distancia = (g) => (pos ? Math.hypot((g.lat - pos.lat) * 111320, (g.lng - pos.lng) * 93000) : 0);
+  const filaLugares = lugares.length ? (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingTop: 12 }}>
+      {[...lugares].sort((a, b) => distancia(a) - distancia(b)).map((g) => (
+        <Pressable key={g.id} onPress={() => alAbrirLugar(g)} accessibilityRole="button" accessibilityLabel={`${g.tipo === 'mall' ? 'Mall' : 'Patio'} ${g.nombre}: ver plano`}
+          style={{ minHeight: 40, paddingHorizontal: 14, borderRadius: R(16), backgroundColor: C.negro, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <Text style={{ fontFamily: F.negrita, fontSize: 10, letterSpacing: 1.2, color: C.amarillo }}>{g.tipo === 'mall' ? 'MALL' : 'PATIO'}</Text>
+          <Text style={{ fontFamily: F.negrita, fontSize: 13, color: '#FFFFFF' }}>{g.nombre} →</Text>
+        </Pressable>
+      ))}
+    </ScrollView>
+  ) : null;
   const hora12 = (d) => new Date(d.termina_at).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
   const cercanos = drops.filter((d) => d.dentro_del_radio || d.cuadras <= 2).length;
   const cabeceraModerna = (
@@ -322,7 +335,8 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
 
       {moderno ? (
         <>
-          {enLugar ? bloqueLugar : <Seguro><MiniMapa pos={visita ? { lat: visita.lat, lng: visita.lng } : pos} yo={!visita && pos && !pos.aprox ? pos : null} drops={drops} alAbrir={alAbrir} alVerMapa={alVerMapa} t={t} /></Seguro>}
+          {enLugar ? bloqueLugar : <Seguro><MiniMapa pos={visita ? { lat: visita.lat, lng: visita.lng } : pos} yo={!visita && pos && !pos.aprox ? pos : null} drops={drops} alAbrir={alAbrir} alVerMapa={alVerMapa} t={t} lugares={lugares} alAbrirLugar={alAbrirLugar} /></Seguro>}
+          {filaLugares}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingTop: 16 }}>
             {CATEGORIAS.map((c) => <Pildora key={c.id} texto={tur ? categoriaTur(c.id, lang) || c.texto : c.texto} categoria={c.id} activa={filtro === c.id} onPress={() => setFiltro(c.id)} />)}
           </ScrollView>
@@ -333,6 +347,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
       ) : (
         <>
           {bloqueLugar}
+          {filaLugares}
           {bloqueBarrios}
           {bloqueFrase}
           {bloqueDrops}

@@ -240,7 +240,10 @@ export function HojaMapa({ drops, pos, sel, alAbrir, coords = {} }) {
 export function useLugares() {
   const [lugares, setLugares] = useState([]);
   useEffect(() => {
-    supabase.rpc('lugares_mapa').then(({ data, error }) => { if (!error && data) setLugares(data); });
+    const traer = () => supabase.rpc('lugares_mapa').then(({ data, error }) => { if (!error && data) setLugares(data); });
+    traer();
+    const x = setInterval(traer, 60000); // si el admin crea uno nuevo, aparece solo
+    return () => clearInterval(x);
   }, []);
   return lugares;
 }
