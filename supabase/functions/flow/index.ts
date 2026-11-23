@@ -105,8 +105,21 @@ Deno.serve(async (req) => {
         await admin.from('suscripciones').upsert({ local_id: local, flow_customer_id: c.customerId, estado: 'tarjeta_pendiente', actualizado_at: new Date().toISOString() });
         fila = { local_id: local, flow_customer_id: c.customerId };
       }
-      const r = await flow('POST', 'customer/register', { customerId: fila.flow_customer_id, url_return: `${FUNCION}?accion=volver&local=${local}` });
-      return json({ url: `${r.url}?token=${r.token}` });
+      try {
+        const r = await flow('POST', 'customer/register', { customerId: fila.flow_customer_id, url_return: `${FUNCION}?accion=volver&local=${local}` });
+        return json({ url: `${r.url}?token=${r.token}` });
+      } catch (e) {
+        // Sin "Cargo Automático" activado en Flow: suscripción igual, pero Flow manda cada mes un correo con el link de pago
+        if (!/automatic charge/i.test(String((e as Error).message))) throw e;
+        let subId = fila.flow_subscription_id;
+        if (!subId) {
+          const s = await flow('POST', 'subscription/create', { planId: PLAN, customerId: fila.flow_customer_id });
+          subId = s.subscriptionId;
+        }
+        await admin.from('suscripciones').update({ flow_subscription_id: subId, tarjeta: 'Pago por correo (Flow)', estado: 'activa', actualizado_at: new Date().toISOString() }).eq('local_id', local);
+        await sincronizar(local).catch(() => {});
+        return json({ sin_tarjeta: true, mensaje: `Listo: quedaste suscrito. Cada mes Flow te manda un correo a ${usuario.email || 'tu correo'} con el link para pagar.` });
+      }
     }
 
     // 2) Flow devuelve al local después de registrar la tarjeta

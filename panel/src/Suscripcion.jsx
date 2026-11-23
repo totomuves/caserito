@@ -37,6 +37,7 @@ export default function Suscripcion({ local }) {
     setCargando(true); setMsg('');
     const { data, error } = await supabase.functions.invoke('flow', { body: { accion: 'iniciar', local_id: local.id } });
     setCargando(false);
+    if (!error && data && data.sin_tarjeta) { setMsg(data.mensaje); leer(false); return; }
     if (error || !data || !data.url) {
       let detalle = (data && data.error) || '';
       if (!detalle && error && error.context && typeof error.context.json === 'function') { try { detalle = (await error.context.json()).error || ''; } catch (e) { /* sin cuerpo */ } }
