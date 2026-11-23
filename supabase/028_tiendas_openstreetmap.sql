@@ -35,3 +35,16 @@ drop policy if exists tiendas_osm_admin on caserito.tiendas_osm;
 create policy tiendas_osm_admin on caserito.tiendas_osm for all to authenticated using (caserito.es_admin()) with check (caserito.es_admin());
 grant select on caserito.tiendas_osm to anon, authenticated;
 grant insert, update, delete on caserito.tiendas_osm to authenticated;
+
+-- Interruptor: mostrar o no las tiendas grises en el mapa de la app (parte apagado)
+insert into caserito.ajustes (clave, valor) values ('tiendas_osm', 'no') on conflict (clave) do nothing;
+create or replace function caserito.fijar_tiendas_osm(p_mostrar boolean)
+returns boolean language plpgsql security definer set search_path = caserito, public as $$
+begin
+  if not caserito.es_admin() then raise exception 'Solo el admin puede cambiar esto'; end if;
+  insert into caserito.ajustes (clave, valor, actualizado_at) values ('tiendas_osm', case when p_mostrar then 'si' else 'no' end, now())
+  on conflict (clave) do update set valor = excluded.valor, actualizado_at = now();
+  return p_mostrar;
+end $$;
+revoke all on function caserito.fijar_tiendas_osm(boolean) from public, anon;
+grant execute on function caserito.fijar_tiendas_osm(boolean) to authenticated;

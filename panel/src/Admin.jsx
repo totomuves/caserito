@@ -39,7 +39,7 @@ export default function Admin({ usuario, alEntrarLocal }) {
       {seccion === 'comentarios' && <Comentarios />}
       {seccion === 'barrios' && <Barrios />}
       {seccion === 'lugares' && <Lugares />}
-      {seccion === 'estilo' && <><EstiloApp /><ColoresBanners /></>}
+      {seccion === 'estilo' && <><EstiloApp /><ColoresBanners /><InterruptorTiendas /></>}
       {seccion === 'invitar' && <Invitar />}
       {seccion === 'qr' && (
         <Qr url={URL_APP} titulo="DROPER" archivo="caserito-qr-app.png"
@@ -685,6 +685,35 @@ function ColoresBanners() {
           <div style={{ background: hex(b.aprendio), padding: '10px 12px', fontWeight: 800, fontSize: 12, color: claro(b.aprendio) ? '#111' : '#fff' }}>DROPER APRENDIÓ QUE…</div>
         </div>
       </div>
+      {msg && <p style={{ margin: 0, fontWeight: 700 }}>{msg}</p>}
+    </div>
+  );
+}
+
+// Mostrar u ocultar en el mapa de la app las tiendas grises de OpenStreetMap
+function InterruptorTiendas() {
+  const [on, setOn] = useState(null);
+  const [msg, setMsg] = useState('');
+  useEffect(() => {
+    supabase.from('ajustes').select('valor').eq('clave', 'tiendas_osm').maybeSingle().then(({ data }) => setOn(!!data && data.valor === 'si'));
+  }, []);
+  async function cambiar() {
+    const nuevo = !on;
+    setMsg('');
+    const { error } = await supabase.rpc('fijar_tiendas_osm', { p_mostrar: nuevo });
+    if (error) { setMsg(/fijar_tiendas_osm/.test(error.message || '') ? 'Falta correr el SQL 028.' : error.message); return; }
+    setOn(nuevo);
+    setMsg(nuevo ? 'Activado ✓ Las tiendas grises se ven en el mapa al abrir la app.' : 'Desactivado ✓ El mapa muestra solo los locales de Droper.');
+  }
+  if (on === null) return null;
+  return (
+    <div className="tarjeta" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <h2 className="letrista" style={{ margin: 0 }}>Tiendas de OpenStreetMap en el mapa</h2>
+      <p style={{ margin: 0 }}>Puntos grises con las tiendas del barrio que aún no están en Droper (las traes en Barrios y arte). Los planos de patios y malls las muestran siempre.</p>
+      <label style={{ display: 'flex', gap: 10, alignItems: 'center', fontWeight: 800, minHeight: 44, cursor: 'pointer' }}>
+        <input type="checkbox" role="switch" checked={on} onChange={cambiar} style={{ width: 24, height: 24 }} />
+        {on ? 'Se muestran en el mapa' : 'No se muestran'}
+      </label>
       {msg && <p style={{ margin: 0, fontWeight: 700 }}>{msg}</p>}
     </div>
   );

@@ -261,8 +261,12 @@ function metrosEntre(a, b) {
 export function useTiendasOsm() {
   const [tiendas, setTiendas] = useState([]);
   useEffect(() => {
-    supabase.from('tiendas_osm').select('osm_id, nombre, tipo, lat, lng').is('local_id', null).is('lugar_id', null).eq('oculta', false).limit(3000)
-      .then(({ data, error }) => { if (!error && data) setTiendas(data); });
+    // Solo si el admin las activó (Admin → Estilo de la app → Tiendas de OpenStreetMap)
+    supabase.from('ajustes').select('valor').eq('clave', 'tiendas_osm').maybeSingle().then(({ data: a }) => {
+      if (!a || a.valor !== 'si') return;
+      supabase.from('tiendas_osm').select('osm_id, nombre, tipo, lat, lng').is('local_id', null).is('lugar_id', null).eq('oculta', false).limit(3000)
+        .then(({ data, error }) => { if (!error && data) setTiendas(data); });
+    });
   }, []);
   return tiendas;
 }
