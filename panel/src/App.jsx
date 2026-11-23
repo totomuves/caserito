@@ -13,6 +13,7 @@ import Admin from './Admin.jsx';
 import { LaminaLocal } from './arteLocal.jsx';
 import MisDrops from './MisDrops.jsx';
 import Ayuda from './Ayuda.jsx';
+import { abrirKit } from './Kit.js';
 import Qr, { URL_APP } from './Qr.jsx';
 
 export default function App() {
@@ -134,6 +135,11 @@ export default function App() {
           </div>
           <Qr url={`${URL_APP}/?local=${local.id}`} titulo={local.nombre} archivo={`caserito-qr-${local.nombre.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.png`}
             bajada="Imprímelo y ponlo en la caja y en la vitrina. Quien lo escanea abre Droper directo, sin instalar nada, y ve tus drops." />
+          <div className="tarjeta" style={{ alignItems: 'center', textAlign: 'center' }}>
+            <b className="letrista" style={{ fontSize: 20 }}>KIT DEL LOCAL</b>
+            <span>Póster para la vitrina, 6 stickers y tarjeta de mesa, con tu QR y tu lámina. Listo para imprimir o guardar en PDF.</span>
+            <button className="boton" onClick={() => abrirKit(local)}>Descargar kit</button>
+          </div>
         </div>
       </Marco>
     );

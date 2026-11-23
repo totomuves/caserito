@@ -3,381 +3,255 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Droper · Ofertas de barrio que se activan cuando llegas</title>
-<meta name="description" content="Droper: drops de ofertas limitadas de los locales de tu barrio. Se activan cuando llegas a la puerta. Arte para el pueblo.">
-<meta property="og:title" content="Droper · Arte para el pueblo">
-<meta property="og:description" content="Ofertas de barrio que se activan cuando llegas. Junta las láminas del Álbum de Chile.">
+<title>Droper · Tu barrio suelta drops</title>
+<meta name="description" content="Droper: ofertas limitadas de los locales de tu barrio que se activan cuando llegas. Junta las láminas de cada local y los pósters de cada mall. Arte para el pueblo.">
+<meta property="og:title" content="Droper · Tu barrio suelta drops">
+<meta property="og:description" content="Ofertas de barrio por cuadra, láminas para tu álbum y pósters de cada mall.">
+<meta property="og:image" content="https://www.caserito.store/conoce/img/inicio.png">
 <link rel="icon" type="image/svg+xml" href="/icono.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;800;900&family=Jost:wght@700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800;900&display=swap" rel="stylesheet">
 <style>
-  :root { --amarillo:#FFD100; --rojo:#E30A2F; --azul:#1E5AA8; --negro:#111111; --papel:#FFF6E5; --crema:#F3E6CC; --verde:#1F9D55; --suave:#FFF3B0; }
+  :root { --am:#FFD100; --ro:#E30A2F; --az:#1E5AA8; --ne:#111111; --gr:#F4F4F6; --bo:#E4E4E9; --tx:#444; }
   * { box-sizing:border-box; }
   html { scroll-behavior:smooth; }
-  body { margin:0; background:var(--papel); color:var(--negro); font-family:Archivo, system-ui, sans-serif; font-size:18px; line-height:1.5; }
+  body { margin:0; background:#fff; color:var(--ne); font-family:Archivo, system-ui, sans-serif; font-size:18px; line-height:1.5; }
   a { color:inherit; }
-  .letrista { font-family:Jost, Archivo, sans-serif; font-weight:800; letter-spacing:-.5px; line-height:1.02; }
-  .envoltura { max-width:1180px; margin:0 auto; padding:0 24px; }
-  .boton { display:inline-flex; align-items:center; gap:10px; min-height:54px; padding:0 26px; border:3px solid var(--negro); border-radius:0; font-weight:800; font-size:17px; text-decoration:none; background:var(--negro); color:var(--amarillo); box-shadow:5px 5px 0 var(--rojo); transition:transform .15s, box-shadow .15s; }
-  .boton:hover { transform:translate(-2px,-2px); box-shadow:7px 7px 0 var(--rojo); }
-  .boton.claro { background:var(--papel); color:var(--negro); box-shadow:5px 5px 0 var(--azul); }
-  .boton:focus-visible { outline:3px solid var(--azul); outline-offset:4px; }
-  .etiqueta { display:inline-block; font-weight:900; font-size:13px; letter-spacing:2.5px; text-transform:uppercase; }
-
-  /* Barra */
-  header.barra { position:sticky; top:0; z-index:10; background:var(--amarillo); border-bottom:3px solid var(--negro); }
-  header.barra .envoltura { display:flex; align-items:center; justify-content:space-between; height:68px; gap:16px; }
-  .logo { height:34px; width:auto; display:block; }
-  nav { display:flex; gap:22px; font-weight:800; font-size:15px; }
-  nav a { text-decoration:none; }
-  nav a:hover { text-decoration:underline; text-decoration-thickness:3px; }
-
-  /* Hero Bauhaus */
-  .hero { position:relative; background:var(--amarillo); border-bottom:3px solid var(--negro); overflow:hidden; }
-  .hero .envoltura { display:grid; grid-template-columns:1.1fr .9fr; gap:40px; align-items:center; padding-top:64px; padding-bottom:80px; position:relative; z-index:1; }
-  .hero h1 { font-size:clamp(46px, 7vw, 92px); margin:14px 0 18px; }
-  .hero h1 .rojo { color:var(--rojo); }
-  .hero p.bajada { font-size:21px; max-width:540px; margin:0 0 30px; font-weight:500; }
-  .hero .botones { display:flex; flex-wrap:wrap; gap:18px; }
-  .forma { position:absolute; }
-  .circulo { border-radius:50%; }
-  .hero .f1 { width:420px; height:420px; right:-120px; top:-120px; background:var(--rojo); }
-  .hero .f2 { width:180px; height:180px; left:-60px; bottom:-60px; background:var(--azul); }
-  .hero .f3 { width:0; height:0; border-left:90px solid transparent; border-right:90px solid transparent; border-bottom:156px solid var(--negro); right:42%; bottom:-40px; opacity:.9; }
-  .hero .franja { position:absolute; left:0; right:0; bottom:0; height:14px; background:repeating-linear-gradient(90deg, var(--negro) 0 40px, var(--papel) 40px 80px); }
-
-  /* Teléfono */
-  .telefono { width:300px; height:610px; margin:0 auto; background:var(--negro); border-radius:42px; padding:12px; box-shadow:14px 14px 0 var(--azul); position:relative; }
-  .pantalla { width:100%; height:100%; border-radius:32px; overflow:hidden; position:relative; background:var(--suave); }
-  .mapa-calles { position:absolute; inset:0; background:
-      linear-gradient(90deg, transparent 0 46%, #FFF6E5 46% 52%, transparent 52%),
-      linear-gradient(0deg, transparent 0 30%, #FFF6E5 30% 35%, transparent 35% 64%, #FFF6E5 64% 69%, transparent 69%),
-      linear-gradient(90deg, transparent 0 14%, #FFF6E5 14% 17%, transparent 17% 80%, #FFF6E5 80% 83%, transparent 83%),
-      var(--suave); }
-  .parque { position:absolute; left:58%; top:40%; width:28%; height:20%; background:#BFD8B0; border-radius:6px; }
-  .calle-nombre { position:absolute; font-weight:900; font-size:9px; letter-spacing:1.5px; color:#9A9A9A; }
-  .chips { position:absolute; top:14px; left:12px; right:12px; display:flex; gap:6px; }
-  .chip { font-weight:800; font-size:11px; padding:6px 10px; border:2px solid var(--negro); border-radius:0; background:var(--papel); white-space:nowrap; }
-  .chip.activo { background:var(--amarillo); }
-  .pin { position:absolute; display:flex; flex-direction:column; align-items:center; }
-  .pin .tag { font-family:Jost, Archivo, sans-serif; font-weight:800; font-size:14px; padding:4px 7px 2px; background:var(--amarillo); border:2.5px solid var(--negro); border-radius:6px; box-shadow:3px 3px 0 var(--negro); margin-bottom:0; white-space:nowrap; border-radius:0; }
-  .pin .tag.negro { background:var(--negro); color:var(--amarillo); box-shadow:3px 3px 0 var(--rojo); }
-  .pin .tag.crema { background:var(--papel); }
-  .pin .tag::after { content:''; position:absolute; left:50%; bottom:-11px; width:3px; height:9px; margin-left:-1.5px; background:var(--negro); }
-  .pin .tag { position:relative; margin-bottom:10px; }
-  .pin .gota { width:30px; height:30px; border:3px solid var(--negro); display:flex; align-items:center; justify-content:center; }
-  .pin .gota.circulo { border-radius:50%; } .pin .gota.rombo { transform:rotate(45deg); width:24px; height:24px; }
-  .pin .gota.tri { border:none; width:0; height:0; border-left:17px solid transparent; border-right:17px solid transparent; border-bottom:30px solid var(--negro) !important; background:none !important; }
-  .pin .gota span {  color:var(--papel); font-weight:900; font-size:12px; }
-  .yo { position:absolute; left:44%; top:56%; width:18px; height:18px; border-radius:50%; background:#1D4ED8; border:3px solid #fff; box-shadow:0 0 0 2px var(--negro), 0 0 0 12px rgba(29,78,216,.22); }
-  .hoja { position:absolute; left:0; right:0; bottom:0; background:var(--papel); border-top:2.5px solid var(--negro); border-radius:0; padding:10px 14px 16px; }
-  .hoja .agarre { width:40px; height:5px; border-radius:3px; background:#11111140; margin:0 auto 8px; }
-  .hoja h4 { margin:0 0 8px; font-size:17px; display:flex; justify-content:space-between; align-items:baseline; }
-  .hoja h4 small { font-family:Archivo; font-style:normal; font-size:11px; color:#4A4A4A; font-weight:800; }
-  .tarjeta { background:#fff; border:2.5px solid var(--negro); border-radius:0; padding:10px; box-shadow:3px 3px 0 var(--negro); }
-  .tarjeta .cat { font-size:10px; font-weight:900; color:var(--rojo); text-transform:uppercase; letter-spacing:.5px; }
-  .tarjeta b { display:block; font-size:15px; margin:2px 0; }
-  .pop { position:relative; height:74px; border:2.5px solid var(--negro); margin:4px 0 8px; padding:6px; overflow:hidden;
-    background-color:#FFE3E3; background-image:radial-gradient(var(--rojo) 2px, transparent 2.5px), radial-gradient(var(--rojo) 2px, transparent 2.5px); background-size:8px 8px; background-position:0 0,4px 4px; }
-  .pop .globo { position:relative; background:#fff; border:2.5px solid var(--negro); border-radius:14px; padding:4px 8px; font-weight:800; font-size:10px; line-height:1.25; text-transform:uppercase; max-width:72%; }
-  .pop .globo::after { content:''; position:absolute; left:16px; bottom:-10px; border-left:4px solid transparent; border-right:12px solid transparent; border-top:10px solid var(--negro); }
-  .pop .zas { position:absolute; right:4px; bottom:4px; width:58px; height:58px; display:flex; align-items:center; justify-content:center; font-family:Jost, Archivo, sans-serif; font-weight:800; font-size:13px; color:var(--rojo); text-shadow:1px 1px 0 var(--negro); background:var(--amarillo);
-    clip-path:polygon(50% 0,58% 18%,75% 7%,74% 26%,93% 25%,82% 41%,100% 50%,82% 59%,93% 75%,74% 74%,75% 93%,58% 82%,50% 100%,42% 82%,25% 93%,26% 74%,7% 75%,18% 59%,0 50%,18% 41%,7% 25%,26% 26%,25% 7%,42% 18%); }
-  .tarjeta i { font-size:12px; display:block; margin-bottom:6px; }
-  .barra-avance { height:9px; border:2px solid var(--negro); border-radius:5px; background:var(--suave); overflow:hidden; margin-bottom:8px; }
-  .barra-avance div { width:62%; height:100%; background:var(--amarillo); }
-  .tarjeta .ir { background:var(--negro); color:var(--amarillo); font-weight:800; font-size:12px; text-align:center; padding:9px; border-radius:0; }
-
+  img { max-width:100%; display:block; }
+  .ancho { max-width:1120px; margin:0 auto; padding:0 22px; }
+  /* Navegación */
+  nav { position:sticky; top:0; z-index:10; background:rgba(255,255,255,.92); backdrop-filter:blur(8px); border-bottom:1px solid var(--bo); }
+  nav .ancho { display:flex; align-items:center; gap:18px; height:64px; }
+  nav .logo { height:30px; }
+  nav .links { display:flex; gap:18px; margin-left:auto; font-weight:700; font-size:15px; }
+  nav .links a { text-decoration:none; padding:8px 2px; }
+  nav .cta { background:var(--ne); color:#fff; padding:10px 16px; border-radius:14px; text-decoration:none; font-weight:800; font-size:15px; }
+  @media (max-width:760px) { nav .links { display:none; } nav .cta { margin-left:auto; } }
+  /* Botones */
+  .botones { display:flex; flex-wrap:wrap; gap:12px; margin-top:26px; }
+  .btn { display:inline-flex; align-items:center; gap:8px; min-height:52px; padding:0 22px; border-radius:16px; font-weight:800; text-decoration:none; font-size:17px; border:2px solid var(--ne); }
+  .btn.negro { background:var(--ne); color:#fff; }
+  .btn.blanco { background:#fff; }
+  .btn.amarillo { background:var(--am); }
+  /* Hero */
+  .hero { background:var(--am); border-radius:0 0 40px 40px; overflow:hidden; position:relative; }
+  .hero .ancho { display:grid; grid-template-columns:1.1fr .9fr; gap:30px; align-items:center; padding-top:56px; padding-bottom:0; }
+  .hero h1 { font-size:clamp(46px, 8vw, 92px); line-height:.92; letter-spacing:-3px; margin:0; font-weight:900; }
+  .hero p.bajada { font-size:21px; max-width:520px; margin:20px 0 0; font-weight:600; }
+  .hero .tel { align-self:end; justify-self:center; width:min(360px, 90%); border-radius:36px 36px 0 0; border:3px solid var(--ne); border-bottom:0; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,.18); background:#fff; }
+  .hero .circulo { position:absolute; right:-120px; top:-120px; width:360px; height:360px; border-radius:50%; background:var(--ro); }
+  .hero .cuadro { position:absolute; left:0; bottom:0; width:120px; height:70px; background:var(--az); }
+  @media (max-width:860px) { .hero .ancho { grid-template-columns:1fr; padding-top:36px; } .hero .tel { width:min(320px, 86%); } }
   /* Secciones */
-  section { border-bottom:3px solid var(--negro); }
-  .bloque { padding:96px 0; }
-  h2 { font-size:clamp(38px, 5vw, 64px); margin:10px 0 18px; }
-  .intro { font-size:20px; max-width:640px; margin:0 0 44px; }
-
-  /* Manifiesto */
-  .manifiesto { background:var(--negro); color:var(--papel); }
-  .manifiesto .envoltura { display:grid; grid-template-columns:auto 1fr; gap:60px; align-items:center; }
-  .bauhaus-figura { width:260px; height:260px; position:relative; flex:none; }
-  .bauhaus-figura .a { position:absolute; inset:0 auto auto 0; width:130px; height:130px; background:var(--amarillo); }
-  .bauhaus-figura .b { position:absolute; right:0; top:0; width:130px; height:130px; border-radius:50%; background:var(--rojo); }
-  .bauhaus-figura .c { position:absolute; left:0; bottom:0; width:0; height:0; border-left:65px solid transparent; border-right:65px solid transparent; border-bottom:130px solid var(--azul); }
-  .bauhaus-figura .d { position:absolute; right:0; bottom:0; width:130px; height:130px; background:var(--papel); border-radius:130px 0 0 0; }
-  .manifiesto h2 { color:var(--amarillo); }
-  .manifiesto ul { list-style:none; padding:0; margin:0; display:grid; gap:14px; font-size:20px; }
-  .manifiesto li { padding-left:34px; position:relative; }
-  .manifiesto li::before { content:''; position:absolute; left:0; top:8px; width:16px; height:16px; background:var(--rojo); }
-  .manifiesto li:nth-child(2)::before { border-radius:50%; background:var(--amarillo); }
-  .manifiesto li:nth-child(3)::before { width:0; height:0; background:none; border-left:9px solid transparent; border-right:9px solid transparent; border-bottom:16px solid var(--azul); }
-
+  section.bloque { padding:84px 0; }
+  .eti { font-size:13px; letter-spacing:2px; font-weight:800; color:var(--ro); text-transform:uppercase; }
+  h2 { font-size:clamp(34px, 5vw, 54px); line-height:1; letter-spacing:-1.5px; margin:8px 0 18px; font-weight:900; }
+  .lead { font-size:20px; color:var(--tx); max-width:680px; }
   /* Pasos */
-  .pasos { display:grid; grid-template-columns:repeat(3, 1fr); gap:0; border:3px solid var(--negro); }
-  .paso { padding:34px 28px 38px; border-right:3px solid var(--negro); position:relative; background:var(--papel); }
-  .paso:last-child { border-right:none; }
-  .paso:nth-child(1) { background:var(--amarillo); }
-  .paso:nth-child(3) { background:var(--crema); }
-  .paso .num { font-family:Jost, Archivo, sans-serif; font-weight:800; font-size:72px; line-height:1; color:var(--rojo); }
-  .paso:nth-child(2) .num { color:var(--azul); }
-  .paso:nth-child(3) .num { color:var(--negro); }
-  .paso h3 { font-size:26px; margin:10px 0 8px; }
-  .paso p { margin:0; font-size:17px; }
-
-  /* Álbum */
-  .album { background:var(--rojo); color:var(--papel); }
-  .album h2 { color:var(--amarillo); }
-  .album .intro { color:var(--papel); }
-  .ediciones { display:grid; grid-template-columns:repeat(4, 1fr); gap:22px; }
-  .lamina { background:var(--papel); color:var(--negro); border:3px solid var(--negro); padding:12px; box-shadow:7px 7px 0 var(--negro); }
-  .lamina:nth-child(odd) { transform:rotate(-2deg); } .lamina:nth-child(even) { transform:rotate(1.5deg); }
-  .lamina .arte { background-image:radial-gradient(rgba(17,17,17,.28) 2.2px, transparent 2.7px), radial-gradient(rgba(17,17,17,.28) 2.2px, transparent 2.7px); background-size:11px 11px; background-position:0 0, 5.5px 5.5px; }
-  .lamina .arte { height:170px; border:3px solid var(--negro); position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; }
-  .lamina .arte .g1 { position:absolute; border-radius:50%; width:120px; height:120px; }
-  .lamina .arte .g2 { position:absolute; width:70px; height:70px; }
-  .lamina .arte .ojos { position:relative; display:flex; gap:6px; z-index:1; }
-  .lamina .arte .ojos span { width:30px; height:30px; background:#fff; border:3px solid var(--negro); border-radius:50%; position:relative; }
-  .lamina .arte .ojos span::after { content:''; position:absolute; width:11px; height:11px; border-radius:50%; background:var(--negro); top:9px; left:5px; }
-  .lamina .arte .ojos span:nth-child(2)::after { left:11px; top:5px; }
-  .lamina .nro { font-family:Jost, Archivo, sans-serif; font-weight:800; font-size:13px; margin-top:10px; color:var(--rojo); }
-  .lamina h3 { margin:2px 0 0; font-size:19px; }
-  .lamina p { margin:2px 0 0; font-size:13px; font-weight:700; }
-  .honor { margin-top:56px; display:grid; grid-template-columns:auto 1fr; gap:36px; align-items:center; background:var(--amarillo); color:var(--negro); border:3px solid var(--negro); padding:28px; box-shadow:8px 8px 0 var(--negro); }
-  .honor .sello { width:120px; height:120px; border-radius:50%; background:var(--negro); color:var(--amarillo); display:flex; align-items:center; justify-content:center; text-align:center; font-family:Jost, Archivo, sans-serif; font-weight:800; font-size:17px; line-height:1.05; transform:rotate(-8deg); }
-  .honor h3 { margin:0 0 6px; font-size:28px; }
-  .honor p { margin:0; }
-
-  /* Barrios */
-  .barrios { display:grid; grid-template-columns:repeat(4, 1fr); border:3px solid var(--negro); }
-  .barrio { padding:28px 24px; border-right:3px solid var(--negro); min-height:230px; display:flex; flex-direction:column; gap:8px; }
-  .barrio:last-child { border-right:none; }
-  .barrio .figura { width:48px; height:48px; margin-bottom:6px; }
-  .barrio h3 { margin:0; font-size:24px; }
-  .barrio .comuna { font-size:14px; font-weight:700; color:#4A4A4A; }
-  .barrio .estado { margin-top:auto; align-self:flex-start; font-weight:900; font-size:12px; letter-spacing:1.5px; padding:6px 10px; border:2.5px solid var(--negro); }
-  .barrio .estado.vivo { background:var(--verde); color:#fff; }
-  .barrio .estado.pronto { background:var(--papel); }
-
-  /* Idiomas */
-  .idiomas { background:var(--azul); color:var(--papel); }
-  .idiomas h2 { color:var(--amarillo); }
-  .idiomas .intro { color:var(--papel); }
-  .frases { display:grid; grid-template-columns:repeat(5, 1fr); gap:16px; }
-  .frase { background:var(--papel); color:var(--negro); border:3px solid var(--negro); padding:18px 16px; box-shadow:6px 6px 0 var(--negro); display:flex; flex-direction:column; gap:10px; }
-  .frase .lengua { font-weight:900; font-size:12px; letter-spacing:2px; text-transform:uppercase; }
-  .frase .mezcla { font-family:Jost, Archivo, sans-serif; font-weight:800; font-size:16px; color:var(--rojo); }
-  .frase q { font-size:16px; font-weight:700; quotes:'“' '”'; }
-
+  .pasos { display:grid; grid-template-columns:repeat(3, 1fr); gap:18px; margin-top:34px; }
+  .paso { background:var(--gr); border-radius:24px; padding:26px; }
+  .paso .n { width:44px; height:44px; border-radius:14px; background:var(--ne); color:var(--am); display:grid; place-items:center; font-weight:900; font-size:20px; }
+  .paso h3 { font-size:22px; margin:16px 0 6px; letter-spacing:-.4px; }
+  .paso p { margin:0; color:var(--tx); }
+  @media (max-width:860px) { .pasos { grid-template-columns:1fr; } }
+  /* Características */
+  .carac { display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-top:34px; }
+  .c { border:1px solid var(--bo); border-radius:22px; padding:22px; background:#fff; }
+  .c .fig { width:46px; height:46px; margin-bottom:12px; }
+  .c h3 { margin:0 0 6px; font-size:20px; letter-spacing:-.3px; }
+  .c p { margin:0; color:var(--tx); font-size:16px; }
+  @media (max-width:960px) { .carac { grid-template-columns:repeat(2, 1fr); } }
+  @media (max-width:620px) { .carac { grid-template-columns:1fr; } }
+  /* Pantallas */
+  .pantallas { display:grid; grid-template-columns:repeat(3, 1fr); gap:22px; margin-top:34px; align-items:start; }
+  .pantalla { background:var(--gr); border-radius:26px; padding:18px; }
+  .pantalla img { border-radius:18px; border:1px solid var(--bo); background:#fff; width:100%; height:auto; }
+  .pantalla b { display:block; margin-top:12px; font-size:18px; }
+  .pantalla span { color:var(--tx); font-size:15px; }
+  @media (max-width:860px) { .pantallas { grid-template-columns:1fr; } }
   /* Locales */
-  .locales { background:var(--amarillo); }
-  .locales .envoltura { display:grid; grid-template-columns:1.2fr .8fr; gap:48px; align-items:center; }
-  .locales ul { margin:0 0 30px; padding-left:22px; font-size:19px; }
-  .locales li { margin-bottom:6px; }
-  .cartel { background:var(--papel); border:3px solid var(--negro); box-shadow:10px 10px 0 var(--negro); padding:26px; transform:rotate(2deg); }
-  .cartel .grande { font-size:54px; color:var(--rojo); }
-  .cartel p { margin:6px 0 0; font-weight:700; }
-
-  footer { background:var(--negro); color:var(--papel); padding:48px 0 60px; }
-  footer .envoltura { display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap; align-items:center; }
-  footer .lema { font-size:34px; color:var(--amarillo); }
-  footer a { color:var(--papel); font-weight:700; }
-
-  @media (max-width: 900px) {
-    nav { display:none; }
-    .hero .envoltura, .manifiesto .envoltura, .locales .envoltura { grid-template-columns:1fr; }
-    .hero .f1 { width:260px; height:260px; right:-110px; top:-90px; }
-    .pasos, .barrios { grid-template-columns:1fr; }
-    .paso, .barrio { border-right:none; border-bottom:3px solid var(--negro); }
-    .paso:last-child, .barrio:last-child { border-bottom:none; }
-    .ediciones { grid-template-columns:repeat(2, 1fr); }
-    .frases { grid-template-columns:1fr 1fr; }
-    .honor { grid-template-columns:1fr; }
-    .bauhaus-figura { width:200px; height:200px; }
-    .bauhaus-figura .a, .bauhaus-figura .b, .bauhaus-figura .d { width:100px; height:100px; }
-    .bauhaus-figura .c { border-left-width:50px; border-right-width:50px; border-bottom-width:100px; }
-    .bloque { padding:64px 0; }
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .pin { animation: caer .6s cubic-bezier(.2,1.6,.4,1) both; }
-    @keyframes caer { from { transform:translateY(-18px); opacity:0 } to { transform:none; opacity:1 } }
-  }
+  .locales { background:var(--ne); color:#fff; border-radius:40px; }
+  .locales .ancho { display:grid; grid-template-columns:1fr 1fr; gap:34px; align-items:center; padding-top:70px; padding-bottom:70px; }
+  .locales .eti { color:var(--am); }
+  .locales .lead { color:#ddd; }
+  .locales ul { margin:18px 0 0; padding:0; list-style:none; display:grid; gap:10px; }
+  .locales li { display:flex; gap:10px; align-items:flex-start; }
+  .locales li::before { content:''; flex:none; width:12px; height:12px; margin-top:8px; background:var(--am); }
+  .locales img { border-radius:18px; transform:rotate(2deg); box-shadow:0 20px 40px rgba(0,0,0,.4); }
+  .locales .btn.blanco { border-color:#fff; }
+  @media (max-width:860px) { .locales .ancho { grid-template-columns:1fr; } }
+  /* Descargar */
+  .descargar { display:grid; grid-template-columns:1fr auto; gap:30px; align-items:center; background:var(--am); border-radius:32px; padding:40px; }
+  .qr { background:#fff; border:3px solid var(--ne); border-radius:20px; padding:12px; width:220px; height:220px; display:grid; place-items:center; }
+  .qr canvas, .qr img { width:190px !important; height:190px !important; }
+  .tiendas { display:flex; gap:12px; flex-wrap:wrap; margin-top:22px; }
+  .tienda { display:inline-flex; flex-direction:column; justify-content:center; min-height:58px; padding:6px 18px; border-radius:14px; background:var(--ne); color:#fff; text-decoration:none; }
+  .tienda small { font-size:11px; letter-spacing:.5px; opacity:.8; }
+  .tienda b { font-size:18px; line-height:1.1; }
+  .tienda.pronto { opacity:.55; cursor:default; }
+  @media (max-width:700px) { .descargar { grid-template-columns:1fr; padding:28px; } .qr { justify-self:center; } }
+  footer { padding:50px 0 60px; color:var(--tx); font-size:15px; }
+  footer .ancho { display:flex; gap:22px; flex-wrap:wrap; align-items:center; }
+  footer img { height:26px; }
+  footer a { font-weight:700; text-decoration:none; }
+  :focus-visible { outline:3px solid var(--ro); outline-offset:3px; }
 </style>
 </head>
 <body>
 
-<header class="barra">
-  <div class="envoltura">
-    <a href="#" aria-label="Droper, inicio"><svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 623 140" role="img" aria-label="Droper"><rect x="10" y="12" width="26" height="116" fill="#1E5AA8" stroke="#111" stroke-width="5" stroke-linejoin="miter"/><path d="M36,12 A58,58 0 0 1 36,128 Z" fill="#1E5AA8" stroke="#111" stroke-width="5" stroke-linejoin="miter"/><circle cx="54" cy="70" r="14" fill="#FFF6E5" stroke="#111" stroke-width="5" stroke-linejoin="miter"/><rect x="116" y="12" width="26" height="116" fill="#E30A2F" stroke="#111" stroke-width="5" stroke-linejoin="miter"/><path d="M142,12 A31,31 0 0 1 142,74 Z" fill="#E30A2F" stroke="#111" stroke-width="5" stroke-linejoin="miter"/><polygon points="142,74 176,74 200,128 166,128" fill="#FFD100" stroke="#111" stroke-width="5" stroke-linejoin="miter"/><circle cx="274" cy="70" r="57" fill="#FFD100" stroke="#111" stroke-width="5" stroke-linejoin="miter"/><circle cx="274" cy="70" r="22" fill="#FFF6E5" stroke="#111" stroke-width="5" stroke-linejoin="miter"/><rect x="264" y="60" width="20" height="20" fill="#E30A2F" stroke="#111" stroke-width="5" stroke-linejoin="miter"/><rect x="341" y="12" width="26" height="116" fill="#111111" stroke="#111" stroke-width="5" stroke-linejoin="miter"/><path d="M367,12 A34,34 0 0 1 367,80 Z" fill="#1E5AA8" stroke="#111" stroke-width="5" stroke-linejoin="miter"/><circle cx="377" cy="46" r="9" fill="#FFD100" stroke="#111" stroke-width="5" stroke-linejoin="miter"/><rect x="425" y="12" width="26" height="116" fill="#111111" stroke="#111" stroke-width="5" stroke-linejoin="miter"/><rect x="451" y="12" width="52" height="24" fill="#111111" stroke="#111" stroke-width="5" stroke-linejoin="miter"/><circle cx="475" cy="70" r="15" fill="#E30A2F" stroke="#111" stroke-width="5" stroke-linejoin="miter"/><rect x="451" y="104" width="52" height="24" fill="#111111" stroke="#111" stroke-width="5" stroke-linejoin="miter"/><rect x="523" y="12" width="26" height="116" fill="#1E5AA8" stroke="#111" stroke-width="5" stroke-linejoin="miter"/><path d="M549,12 A31,31 0 0 1 549,74 Z" fill="#1E5AA8" stroke="#111" stroke-width="5" stroke-linejoin="miter"/><polygon points="549,74 583,74 607,128 573,128" fill="#E30A2F" stroke="#111" stroke-width="5" stroke-linejoin="miter"/></svg></a>
-    <nav aria-label="Secciones">
+<nav aria-label="Principal">
+  <div class="ancho">
+    <a href="#inicio" aria-label="Droper, inicio"><img class="logo" src="/email/logo.png" alt="Droper"></a>
+    <div class="links">
       <a href="#como">Cómo funciona</a>
-      <a href="#album">El Álbum</a>
-      <a href="#barrios">Barrios</a>
-      <a href="#idiomas">Idiomas</a>
+      <a href="#pantallas">La app</a>
       <a href="#locales">Para locales</a>
-    </nav>
-    <a class="boton" style="min-height:44px;padding:0 18px;font-size:15px;box-shadow:4px 4px 0 var(--rojo)" href="/">Abrir la app</a>
+      <a href="#descargar">Descargar</a>
+    </div>
+    <a class="cta" href="/">Abrir Droper</a>
+  </div>
+</nav>
+
+<header class="hero" id="inicio">
+  <div class="circulo" aria-hidden="true"></div>
+  <div class="cuadro" aria-hidden="true"></div>
+  <div class="ancho">
+    <div style="position:relative; padding-bottom:56px">
+      <h1>Tu barrio suelta drops.</h1>
+      <p class="bajada">Ofertas limitadas de los locales que tienes a 2 cuadras. Llegas, escaneas, ganas la lámina del local. Arte para el pueblo.</p>
+      <div class="botones">
+        <a class="btn negro" href="/">Abrir la app →</a>
+        <a class="btn blanco" href="#locales">Tengo un local</a>
+      </div>
+    </div>
+    <div class="tel"><img src="img/inicio.png" alt="Pantalla de inicio de Droper: saludo, mapa con las láminas de los locales cercanos y tarjetas de drops con precio" width="430" height="1140" loading="eager"></div>
   </div>
 </header>
 
-<main>
-  <section class="hero">
-    <div class="forma circulo f1" aria-hidden="true"></div>
-    <div class="forma circulo f2" aria-hidden="true"></div>
-    <div class="forma f3" aria-hidden="true"></div>
-    <div class="envoltura">
-      <div>
-        <span class="etiqueta">Santiago · Barrio Italia · Franklin · El Golf</span>
-        <h1 class="letrista">Ofertas de barrio<br>que se activan<br><span class="rojo">cuando llegas.</span></h1>
-        <p class="bajada">Los locales de tu cuadra sueltan <b>drops</b>: pocas unidades, poco rato. Camina, llega a la puerta, muestra tu QR y es tuyo. Sin descargar nada.</p>
-        <div class="botones">
-          <a class="boton" href="/">Ver drops cerca →</a>
-          <a class="boton claro" href="#locales">Tengo un local</a>
-        </div>
-      </div>
-      <div class="telefono" role="img" aria-label="La app Droper mostrando el mapa con drops cerca">
-        <div class="pantalla">
-          <div class="mapa-calles"></div>
-          <div class="parque"></div>
-          <span class="calle-nombre" style="left:8px; top:33%">AV. ITALIA</span>
-          <span class="calle-nombre" style="left:47%; top:20%; transform:rotate(90deg); transform-origin:left">CONDELL</span>
-          <span class="calle-nombre" style="left:20px; top:67%">SANTA ISABEL</span>
-          <div class="chips"><span class="chip activo">Todo · 9</span><span class="chip">Comida</span><span class="chip">Café</span><span class="chip">Grupales</span></div>
-          <div class="pin" style="left:22px; top:92px"><span class="tag">$1.990</span><span class="gota circulo" style="background:var(--rojo)"><span>4</span></span></div>
-          <div class="pin" style="left:170px; top:120px"><span class="tag negro">¿Sorpresa?</span><span class="gota rombo" style="background:var(--amarillo)"><span style="color:var(--negro);transform:rotate(-45deg)">?</span></span></div>
-          <div class="pin" style="left:62px; top:190px"><span class="tag crema">Quedan 12</span><span class="gota tri"></span></div>
-          <div class="pin" style="left:186px; top:236px"><span class="tag">$990</span><span class="gota" style="background:var(--azul)"><span>2</span></span></div>
-          <div class="yo" aria-hidden="true"></div>
-          <div class="hoja">
-            <div class="agarre"></div>
-            <h4 class="letrista">MÁS CERCA DE TI <small>9 drops activos</small></h4>
-            <div class="tarjeta">
-              <span class="cat">Café · quedan 4</span>
-              <b>Café del Barrio</b>
-              <div class="pop"><div class="globo">Cortado + medialuna a luca nueve, ¡al tiro!</div><div class="zas">$1.990</div></div>
-              <div class="barra-avance"><div></div></div>
-              <div class="ir">Cómo llegar · 2 min</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="franja" aria-hidden="true"></div>
-  </section>
-
-  <section class="manifiesto bloque">
-    <div class="envoltura">
-      <div class="bauhaus-figura" aria-hidden="true"><div class="a"></div><div class="b"></div><div class="c"></div><div class="d"></div></div>
-      <div>
-        <span class="etiqueta" style="color:var(--amarillo)">Manifiesto</span>
-        <h2 class="letrista">Arte para el pueblo.</h2>
-        <ul>
-          <li><b>El barrio primero.</b> Droper existe para que la gente vuelva a caminar su cuadra y a conocer al del local.</li>
-          <li><b>Para todos, no para unos pocos.</b> Ofertas, láminas y arte del barrio que cualquiera puede ganar llegando a pie.</li>
-          <li><b>Hablamos como la calle.</b> Chileno, con humor, sin gritar ni presionar. Y si vienes de lejos, te lo decimos en tu idioma.</li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  <section id="como" class="bloque">
-    <div class="envoltura">
-      <span class="etiqueta">Cómo funciona</span>
-      <h2 class="letrista">Tres pasos. Cero descarga.</h2>
-      <p class="intro">Abres Droper en el navegador del celular, igual que una página. Si quieres, la agregas a tu pantalla de inicio.</p>
-      <div class="pasos">
-        <div class="paso"><div class="num">1</div><h3>Mira el mapa</h3><p>Los drops aparecen como etiquetas de precio sobre el mapa del barrio. Filtra por comida, café o grupales.</p></div>
-        <div class="paso"><div class="num">2</div><h3>Llega a la puerta</h3><p>El drop se desbloquea cuando estás a menos de media cuadra del local. Si quieres, te avisamos cuando sale uno cerca.</p></div>
-        <div class="paso"><div class="num">3</div><h3>Muestra tu QR</h3><p>El local escanea tu código y listo. Pagas en la caja como siempre y te llevas la lámina del local para tu álbum.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="album" class="album bloque">
-    <div class="envoltura">
-      <span class="etiqueta" style="color:var(--amarillo)">El Álbum de Chile</span>
-      <h2 class="letrista">Cada canje, una lámina.<br>Cada barrio, su edición.</h2>
-      <p class="intro">Con tu primer canje en un local ganas su lámina. Junta las del barrio para la Edición Especial y cambia las repetidas por premios del local o por arte del barrio.</p>
-      <div class="ediciones">
-        <div class="lamina"><div class="arte" style="background:var(--amarillo)"><div class="g1" style="background:var(--rojo); left:-30px; top:-30px"></div><div class="g2" style="background:var(--azul); right:10px; bottom:10px"></div><div class="ojos"><span></span><span></span></div></div><div class="nro">N° 01 · BARRIO ITALIA</div><h3>Edición Italiana</h3><p>Providencia y Ñuñoa</p></div>
-        <div class="lamina"><div class="arte" style="background:var(--azul)"><div class="g1" style="background:var(--amarillo); right:-40px; bottom:-40px"></div><div class="g2" style="background:var(--rojo); left:12px; top:12px; border-radius:50%"></div><div class="ojos"><span></span><span></span></div></div><div class="nro">N° 02 · FRANKLIN</div><h3>Edición Persa</h3><p>Santiago</p></div>
-        <div class="lamina"><div class="arte" style="background:var(--crema)"><div class="g1" style="background:var(--negro); left:-20px; bottom:-50px"></div><div class="g2" style="background:var(--amarillo); right:14px; top:14px"></div><div class="ojos"><span></span><span></span></div></div><div class="nro">N° 03 · MATTA SUR</div><h3>Edición Patrimonial</h3><p>Santiago</p></div>
-        <div class="lamina"><div class="arte" style="background:var(--rojo)"><div class="g1" style="background:var(--papel); right:-30px; top:-30px"></div><div class="g2" style="background:var(--negro); left:14px; bottom:14px"></div><div class="ojos"><span></span><span></span></div></div><div class="nro">N° 04 · EL GOLF</div><h3>Edición Ejecutiva</h3><p>Las Condes</p></div>
-      </div>
-      <div class="honor">
-        <div class="sello">DROPER<br>DE HONOR</div>
-        <div>
-          <h3 class="letrista">7 visitas = tu propia lámina.</h3>
-          <p>Cuando vuelves 7 veces al mismo local, te sacas una selfie y la convertimos en caricatura de colección. Tu cara en el álbum del barrio, para siempre.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="barrios" class="bloque">
-    <div class="envoltura">
-      <span class="etiqueta">Barrios</span>
-      <h2 class="letrista">Partimos por Santiago.</h2>
-      <p class="intro">La app reconoce en qué barrio estás. Si vas a otro, elígelo antes de salir y mira qué drops te esperan.</p>
-      <div class="barrios">
-        <div class="barrio" style="background:var(--amarillo)"><svg class="figura" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#E30A2F" stroke="#111" stroke-width="3"/></svg><h3>Barrio Italia</h3><span class="comuna">Providencia · Ñuñoa</span><span class="estado vivo">EN VIVO</span></div>
-        <div class="barrio"><svg class="figura" viewBox="0 0 48 48" aria-hidden="true"><rect x="3" y="3" width="42" height="42" fill="#1E5AA8" stroke="#111" stroke-width="3"/></svg><h3>Barrio Franklin</h3><span class="comuna">Santiago</span><span class="estado pronto">PRONTO</span></div>
-        <div class="barrio" style="background:var(--crema)"><svg class="figura" viewBox="0 0 48 48" aria-hidden="true"><polygon points="24,3 45,45 3,45" fill="#FFD100" stroke="#111" stroke-width="3"/></svg><h3>Matta Sur</h3><span class="comuna">Santiago</span><span class="estado pronto">PRONTO</span></div>
-        <div class="barrio"><svg class="figura" viewBox="0 0 48 48" aria-hidden="true"><path d="M3 45 A42 42 0 0 1 45 3 L45 45 Z" fill="#111" stroke="#111" stroke-width="3"/></svg><h3>El Golf</h3><span class="comuna">Las Condes</span><span class="estado pronto">PRONTO</span></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="idiomas" class="idiomas bloque">
-    <div class="envoltura">
-      <span class="etiqueta" style="color:var(--amarillo)">Modo turista</span>
-      <h2 class="letrista">Chileno, pero en tu idioma.</h2>
-      <p class="intro">Droper no se traduce: se mezcla. Si vienes de afuera, la app te habla en tu idioma con el chileno de la calle, y te explica cada modismo con un toque.</p>
-      <div class="frases">
-        <div class="frase"><span class="lengua">🇨🇱 Español</span><span class="mezcla">Chileno</span><q>Droper, el cortado a luca, ¡al tiro que se acaba!</q></div>
-        <div class="frase"><span class="lengua">🇬🇧 English</span><span class="mezcla">Spanglish</span><q>Cortado a luca, grab it al tiro, caserito!</q></div>
-        <div class="frase"><span class="lengua">🇧🇷 Português</span><span class="mezcla">Portuñol</span><q>Você tá a 2 cuadras · o drop desbloqueia quando chegar.</q></div>
-        <div class="frase"><span class="lengua">🇮🇹 Italiano</span><span class="mezcla">Itañol</span><q>¡Mamma mia, caserito! Lasaña a $4.990, andiamo al tiro.</q></div>
-        <div class="frase"><span class="lengua">🇩🇪 Deutsch</span><span class="mezcla">Deutschñol</span><q>Noch 5 empanadas! Komm al tiro, caserito.</q></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="locales" class="locales bloque">
-    <div class="envoltura">
-      <div>
-        <span class="etiqueta">Para locales</span>
-        <h2 class="letrista">Tu vitrina en el celular de la cuadra.</h2>
-        <ul>
-          <li>Creas un drop en 30 segundos, desde el celular o el computador.</li>
-          <li>Te llegan personas que están a pasos de tu puerta, no likes.</li>
-          <li>Ves cuántos vinieron, cuántos volvieron y a qué hora.</li>
-          <li>Tu equipo escanea los QR con su propio rol.</li>
-        </ul>
-        <div class="botones" style="display:flex;gap:18px;flex-wrap:wrap">
-          <a class="boton" href="/locales/">Cómo funciona para locales →</a>
-        </div>
-      </div>
-      <div class="cartel">
-        <span class="etiqueta" style="color:var(--azul)">Durante la beta</span>
-        <div class="letrista grande">Gratis.</div>
-        <p>Te inscribimos en 10 minutos, en tu mismo local, y dejamos listo tu primer drop.</p>
-      </div>
-    </div>
-  </section>
-</main>
-
-<footer>
-  <div class="envoltura">
-    <div>
-      <div class="letrista lema">Arte para el pueblo.</div>
-      <div style="margin-top:6px">Droper · Santiago de Chile</div>
-    </div>
-    <div style="display:flex;gap:22px;flex-wrap:wrap">
-      <a href="/">Abrir la app</a>
-      <a href="/locales/">Para locales</a>
-      <a href="https://caserito-yc5f.vercel.app">Panel de locales</a>
+<section class="bloque" id="como">
+  <div class="ancho">
+    <div class="eti">Cómo funciona</div>
+    <h2>Tres pasos y estás.</h2>
+    <p class="lead">Sin descargar nada para partir: Droper abre en el navegador. Los drops aparecen cuando estás cerca, como una sorpresa del barrio.</p>
+    <div class="pasos">
+      <div class="paso"><div class="n">1</div><h3>Mira lo que hay cerca</h3><p>El mapa te muestra los locales a 2 cuadras, cada uno con su lámina, y los drops del momento con su precio.</p></div>
+      <div class="paso"><div class="n">2</div><h3>Súmate al drop</h3><p>Los cupos son pocos y el tiempo corre. Toca "Lo quiero" y camina: "Cómo llegar" te lleva a la puerta.</p></div>
+      <div class="paso"><div class="n">3</div><h3>Escanea y gana</h3><p>En la caja escaneas el QR del local, canjeas tu oferta y la lámina del local se pega en tu álbum.</p></div>
     </div>
   </div>
+</section>
+
+<section class="bloque" style="background:var(--gr)" id="caracteristicas">
+  <div class="ancho">
+    <div class="eti">Características</div>
+    <h2>Hecho para caminar el barrio.</h2>
+    <div class="carac">
+      <div class="c"><svg class="fig" viewBox="0 0 46 46" aria-hidden="true"><circle cx="23" cy="23" r="21" fill="#FFD100"/><circle cx="23" cy="23" r="7" fill="#1D4ED8" stroke="#fff" stroke-width="3"/></svg><h3>Drops a 2 cuadras</h3><p>El mapa te sigue con el punto al centro y gira con la brújula. Lo que tienes al frente queda arriba.</p></div>
+      <div class="c"><svg class="fig" viewBox="0 0 46 46" aria-hidden="true"><rect width="46" height="46" fill="#1E5AA8"/><rect x="10" y="20" width="18" height="16" fill="#FFD100"/><circle cx="32" cy="28" r="5" fill="#E30A2F"/></svg><h3>Una lámina por local</h3><p>Cada local tiene su lámina Bauhaus que se parece a lo que hace: la taza del café, la pizza, el libro, el disco.</p></div>
+      <div class="c"><svg class="fig" viewBox="0 0 46 46" aria-hidden="true"><rect width="46" height="46" fill="#E30A2F"/><rect x="12" y="6" width="22" height="34" fill="#FFD100"/><circle cx="30" cy="30" r="9" fill="#111"/></svg><h3>Pósters de malls</h3><p>Patios de comida, mercados y malls tienen su póster. Entra y es tuyo, para completar el álbum.</p></div>
+      <div class="c"><svg class="fig" viewBox="0 0 46 46" aria-hidden="true"><rect width="46" height="46" fill="#111"/><rect x="6" y="8" width="34" height="8" fill="#fff"/><rect x="6" y="20" width="34" height="8" fill="#fff"/><rect x="6" y="32" width="34" height="8" fill="#FFD100"/></svg><h3>Planos por piso</h3><p>En un mall ves el plano de cada piso con las tiendas, haces zoom y encuentras el drop sin perderte.</p></div>
+      <div class="c"><svg class="fig" viewBox="0 0 46 46" aria-hidden="true"><circle cx="23" cy="23" r="21" fill="#1E5AA8"/><path d="M2 23h42M23 2c9 9 9 33 0 42M23 2c-9 9-9 33 0 42" stroke="#fff" stroke-width="3" fill="none"/></svg><h3>Tourist?</h3><p>Spanglish, portuñol, franchileno, italiano y alemán, con un glosario de chilenismos para el que viene de visita.</p></div>
+      <div class="c"><svg class="fig" viewBox="0 0 46 46" aria-hidden="true"><path d="M8 34c4-4 4-12 4-16a11 11 0 0 1 22 0c0 4 0 12 4 16z" fill="#FFD100" stroke="#111" stroke-width="3"/><circle cx="23" cy="40" r="4" fill="#111"/></svg><h3>Avisos justos</h3><p>Te avisamos cuando sueltan un drop cerca o cuando entras a un barrio. Máximo 3 al día y nunca de noche.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="bloque" id="pantallas">
+  <div class="ancho">
+    <div class="eti">La app</div>
+    <h2>Así se ve Droper.</h2>
+    <div class="pantallas">
+      <div class="pantalla"><img src="img/inicio.png" alt="Inicio con mapa y drops cercanos" loading="lazy"><b>Inicio</b><span>Tu saludo, el mapa a 2 cuadras y las tarjetas de drops con "Lo quiero" y "Cómo llegar".</span></div>
+      <div class="pantalla"><img src="img/laminas.png" alt="Láminas Bauhaus de distintos locales: café, pizzería, bar, heladería, librería y más" loading="lazy"><b>Láminas</b><span>Una por local, generadas en estilo Bauhaus. Cada una se parece a su local.</span></div>
+      <div class="pantalla"><img src="img/kit-poster.png" alt="Póster de vitrina de un local con QR y su lámina" loading="lazy"><b>En la vitrina</b><span>Cada local tiene su kit: póster, stickers y tarjeta de mesa con su QR.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="locales" id="locales">
+  <div class="ancho">
+    <div>
+      <div class="eti">Para locales</div>
+      <h2>Llena tu local a la hora que tú quieras.</h2>
+      <p class="lead">Publicas un drop en un minuto: qué ofreces, cuántos cupos y hasta qué hora. Droper avisa a quienes están cerca y tú ves en tu panel cuántos llegaron.</p>
+      <ul>
+        <li>Sin comisiones por venta: el canje es en tu caja.</li>
+        <li>Tu lámina es tu logo dentro de la app.</li>
+        <li>Kit listo para imprimir: póster, stickers y tarjeta de mesa.</li>
+        <li>Panel con visitas, canjes, premios y tu equipo.</li>
+      </ul>
+      <div class="botones">
+        <a class="btn amarillo" href="https://caserito-yc5f.vercel.app" id="btn-panel">Entrar al panel de locales →</a>
+        <a class="btn blanco" style="background:transparent;color:#fff" href="/locales/">Ver el dossier</a>
+      </div>
+    </div>
+    <img src="img/kit-poster.png" alt="" loading="lazy">
+  </div>
+</section>
+
+<section class="bloque" id="descargar">
+  <div class="ancho">
+    <div class="descargar">
+      <div>
+        <div class="eti" style="color:var(--ne)">Descargar</div>
+        <h2 style="margin-bottom:10px">Escanea y abre Droper.</h2>
+        <p style="margin:0; font-size:19px; max-width:560px">Hoy funciona directo en el navegador del celular. Muy pronto en las tiendas: este mismo QR te va a llevar a la App Store o a Google Play según tu teléfono.</p>
+        <div class="tiendas">
+          <a class="tienda pronto" id="t-ios" aria-disabled="true"><small>PRONTO EN</small><b>App Store</b></a>
+          <a class="tienda pronto" id="t-android" aria-disabled="true"><small>PRONTO EN</small><b>Google Play</b></a>
+          <a class="tienda" href="/" style="background:#fff;color:var(--ne);border:2px solid var(--ne)"><small>HOY</small><b>Abrir en la web</b></a>
+        </div>
+      </div>
+      <div class="qr" id="qr" role="img" aria-label="Código QR para descargar Droper"></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="ancho">
+    <img src="/email/logo.png" alt="Droper">
+    <span>Arte para el pueblo · Santiago de Chile</span>
+    <a href="/">App</a>
+    <a href="/locales/">Dossier locales</a>
+    <a href="https://caserito-yc5f.vercel.app">Panel de locales</a>
+  </div>
 </footer>
+
+<script src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
+<script>
+  // Cuando la app esté en las tiendas, pega aquí los links y todo se activa solo (botones y QR)
+  var TIENDAS = { ios: '', android: '' };
+  var DESCARGA = 'https://www.caserito.store/conoce/#descargar';
+
+  // El QR lleva a esta página con #descargar: si ya hay tienda, redirige según el teléfono
+  (function () {
+    var ua = navigator.userAgent || '';
+    var esIos = /iPhone|iPad|iPod/.test(ua), esAndroid = /Android/.test(ua);
+    if (TIENDAS.ios) { var a = document.getElementById('t-ios'); a.href = TIENDAS.ios; a.classList.remove('pronto'); a.removeAttribute('aria-disabled'); a.querySelector('small').textContent = 'DESCÁRGALA EN'; }
+    if (TIENDAS.android) { var b = document.getElementById('t-android'); b.href = TIENDAS.android; b.classList.remove('pronto'); b.removeAttribute('aria-disabled'); b.querySelector('small').textContent = 'DISPONIBLE EN'; }
+    if (location.hash === '#descargar') {
+      if (esIos && TIENDAS.ios) location.replace(TIENDAS.ios);
+      else if (esAndroid && TIENDAS.android) location.replace(TIENDAS.android);
+      else if ((esIos || esAndroid) && !TIENDAS.ios && !TIENDAS.android) location.replace('/');
+    }
+  })();
+
+  // Dibuja el QR
+  (function () {
+    var caja = document.getElementById('qr');
+    try {
+      var q = qrcode(0, 'M'); q.addData(DESCARGA); q.make();
+      caja.innerHTML = q.createImgTag(6, 0);
+    } catch (e) { caja.innerHTML = '<a href="/" style="font-weight:800">Abrir Droper</a>'; }
+  })();
+
+  // Panel de locales: si ya está el subdominio, úsalo
+  fetch('https://local.caserito.store', { mode: 'no-cors' }).then(function () {
+    document.querySelectorAll('a[href="https://caserito-yc5f.vercel.app"]').forEach(function (a) { a.href = 'https://local.caserito.store'; });
+  }).catch(function () {});
+</script>
 </body>
 </html>

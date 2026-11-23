@@ -8,6 +8,7 @@ import { textoCategoria } from './categorias.js';
 import Qr, { URL_APP } from './Qr.jsx';
 import Lugares from './Lugares.jsx';
 import Prospectos from './Prospectos.jsx';
+import { abrirKit } from './Kit.js';
 
 const SECCIONES = [
   { id: 'resumen', texto: 'Resumen' },
@@ -272,7 +273,10 @@ function Locales({ usuario, alEntrarLocal }) {
               ? <button className="boton" style={{ flex: 1, minHeight: 44 }} onClick={() => cambiar(l, { aprobado: true })}>Aprobar</button>
               : <button className="pildora" style={{ flex: 1 }} onClick={() => cambiar(l, { activo: !l.activo })}>{l.activo ? 'Pausar' : 'Reactivar'}</button>}
           </div>
-          {alEntrarLocal && <button className="boton" style={{ alignSelf: 'flex-start', minHeight: 42 }} onClick={() => alEntrarLocal(l)}>Entrar a este local →</button>}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {alEntrarLocal && <button className="boton" style={{ minHeight: 42 }} onClick={() => alEntrarLocal(l)}>Entrar a este local →</button>}
+            <button type="button" className="pildora" onClick={() => abrirKit(l)}>Kit para imprimir</button>
+          </div>
           <Entrega local={l} e={entregas[l.id]} alCambiar={cargarEntregas} />
           <EliminarLocal local={l} alEliminar={recargar} />
         </div>
