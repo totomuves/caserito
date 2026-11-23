@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { C, F, R, precio } from './tema';
-import { figuraPin, RUTA_PIN, useCoordenadas } from './MapaComun';
+import { useCoordenadas, useLocalesMapa, especialidad } from './MapaComun';
+import { arteHtml } from './arteLocal';
 
 const L = require('leaflet');
 const LLAVE_CARTO = process.env.EXPO_PUBLIC_CARTO_KEY || '';
@@ -18,13 +19,16 @@ function estilos() {
   const st = document.createElement('style');
   st.id = 'droper-mini';
   st.textContent = `
-    .droper-mini { background:#EEF0F3; }
-    .droper-mini .leaflet-tile-pane { filter: grayscale(.85) brightness(1.06) contrast(.95); }
+    .droper-mini { background:#FFF3B0; }
+    .droper-mini .leaflet-tile-pane { filter: sepia(.55) saturate(1.6) hue-rotate(-8deg) brightness(1.04) contrast(1.05); }
     .droper-mini .leaflet-control-attribution { font-size:8px; background:rgba(255,255,255,.7); }
     .mini-yo { width:18px; height:18px; border-radius:9px; background:#1D4ED8; border:3px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.35); box-sizing:border-box; }
-    .mini-pin { display:flex; flex-direction:column; align-items:center; cursor:pointer; }
-    .mini-pin b { font:800 11px Archivo, sans-serif; background:#fff; color:#111; border:1px solid #E4E4E9; border-radius:10px; padding:2px 7px; box-shadow:0 2px 6px rgba(17,17,17,.15); white-space:nowrap; margin-bottom:2px; }
-    .mini-pin svg { width:18px; height:18px; }
+    .mini-lam { display:flex; flex-direction:column; align-items:center; cursor:pointer; }
+    .mini-lam .carta { position:relative; width:40px; height:40px; box-sizing:border-box; overflow:hidden; background:#fff; border:1px solid #D9D9DF; border-radius:8px; padding:2px; box-shadow:0 3px 8px rgba(17,17,17,.18); }
+    .mini-lam.con-drop .carta { border:2px solid #111; }
+    .mini-lam .nom { font:800 8px Archivo, sans-serif; color:#111; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:40px; margin-top:1px; }
+    .mini-lam .precio { font:800 10px Archivo, sans-serif; background:#FFD100; color:#111; border-radius:8px; padding:1px 6px; margin-bottom:2px; box-shadow:0 2px 5px rgba(17,17,17,.2); white-space:nowrap; }
+    .mini-lam .punta { width:6px; height:6px; border-radius:3px; background:#111; margin-top:2px; }
   `;
   document.head.appendChild(st);
 }
@@ -34,6 +38,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
   const mapa = useRef(null);
   const capa = useRef(null);
   const coords = useCoordenadas(drops);
+  const locales = useLocalesMapa();
   const centro = yo || pos;
 
   useEffect(() => {
@@ -56,21 +61,26 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
     if (!m || !g || !centro || !m.hasLayer(g)) return;
     g.clearLayers();
     // Encuadre calculado sin depender del círculo (getBounds del círculo se cae si aún no está pegado al mapa)
-    try { m.fitBounds(L.latLng(centro.lat, centro.lng).toBounds(RADIO * 2), { padding: [8, 8], animate: false }); } catch (e) { m.setView([centro.lat, centro.lng], 16, { animate: false }); }
-    L.circle([centro.lat, centro.lng], { radius: RADIO, color: '#111', weight: 1.5, dashArray: '6 6', fillColor: C.amarillo, fillOpacity: 0.16 }).addTo(g);
+    m.setView([centro.lat, centro.lng], 17, { animate: false });
+    L.circle([centro.lat, centro.lng], { radius: RADIO, color: '#111', weight: 1.5, dashArray: '6 6', fillColor: C.amarillo, fillOpacity: 0.14, interactive: false }).addTo(g);
     if (yo) L.marker([yo.lat, yo.lng], { icon: L.divIcon({ className: '', html: '<div class="mini-yo"></div>', iconSize: [18, 18] }), interactive: false, zIndexOffset: 1000 }).addTo(g);
-    drops.forEach((d) => {
-      const p = coords[d.local_id];
-      if (!p) return;
-      const fp = figuraPin(d);
-      const html = `<div class="mini-pin"><b>${d.tipo === 'sorpresa' ? '¿?' : (precio(d.precio) || '★')}</b><svg viewBox="0 0 36 36"><path d="${RUTA_PIN[fp.forma]}" fill="${fp.color}" stroke="#111" stroke-width="3"/></svg></div>`;
-      L.marker([p.lat, p.lng], { icon: L.divIcon({ className: '', html, iconSize: [70, 40], iconAnchor: [35, 38] }) })
-        .on('click', () => alAbrir(d)).addTo(g);
+    const dropDe = {};
+    drops.forEach((d) => { if (!dropDe[d.local_id]) dropDe[d.local_id] = d; });
+    const puntos = locales.map((l) => ({ l, p: l.punto }));
+    drops.forEach((d) => { if (!locales.some((l) => l.id === d.local_id) && coords[d.local_id]) puntos.push({ l: { id: d.local_id, nombre: d.local_nombre, categoria: d.categoria }, p: coords[d.local_id] }); });
+    puntos.forEach(({ l, p }) => {
+      const d = dropDe[l.id];
+      const esc = (x) => String(x || '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+      const html = `<div class="mini-lam${d ? ' con-drop' : ''}" title="${esc(l.nombre)} · ${esc(especialidad(l))}">`
+        + (d ? `<div class="precio">${d.tipo === 'sorpresa' ? '¿?' : esc(precio(d.precio) || 'DROP')}</div>` : '')
+        + `<div class="carta">${arteHtml(l.id, l.categoria)}</div><div class="nom">${esc(l.nombre)}</div><div class="punta"></div></div>`;
+      L.marker([p.lat, p.lng], { icon: L.divIcon({ className: '', html, iconSize: [46, d ? 78 : 62], iconAnchor: [23, d ? 76 : 60] }), zIndexOffset: d ? 500 : 0 })
+        .on('click', () => (d ? alAbrir(d) : alVerMapa())).addTo(g);
     });
-  }, [centro && centro.lat, centro && centro.lng, !!yo, drops, coords, !!mapa.current]);
+  }, [centro && centro.lat, centro && centro.lng, !!yo, drops, coords, locales, !!mapa.current]);
 
   return (
-    <View style={{ marginHorizontal: 16, marginTop: 14, height: 210, borderRadius: R(20), overflow: 'hidden', borderWidth: 1, borderColor: C.borde, backgroundColor: '#EEF0F3' }}>
+    <View style={{ marginHorizontal: 16, marginTop: 14, height: 300, borderRadius: R(20), overflow: 'hidden', borderWidth: 1, borderColor: C.borde, backgroundColor: '#FFF3B0' }}>
       <div ref={caja} style={{ position: 'absolute', inset: 0 }} />
       <View style={{ position: 'absolute', left: 10, top: 10, backgroundColor: C.papel, borderRadius: 14, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: C.borde, zIndex: 500 }}>
         <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{yo ? t('Tú · 2 cuadras a la redonda', 'You · 2 cuadras around') : t('Activa tu ubicación', 'Turn on location')}</Text>

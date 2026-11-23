@@ -9,7 +9,7 @@ import { ArteLocal } from './arteLocal';
 import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa } from './MapaComun';
 
 // Estilo amarillo pálido del diseño "pantallas" (Google Maps en Android)
-const ESTILO = [
+export const ESTILO = [
   { elementType: 'geometry', stylers: [{ color: '#FFF3B0' }] },
   { elementType: 'labels.text.fill', stylers: [{ color: '#6B6B6B' }] },
   { elementType: 'labels.text.stroke', stylers: [{ color: '#FFF6E5' }] },
