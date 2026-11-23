@@ -19,6 +19,7 @@ const SECCIONES = [
   { id: 'invitar', texto: 'Invitar locales' },
   { id: 'barrios', texto: 'Barrios y arte' },
   { id: 'lugares', texto: 'Patios y malls' },
+  { id: 'suscripciones', texto: 'Suscripciones' },
   { id: 'qr', texto: 'QR' },
   { id: 'estilo', texto: 'Estilo de la app' },
 ];
@@ -42,6 +43,7 @@ export default function Admin({ usuario, alEntrarLocal }) {
       {seccion === 'lugares' && <Lugares />}
       {seccion === 'estilo' && <><EstiloApp /><ColoresBanners /><InterruptorTiendas /></>}
       {seccion === 'invitar' && <Invitar />}
+      {seccion === 'suscripciones' && <SuscripcionesAdmin />}
       {seccion === 'qr' && (
         <Qr url={URL_APP} titulo="DROPER" archivo="caserito-qr-app.png"
           bajada="QR general de la app para caseritos: one-pager, flyers, redes y el 'último flyer'." />
@@ -718,6 +720,58 @@ function InterruptorTiendas() {
         <input type="checkbox" role="switch" checked={on} onChange={cambiar} style={{ width: 24, height: 24 }} />
         {on ? 'Se muestran en el mapa' : 'No se muestran'}
       </label>
+      {msg && <p style={{ margin: 0, fontWeight: 700 }}>{msg}</p>}
+    </div>
+  );
+}
+
+// Suscripciones de los locales (Flow): quién paga, quién está gratis y el interruptor del cobro
+function SuscripcionesAdmin() {
+  const [filas, setFilas] = useState(null);
+  const [cobro, setCobro] = useState(false);
+  const [msg, setMsg] = useState('');
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    supabase.rpc('suscripciones_admin').then(({ data, error }) => {
+      if (error) { setMsg(/suscripciones_admin/.test(error.message || '') ? 'Falta correr el SQL 030 (suscripciones).' : explicar(error)); setFilas([]); return; }
+      setFilas(data || []);
+    });
+    supabase.from('ajustes').select('valor').eq('clave', 'cobro_activo').maybeSingle().then(({ data }) => setCobro(!!data && data.valor === 'si'));
+  }, [n]);
+  async function cambiarCobro() {
+    if (!cobro && !window.confirm('Al prender el cobro, los locales sin suscripción activa ni meses gratis no podrán publicar drops nuevos. ¿Prender?')) return;
+    const { error } = await supabase.rpc('fijar_cobro', { p_activo: !cobro });
+    if (error) setMsg(explicar(error)); else { setCobro(!cobro); setN(n + 1); }
+  }
+  async function gratis(l, fecha) {
+    const { error } = await supabase.rpc('fijar_gratis_hasta', { p_local: l.local_id, p_fecha: fecha || null });
+    if (error) setMsg(explicar(error)); else setN(n + 1);
+  }
+  const mas3 = () => { const d = new Date(); d.setMonth(d.getMonth() + 3); return d.toISOString().slice(0, 10); };
+  if (!filas) return <p className="ayuda">Cargando…</p>;
+  const activas = filas.filter((f) => f.estado === 'activa').length;
+  return (
+    <div className="tarjeta" style={{ display: 'grid', gap: 12 }}>
+      <h2 className="letrista" style={{ margin: 0 }}>Suscripciones</h2>
+      <p style={{ margin: 0 }}>{activas} pagando · {filas.filter((f) => f.gratis_hasta && f.gratis_hasta >= new Date().toISOString().slice(0, 10)).length} con meses gratis · {filas.length} locales. Ingresos del mes: <b>${(activas * 10000).toLocaleString('es-CL')}</b></p>
+      <label style={{ display: 'flex', gap: 10, alignItems: 'center', fontWeight: 800, minHeight: 44 }}>
+        <input type="checkbox" role="switch" checked={cobro} onChange={cambiarCobro} style={{ width: 24, height: 24 }} />
+        {cobro ? 'Cobro prendido: sin suscripción ni meses gratis no se publican drops' : 'Cobro apagado: todos pueden publicar (modo prueba)'}
+      </label>
+      <div style={{ display: 'grid', gap: 6 }}>
+        {filas.map((l) => (
+          <div key={l.local_id} style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', borderBottom: '1px solid #eee', padding: '6px 0' }}>
+            <b style={{ flex: '1 1 180px' }}>{l.nombre}</b>
+            <span className="pildora" style={{ background: l.estado === 'activa' ? '#FFD100' : l.estado === 'morosa' ? '#E30A2F' : '#fff', color: l.estado === 'morosa' ? '#fff' : '#111' }}>{l.estado.replace('_', ' ')}</span>
+            {l.tarjeta && <span className="ayuda">{l.tarjeta}</span>}
+            <label className="ayuda" style={{ display: 'flex', gap: 6, alignItems: 'center' }}>Gratis hasta
+              <input type="date" value={l.gratis_hasta || ''} onChange={(e) => gratis(l, e.target.value)} style={{ minHeight: 36 }} />
+            </label>
+            <button type="button" className="pildora" onClick={() => gratis(l, mas3())}>+3 meses</button>
+            <span>{l.al_dia ? '✓ puede publicar' : '✕ bloqueado'}</span>
+          </div>
+        ))}
+      </div>
       {msg && <p style={{ margin: 0, fontWeight: 700 }}>{msg}</p>}
     </div>
   );

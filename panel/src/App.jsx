@@ -14,6 +14,7 @@ import { LaminaLocal } from './arteLocal.jsx';
 import MisDrops from './MisDrops.jsx';
 import Ayuda from './Ayuda.jsx';
 import { abrirKit } from './Kit.js';
+import Suscripcion from './Suscripcion.jsx';
 import Qr, { URL_APP } from './Qr.jsx';
 
 export default function App() {
@@ -179,6 +180,7 @@ export default function App() {
         {admin && <button className="pildora activa" onClick={() => setSoloAdmin(true)}>Ir al admin</button>}
       </div>
       {pestanas.length === 0 && <div className="contenido"><div className="tarjeta">Tu rol todavía no tiene permisos para drops ni para escanear. Pídele al dueño del local que te los dé.</div></div>}
+      {vista === 'resumen' && (rol === 'Dueño' || rol === 'Admin Caserito' || !rol) && <Suscripcion local={local} />}
       {vista === 'resumen' && <Resumen local={local} alCrear={puede('drops') ? () => { setBase(null); setPestana('crear'); } : null} />}
       {vista === 'crear' && (
         <Crear key={base ? base.id + (base.editarId ? '-e' : '-d') : 'nuevo'} local={local} base={base}
