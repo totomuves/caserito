@@ -24,7 +24,7 @@ function etiquetaPara(d, hora, t, cuad) {
   return cuad(d.cuadras).toUpperCase();
 }
 
-export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda, avisos, avisoMotivo, alPrenderAvisos, alCerrarAvisos, avisoQr, alCerrarAvisoQr, barrioActual, barrioLejos, barrios = [], visita = null, alVisitar = () => {}, pos = null, alVerMapa = () => {}, lugares = [], alAbrirLugar = () => {}, dropsMapa = null, diag = {}, alRecargar = () => {} }) {
+export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda, avisos, avisoMotivo, alPrenderAvisos, alCerrarAvisos, avisoQr, alCerrarAvisoQr, barrioActual, barrioLejos, barrios = [], visita = null, alVisitar = () => {}, pos = null, alVerMapa = () => {}, lugares = [], alAbrirLugar = () => {}, dropsMapa = null, diag = {}, alRecargar = () => {}, radio = 3000, alCambiarRadio = () => {} }) {
   const b = barrioActual && barrioActual.barrio;
   const nombreBarrio = (b && b.nombre) || 'Barrio Italia';
   const lugar = b ? (barrioActual.dentro ? `${b.nombre} · ${b.comuna}` : b.nombre) : 'Barrio Italia';
@@ -68,7 +68,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
   }, []);
   const f = frases[i % frases.length];
 
-  const visibles = filtro === 'todo' ? drops : drops.filter((d) => tieneCategoria(d, filtro));
+  const visibles = (filtro === 'todo' ? drops : drops.filter((d) => tieneCategoria(d, filtro))).slice().sort((a, b) => (a.cuadras || 0) - (b.cuadras || 0));
 
   async function alternar(g) {
     setGustos(gustos.map((x) => (x.id === g.id ? { ...x, activo: !x.activo } : x)));
@@ -80,6 +80,23 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
   }
 
   const moderno = estilo === 'moderno';
+  // Desde qué distancia aparecen los drops (y siempre del más cercano al más lejano)
+  const DISTANCIAS = [{ m: 200, es: '2 cuadras', en: '2 blocks' }, { m: 500, es: '5 cuadras', en: '5 blocks' }, { m: 1000, es: '1 km', en: '1 km' }, { m: 3000, es: '3 km', en: '3 km' }, { m: 10000, es: '10 km', en: '10 km' }];
+  const textoRadio = (DISTANCIAS.find((x) => x.m === radio) || { es: `${radio} m` }).es;
+  const selectorDistancia = (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingHorizontal: 16, paddingTop: 8, alignItems: 'center' }}>
+      <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.gris, marginRight: 2 }}>{t('Hasta', 'Up to')}</Text>
+      {DISTANCIAS.map((x) => {
+        const on = x.m === radio;
+        return (
+          <Pressable key={x.m} onPress={() => alCambiarRadio(x.m)} accessibilityRole="radio" accessibilityState={{ checked: on }}
+            style={{ minHeight: 34, paddingHorizontal: 12, borderRadius: R(14), borderWidth: 1, borderColor: on ? C.negro : C.borde, backgroundColor: on ? C.negro : C.papel, justifyContent: 'center' }}>
+            <Text style={{ fontFamily: F.negrita, fontSize: 12, color: on ? C.amarillo : C.negro }}>{t(x.es, x.en)}</Text>
+          </Pressable>
+        );
+      })}
+    </ScrollView>
+  );
   // Patios y malls: acceso directo a su plano (los más cercanos primero)
   const distancia = (g) => (pos ? Math.hypot((g.lat - pos.lat) * 111320, (g.lng - pos.lng) * 93000) : 0);
   const filaLugares = lugares.length ? (
@@ -113,7 +130,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
       {verIdiomas ? <SelectorIdioma alElegir={() => setVerIdiomas(false)} style={{ paddingTop: 10 }} /> : null}
       <Text style={{ fontFamily: F.negrita, fontSize: 26, lineHeight: 28, letterSpacing: -0.8, marginTop: 12, color: tintaBanner('cabecera') }}>
         {apodo ? t(`Hola, ${apodo}.`, `Hi, ${apodo}.`) : t('Hola.', 'Hi.')}{'\n'}
-        {pos && pos.aprox ? t('Activa tu ubicación para ver lo que tienes cerca.', 'Turn on location to see what’s near.') : lejos ? t(`Nada a 2 cuadras: mira lo de ${barrioLejos || 'otro barrio'}.`, `Nada cerca: mira ${barrioLejos || 'otro barrio'}.`) : cercanos ? t(`${cercanos} ${cercanos === 1 ? 'drop' : 'drops'} a 2 cuadras.`, `${cercanos} drops a 2 cuadras.`) : drops.length ? t(`${drops.length} ${drops.length === 1 ? 'drop' : 'drops'} en el barrio.`, `${drops.length} drops en el barrio.`) : t('Hoy el barrio está tranquilo.', 'El barrio está tranqui today.')}
+        {pos && pos.aprox ? t('Activa tu ubicación para ver lo que tienes cerca.', 'Turn on location to see what’s near.') : lejos ? t(barrioLejos ? `Nada a ${textoRadio}: mira lo de ${barrioLejos}.` : `Nada a ${textoRadio}: mira lo más cercano.`, `Nothing within ${textoRadio}: mira lo más cercano.`) : drops.length ? t(`${drops.length} ${drops.length === 1 ? 'drop' : 'drops'} a menos de ${textoRadio}.`, `${drops.length} drops within ${textoRadio}.`) : t('Hoy el barrio está tranquilo.', 'El barrio está tranqui today.')}
       </Text>
       <Text style={{ fontFamily: F.negrita, fontSize: 13, marginTop: 6, color: tintaBanner('cabecera') }}>
         📍 {visita ? t(`Vas a ${visita.nombre} · ${visita.comuna}`, `Going to ${visita.nombre}`) : lugar}
@@ -126,6 +143,8 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
         <Text style={{ fontFamily: F.negrita, fontSize: 22, letterSpacing: -0.6 }}>{t('Cerca de ti', 'Cerca · Near you')}</Text>
         <Pressable onPress={alVerMapa} accessibilityRole="button"><Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.gris }}>{t('Ver en el mapa', 'Ver mapa')}</Text></Pressable>
       </View>
+      {selectorDistancia}
+      {lejos && visibles.length ? <Text style={{ fontFamily: F.media, fontSize: 13, color: C.gris, paddingHorizontal: 18, paddingTop: 6 }}>{t(`Nada a menos de ${textoRadio}: estos son los más cercanos.`, `Nothing within ${textoRadio}: these are the closest.`)}</Text> : null}
       {visibles.length === 0 ? (
         <View style={{ paddingHorizontal: 18, paddingTop: 8, gap: 6 }}>
           <Text style={{ fontFamily: F.media, fontSize: 14, color: C.gris }}>{t('No hay drops por aquí ahora. Vuelve más rato: los locales sueltan sorpresas durante el día.', 'No drops right now. Vuelve más rato.')}</Text>
@@ -229,6 +248,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingTop: 18 }}>
         {CATEGORIAS.map((c) => <Pildora key={c.id} texto={tur ? categoriaTur(c.id, lang) || c.texto : c.texto} categoria={c.id} activa={filtro === c.id} onPress={() => setFiltro(c.id)} />)}
       </ScrollView>
+      {selectorDistancia}
 
       <View style={{ marginTop: 14 }}>
         <Ola color={fondoBanner('cerca')} abajo={false} />

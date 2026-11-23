@@ -3,6 +3,7 @@ import { ActivityIndicator, Platform, Pressable, Text, View } from 'react-native
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import * as Location from 'expo-location';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Svg, { Path } from 'react-native-svg';
 import { useFonts, LuckiestGuy_400Regular } from '@expo-google-fonts/luckiest-guy';
 import { Archivo_400Regular, Archivo_600SemiBold, Archivo_800ExtraBold } from '@expo-google-fonts/archivo';
@@ -67,6 +68,10 @@ function Caserito() {
   const [cargando, setCargando] = useState(true);
   const [lejos, setLejos] = useState(false);
   const [centroLejos, setCentroLejos] = useState(null);
+  // Distancia desde la que aparecen los drops en "Cerca de ti" (la elige la persona; se recuerda)
+  const [radio, setRadioState] = useState(3000);
+  useEffect(() => { AsyncStorage.getItem('droper_radio').then((v) => { const n = Number(v); if (n >= 100) setRadioState(n); }).catch(() => {}); }, []);
+  const setRadio = (n) => { setRadioState(n); AsyncStorage.setItem('droper_radio', String(n)).catch(() => {}); };
   // Barrio que el caserito va a visitar (null = donde está ahora)
   const [visita, setVisita] = useState(null);
   const [avisos, setAvisos] = useState(null);
@@ -190,17 +195,25 @@ function Caserito() {
     }
     let data = [], error = null;
     if (!pos.aprox) {
-      let r = await supabase.rpc('drops_cerca', { lat: pos.lat, lng: pos.lng, radio_m: 3000 });
+      let r = await supabase.rpc('drops_cerca', { lat: pos.lat, lng: pos.lng, radio_m: radio });
       // Si viene vacío pero ya estabas viendo drops cerca, confirmamos una vez más antes de borrarlos
       if (!r.error && !(r.data || []).length && dropsRef.current.some((d) => !d.lejos_marca && new Date(d.termina_at) > new Date())) {
         await new Promise((ok) => setTimeout(ok, 1500));
-        r = await supabase.rpc('drops_cerca', { lat: pos.lat, lng: pos.lng, radio_m: 3000 });
+        r = await supabase.rpc('drops_cerca', { lat: pos.lat, lng: pos.lng, radio_m: radio });
       }
       data = r.data || []; error = r.error;
-      setDiag((x) => ({ ...x, cerca: data.length, errorCerca: error ? error.message : '', lat: pos.lat, lng: pos.lng, precision: pos.precision }));
+      setDiag((x) => ({ ...x, radio, cerca: data.length, errorCerca: error ? error.message : '', lat: pos.lat, lng: pos.lng, precision: pos.precision }));
     } else setDiag((x) => ({ ...x, cerca: null, aprox: true }));
     // Sin drops cerca (o sin tu ubicación): los del barrio más cercano que tenga, para que cualquiera pueda mirar
     let lejos = false, mostrado = null;
+    if (!error && data.length === 0 && !pos.aprox) {
+      // Nada dentro de tu distancia: los más cercanos de la ciudad, ordenados por distancia real
+      const r = await supabase.rpc('drops_cerca', { lat: pos.lat, lng: pos.lng, radio_m: 60000 });
+      if (!r.error && r.data && r.data.length) {
+        lejos = true;
+        data = r.data.slice(0, 12).map((d) => ({ ...d, dentro_del_radio: false, lejos_marca: true }));
+      }
+    }
     if (!error && data.length === 0) {
       const lista = barrios.length ? barrios : [{ ...BARRIO_ITALIA, nombre: 'Barrio Italia' }];
       const cerca = (b) => (pos.aprox ? (b.lanzado ? 0 : 1) : Math.hypot(b.lat - pos.lat, b.lng - pos.lng));
@@ -222,7 +235,7 @@ function Caserito() {
     }
     else { setError(''); setDrops(data || []); setLejos(lejos); setCentroLejos(mostrado); }
     setCargando(false);
-  }, [usuario, posBusqueda, barrios, visita]);
+  }, [usuario, posBusqueda, barrios, visita, radio]);
   const cargarRef2 = useRef(null);
   cargarRef2.current = cargar;
   // Al volver a la app o recuperar internet, se actualiza al tiro
@@ -314,7 +327,7 @@ function Caserito() {
           ) : pestana === 'ayuda' ? (
             <Ayuda alCerrar={() => setPestana('inicio')} />
           ) : pestana === 'inicio' ? (
-            <Inicio drops={drops} dropsMapa={dropsDelMapa} diag={diag} alRecargar={() => cargarRef2.current && cargarRef2.current()} usuario={usuario} pos={pos} alVerMapa={() => setPestana('mapa')} lejos={lejos} alAbrir={abrir} alRefrescar={cargar} alAyuda={() => setPestana('ayuda')}
+            <Inicio drops={drops} radio={radio} alCambiarRadio={setRadio} dropsMapa={dropsDelMapa} diag={diag} alRecargar={() => cargarRef2.current && cargarRef2.current()} usuario={usuario} pos={pos} alVerMapa={() => setPestana('mapa')} lejos={lejos} alAbrir={abrir} alRefrescar={cargar} alAyuda={() => setPestana('ayuda')}
               avisoQr={avisoQr} alCerrarAvisoQr={() => setAvisoQr('')} barrioActual={barrioDe(pos, barrios)} barrioLejos={centroLejos && centroLejos.nombre}
               barrios={barrios} visita={visita} alVisitar={setVisita} lugares={lugares} alAbrirLugar={setLugarAbierto}
               avisos={avisos} avisoMotivo={avisoMotivo} alPrenderAvisos={prenderAvisos} alCerrarAvisos={cerrarAvisos} />
