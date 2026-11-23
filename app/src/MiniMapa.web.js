@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { C, F, R, precio, ESTILO } from './tema';
-import { useCoordenadas, useLocalesMapa, useTiendasOsm, especialidad } from './MapaComun';
+import { useCoordenadas, useLocalesMapa, useTiendasOsm, especialidad, traerRuta } from './MapaComun';
 import { arteHtml } from './arteLocal';
 import { conectarCalles, CSS_CALLES } from './callesWeb';
 import { CSS_PINES, laminaPinHtml, tamLamina, posterPinHtml, tamPoster } from './pinesWeb';
@@ -31,7 +31,8 @@ function estilos() {
   document.head.appendChild(st);
 }
 
-export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVerMapa = () => {}, t = (a) => a, lugares = [], alAbrirLugar = () => {} }) {
+export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVerMapa = () => {}, t = (a) => a, lugares = [], alAbrirLugar = () => {}, destino = null }) {
+  const capaRuta = useRef(null);
   const caja = useRef(null);
   const mapa = useRef(null);
   const capa = useRef(null);
@@ -89,6 +90,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
       : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(m);
     m.setView([centro.lat, centro.lng], 17, { animate: false });
     capa.current = L.layerGroup().addTo(m);
+    capaRuta.current = L.layerGroup().addTo(m);
     const soltarCalles = ESTILO === 'moderno' ? conectarCalles(L, m) : null;
     mapa.current = m;
     setTimeout(() => m.invalidateSize(), 50);
@@ -96,6 +98,21 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
   }, [!!centro]);
 
   // Tú siempre al centro: el mapa se mueve contigo (2 cuadras a cada lado)
+  // Ruta de "Cómo llegar" también en el mapa del inicio
+  useEffect(() => {
+    const g = capaRuta.current;
+    if (!g) return;
+    g.clearLayers();
+    if (!destino || !centro) return;
+    let vivo = true;
+    traerRuta(centro, destino).then((r) => {
+      if (!vivo) return;
+      const puntos = r ? r.puntos.map((p) => [p.lat, p.lng]) : [[centro.lat, centro.lng], [destino.lat, destino.lng]];
+      L.polyline(puntos, { color: '#111111', weight: 9, opacity: 0.85, lineCap: 'round', lineJoin: 'round' }).addTo(g);
+      L.polyline(puntos, { color: '#E30A2F', weight: 5, lineCap: 'round', lineJoin: 'round', dashArray: r ? null : '8 10' }).addTo(g);
+    });
+    return () => { vivo = false; };
+  }, [destino && destino.lat, destino && destino.lng, centro && Math.round(centro.lat * 3700), centro && Math.round(centro.lng * 3100), !!mapa.current]);
   const ultimoCentro = useRef(null);
   useEffect(() => {
     const m = mapa.current;

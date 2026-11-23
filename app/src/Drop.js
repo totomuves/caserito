@@ -8,7 +8,7 @@ import { Ola, Boton, EtiquetaPrecio, Brillo, FondoBauhaus, Figura, PuntosPop, Gl
 import { ArteLocal } from './arteLocal';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR, categoriaTur } from './idioma';
 
-export default function Drop({ drop, usuario, alCerrar }) {
+export default function Drop({ drop, usuario, alCerrar, alComoLlegar = null }) {
   const [mio, setMio] = useState(undefined);
   const [estado, setEstado] = useState(null);
   const [niveles, setNiveles] = useState([]);
@@ -138,7 +138,7 @@ export default function Drop({ drop, usuario, alCerrar }) {
 
       {destino && destino.lat && !drop.dentro_del_radio ? (
         <View style={{ marginHorizontal: 16, marginTop: 14 }}>
-          <Boton texto={t(`Cómo llegar caminando · ${cuad(drop.cuadras)}`, `Camina pa’llá · ${cuad(drop.cuadras)}`)} fondo={C.amarillo} color={C.negro} onPress={() => caminar(destino)} />
+          <Boton texto={t(`Cómo llegar caminando · ${cuad(drop.cuadras)}`, `Camina pa’llá · ${cuad(drop.cuadras)}`)} fondo={C.amarillo} color={C.negro} onPress={() => (alComoLlegar ? alComoLlegar({ lat: destino.lat, lng: destino.lng, nombre: drop.local_nombre }) : caminar(destino))} />
           {destino.direccion ? <Text style={{ fontFamily: F.media, fontSize: 13, color: C.gris, textAlign: 'center', marginTop: 6 }}>{destino.direccion}</Text> : null}
         </View>
       ) : null}

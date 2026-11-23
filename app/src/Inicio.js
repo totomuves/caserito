@@ -24,7 +24,7 @@ function etiquetaPara(d, hora, t, cuad) {
   return cuad(d.cuadras).toUpperCase();
 }
 
-export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda, avisos, avisoMotivo, alPrenderAvisos, alCerrarAvisos, avisoQr, alCerrarAvisoQr, barrioActual, barrioLejos, barrios = [], visita = null, alVisitar = () => {}, pos = null, alVerMapa = () => {}, lugares = [], alAbrirLugar = () => {}, dropsMapa = null, diag = {}, alRecargar = () => {}, radio = 3000, alCambiarRadio = () => {}, alComoLlegar = null }) {
+export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda, avisos, avisoMotivo, alPrenderAvisos, alCerrarAvisos, avisoQr, alCerrarAvisoQr, barrioActual, barrioLejos, barrios = [], visita = null, alVisitar = () => {}, pos = null, alVerMapa = () => {}, lugares = [], alAbrirLugar = () => {}, dropsMapa = null, diag = {}, alRecargar = () => {}, radio = 3000, alCambiarRadio = () => {}, alComoLlegar = null, destino = null }) {
   const b = barrioActual && barrioActual.barrio;
   const nombreBarrio = (b && b.nombre) || 'Barrio Italia';
   const lugar = b ? (barrioActual.dentro ? `${b.nombre} · ${b.comuna}` : b.nombre) : 'Barrio Italia';
@@ -76,7 +76,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
   }
 
   if (estilo === 'diario') {
-    return <Portada drops={drops} nombreBarrio={nombreBarrio} barrios={barrios} visita={visita} alVisitar={alVisitar} alAbrir={alAbrir} alRefrescar={alRefrescar} coords={coords} t={t} cuad={cuad} />;
+    return <Portada drops={drops} nombreBarrio={nombreBarrio} barrios={barrios} visita={visita} alVisitar={alVisitar} alAbrir={alAbrir} alRefrescar={alRefrescar} coords={coords} t={t} cuad={cuad} alComoLlegar={alComoLlegar} />;
   }
 
   const moderno = estilo === 'moderno';
@@ -368,7 +368,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
 
       {moderno ? (
         <>
-          {enLugar ? bloqueLugar : <Seguro><MiniMapa pos={visita ? { lat: visita.lat, lng: visita.lng } : pos} yo={!visita && pos && !pos.aprox ? pos : null} drops={dropsMapa || drops} alAbrir={alAbrir} alVerMapa={alVerMapa} t={t} lugares={lugares} alAbrirLugar={alAbrirLugar} /></Seguro>}
+          {enLugar ? bloqueLugar : <Seguro><MiniMapa pos={visita ? { lat: visita.lat, lng: visita.lng } : pos} yo={!visita && pos && !pos.aprox ? pos : null} drops={dropsMapa || drops} alAbrir={alAbrir} alVerMapa={alVerMapa} t={t} lugares={lugares} alAbrirLugar={alAbrirLugar} destino={destino} /></Seguro>}
           {filaLugares}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingTop: 16 }}>
             {CATEGORIAS.map((c) => <Pildora key={c.id} texto={tur ? categoriaTur(c.id, lang) || c.texto : c.texto} categoria={c.id} activa={filtro === c.id} onPress={() => setFiltro(c.id)} />)}

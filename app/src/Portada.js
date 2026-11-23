@@ -66,7 +66,7 @@ function Caja({ children, fondo = PAPEL, style }) {
   return <View style={[{ borderWidth: 2, borderColor: C.borde, backgroundColor: fondo }, style]}>{children}</View>;
 }
 
-export default function Portada({ drops, nombreBarrio, barrios, visita, alVisitar, alAbrir, alRefrescar, coords = {}, t, cuad }) {
+export default function Portada({ drops, nombreBarrio, barrios, visita, alVisitar, alAbrir, alRefrescar, coords = {}, t, cuad, alComoLlegar = null }) {
   const [refrescando, setRefrescando] = useState(false);
   const [seccion, setSeccion] = useState('todo');
   const lista = (seccion === 'todo' ? drops : drops.filter((d) => tieneCategoria(d, seccion))).slice().sort((a, b) => a.cuadras - b.cuadras);
@@ -142,7 +142,7 @@ export default function Portada({ drops, nombreBarrio, barrios, visita, alVisita
               <Text style={{ ...S, fontSize: 13, lineHeight: 18 }}>
                 {t(`${portada.local_nombre} soltó ${portada.titulo.toLowerCase()} y a esta hora quedan ${portada.quedan}. Está a ${cuad(portada.cuadras)} de ti.`, `${portada.local_nombre} dropped ${portada.titulo.toLowerCase()} and only ${portada.quedan} left. It's ${cuad(portada.cuadras)} away.`)}
               </Text>
-              <Pressable onPress={() => (portada.dentro_del_radio || !coords[portada.local_id] ? alAbrir(portada) : caminar(coords[portada.local_id]))} accessibilityRole="button"
+              <Pressable onPress={() => (portada.dentro_del_radio || !coords[portada.local_id] ? alAbrir(portada) : alComoLlegar ? alComoLlegar({ ...coords[portada.local_id], nombre: portada.local_nombre }) : caminar(coords[portada.local_id]))} accessibilityRole="button"
                 style={{ backgroundColor: C.negro, paddingVertical: 10, alignItems: 'center', marginTop: 4 }}>
                 <Text style={{ ...T, fontSize: 15, color: AMARILLO }}>{portada.dentro_del_radio ? t('¡CANJÉALO AHORA!', '¡CANJÉALO NOW!') : t(`CÓMO LLEGAR · ${Math.max(1, Math.round((portada.cuadras || 1) * 1.25))} MIN`, `GET THERE · ${Math.max(1, Math.round((portada.cuadras || 1) * 1.25))} MIN`)}</Text>
               </Pressable>
