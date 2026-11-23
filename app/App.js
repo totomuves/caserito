@@ -26,7 +26,27 @@ import { barrioDe } from './src/barrios';
 import { estadoAvisos, activarAvisos, descartarAvisos, ubicarAviso, alTocarAviso, avisarPuerta, avisarBarrio } from './src/avisos';
 
 export default function App() {
-  return <IdiomaProvider><EstiloProvider><Caserito /></EstiloProvider></IdiomaProvider>;
+  return <Atajo><IdiomaProvider><EstiloProvider><Caserito /></EstiloProvider></IdiomaProvider></Atajo>;
+}
+
+// Si algo se cae, mostramos el error en vez de una pantalla vacía (y se puede reintentar)
+class Atajo extends React.Component {
+  constructor(p) { super(p); this.state = { error: null, n: 0 }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  componentDidCatch(error, info) { this.pila = (info && info.componentStack || '').split('\n').filter(Boolean).slice(0, 6).join('\n'); }
+  render() {
+    if (!this.state.error) return <React.Fragment key={this.state.n}>{this.props.children}</React.Fragment>;
+    return (
+      <View style={{ flex: 1, backgroundColor: '#FFD100', padding: 24, paddingTop: 70, gap: 12 }}>
+        <Text style={{ fontWeight: '800', fontSize: 22 }}>Uy, algo falló</Text>
+        <Text selectable style={{ fontSize: 14 }}>{String(this.state.error && (this.state.error.message || this.state.error))}</Text>
+        <Text selectable style={{ fontSize: 11, color: '#4A4A4A' }}>{this.pila}</Text>
+        <Pressable onPress={() => this.setState({ error: null, n: this.state.n + 1 })} style={{ backgroundColor: '#111', borderRadius: 12, padding: 14, alignItems: 'center' }}>
+          <Text style={{ color: '#FFF', fontWeight: '800' }}>Reintentar</Text>
+        </Pressable>
+      </View>
+    );
+  }
 }
 
 function Caserito() {
