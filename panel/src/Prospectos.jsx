@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, explicar } from './supabase.js';
 import { traerTiendas, mismoNombre, dentroDe, tipoLegible } from './osm.js';
+import MapaAdmin from './MapaAdmin.jsx';
 
 // Admin · Tiendas del barrio desde OpenStreetMap: aparecen en el mapa de la app como "aún no está en Droper"
 // y quedan como lista de locales para invitar.
@@ -11,6 +12,7 @@ export default function Prospectos({ barrio, locales }) {
   const [abierto, setAbierto] = useState(false);
   const [filtro, setFiltro] = useState('');
   const [n, setN] = useState(0);
+  const [anillo, setAnillo] = useState(null);
 
   useEffect(() => {
     supabase.from('tiendas_osm').select('*').eq('barrio_id', barrio.id).is('lugar_id', null).order('nombre')
@@ -25,6 +27,7 @@ export default function Prospectos({ barrio, locales }) {
       const b = (bs || []).find((x) => x.id === barrio.id);
       const anillo = (b && b.limite && b.limite.coordinates && b.limite.coordinates[0]) || [];
       if (anillo.length < 3) throw new Error('Este barrio no tiene límites dibujados.');
+      setAnillo(anillo);
       const lngs = anillo.map((p) => p[0]), lats = anillo.map((p) => p[1]);
       const todas = await traerTiendas({ bbox: [Math.min(...lats), Math.min(...lngs), Math.max(...lats), Math.max(...lngs)] });
       const aca = todas.filter((t) => dentroDe(t, anillo));
@@ -44,6 +47,15 @@ export default function Prospectos({ barrio, locales }) {
     }
     setTrayendo(false);
   }
+
+  useEffect(() => {
+    if (!abierto || anillo) return;
+    supabase.rpc('barrios_mapa').then(({ data }) => {
+      const b = (data || []).find((x) => x.id === barrio.id);
+      const a = b && b.limite && b.limite.coordinates && b.limite.coordinates[0];
+      if (a) setAnillo(a);
+    });
+  }, [abierto]);
 
   async function invitar(t) {
     const { data: u } = await supabase.auth.getUser();
@@ -68,11 +80,13 @@ export default function Prospectos({ barrio, locales }) {
         <b>Tiendas de OpenStreetMap</b>
         <span className="ayuda">{total ? `${total} tiendas · ${total - lista.length} ya en Droper u ocultas` : 'Todavía no traes tiendas'}</span>
         <button type="button" className="pildora" onClick={traer} disabled={trayendo}>{trayendo ? 'Trayendo…' : total ? 'Actualizar' : 'Traer tiendas'}</button>
-        {total > 0 && <button type="button" className="pildora" onClick={() => setAbierto(!abierto)}>{abierto ? 'Esconder lista' : `Ver ${lista.length} para invitar`}</button>}
+        {total > 0 && <button type="button" className="pildora" onClick={() => setAbierto(!abierto)}>{abierto ? 'Esconder mapa y lista' : `Ver mapa y ${lista.length} para invitar`}</button>}
       </div>
       {msg && <span role="status" style={{ fontWeight: 700 }}>{msg}</span>}
       {abierto && (
         <>
+          <MapaAdmin poligono={anillo}
+            puntos={(tiendas || []).filter((t) => !t.oculta).map((t) => ({ lat: t.lat, lng: t.lng, nombre: t.nombre, detalle: t.local_id ? 'Ya está en Droper' : `${tipoLegible(t.tipo)} · aún no está en Droper`, color: t.local_id ? '#111111' : '#8A8A8A', grande: !!t.local_id }))} />
           <input value={filtro} onChange={(e) => setFiltro(e.target.value)} placeholder="Buscar por nombre o tipo (café, ropa…)" style={{ minHeight: 40 }} />
           <div style={{ display: 'grid', gap: 6, maxHeight: 420, overflow: 'auto' }}>
             {lista.map((t) => (

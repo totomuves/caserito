@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, explicar } from './supabase.js';
 import { traerTiendas, mismoNombre } from './osm.js';
+import MapaAdmin from './MapaAdmin.jsx';
 
 // Admin · Patios y malls: lugares con plano propio (patio de comida, mercado, galería, mall con pisos)
 export default function Lugares() {
@@ -22,7 +23,7 @@ export default function Lugares() {
       setBarrios(b.data || []);
       const l = await supabase.from('locales').select('id, nombre, barrio_id, piso_id, plano_x, plano_y').eq('aprobado', true).order('nombre');
       setLocales(l.data || []);
-      const t = await supabase.from('tiendas_osm').select('osm_id, nombre, piso_id, plano_x, plano_y, local_id').not('piso_id', 'is', null).eq('oculta', false);
+      const t = await supabase.from('tiendas_osm').select('osm_id, nombre, lugar_id, lat, lng, nivel, piso_id, plano_x, plano_y, local_id').not('piso_id', 'is', null).eq('oculta', false);
       setTiendas(t.data || []);
     })();
   }, [n]);
@@ -189,6 +190,11 @@ function Lugar({ g, barrios, locales, tiendas, alCambiar }) {
           </form>
         )}
       </div>
+      <details>
+        <summary style={{ cursor: 'pointer', fontWeight: 700, minHeight: 32 }}>Ver en el mapa ({tiendas.filter((t) => t.lugar_id === g.id).length} tiendas de OpenStreetMap)</summary>
+        <MapaAdmin alto={320} circulo={{ lat: g.lat, lng: g.lng, radio: g.radio_m }}
+          puntos={tiendas.filter((t) => t.lugar_id === g.id).map((t) => ({ lat: t.lat, lng: t.lng, nombre: t.nombre, detalle: t.nivel != null ? `Nivel ${t.nivel}` : 'Sin piso en OpenStreetMap', color: t.local_id ? '#111111' : '#8A8A8A', grande: !!t.local_id }))} />
+      </details>
       {piso && <EditorPiso key={piso.id} piso={piso} g={g} locales={locales} tiendas={tiendas} alCambiar={alCambiar} />}
       {msg && <span role="status" style={{ fontWeight: 700 }}>{msg}</span>}
     </div>
