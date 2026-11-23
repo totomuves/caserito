@@ -8,6 +8,7 @@ import Logo from './Logo';
 import { SelectorBarrios, useCoordenadas } from './MapaComun';
 import { useEstilo } from './estilo';
 import Portada from './Portada';
+import MiniMapa from './MiniMapa';
 import Svg, { Path } from 'react-native-svg';
 
 function etiquetaPara(d, hora, t, cuad) {
@@ -19,7 +20,7 @@ function etiquetaPara(d, hora, t, cuad) {
   return cuad(d.cuadras).toUpperCase();
 }
 
-export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda, avisos, avisoMotivo, alPrenderAvisos, alCerrarAvisos, avisoQr, alCerrarAvisoQr, barrioActual, barrioLejos, barrios = [], visita = null, alVisitar = () => {} }) {
+export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda, avisos, avisoMotivo, alPrenderAvisos, alCerrarAvisos, avisoQr, alCerrarAvisoQr, barrioActual, barrioLejos, barrios = [], visita = null, alVisitar = () => {}, pos = null, alVerMapa = () => {} }) {
   const b = barrioActual && barrioActual.barrio;
   const nombreBarrio = (b && b.nombre) || 'Barrio Italia';
   const lugar = b ? (barrioActual.dentro ? `${b.nombre} · ${b.comuna}` : b.nombre) : 'Barrio Italia';
@@ -68,6 +69,95 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
   if (estilo === 'diario') {
     return <Portada drops={drops} nombreBarrio={nombreBarrio} barrios={barrios} visita={visita} alVisitar={alVisitar} alAbrir={alAbrir} alRefrescar={alRefrescar} coords={coords} t={t} cuad={cuad} />;
   }
+
+  const moderno = estilo === 'moderno';
+  const bloqueBarrios = (
+    <>
+      <SelectorBarrios barrios={barrios} vista={visita} alElegir={alVisitar} flotante={false} titulo={t('¿A qué barrio vas?', '¿A qué barrio vas? Pick a barrio')} />
+      {visita ? (
+        <View style={{ marginHorizontal: 16, marginTop: 8, backgroundColor: C.papel, borderWidth: 2, borderColor: C.azul, borderRadius: R(16), padding: 10 }}>
+          <Text style={{ fontFamily: F.media, fontSize: 13 }}>
+            {t(`Estás viendo los drops de ${visita.nombre}. Cuando llegues, la app vuelve sola a "Aquí" y se activa tu QR en cada local.`,
+               `Estás viendo los drops de ${visita.nombre}. When you get there, la app vuelve a "Aquí" y tu QR se activa.`)}
+          </Text>
+        </View>
+      ) : null}
+
+    </>
+  );
+  const bloqueFrase = (
+    <>
+      <View style={{ marginHorizontal: 16, marginTop: 14, backgroundColor: C.negro, borderRadius: R(16), padding: 16, gap: 10 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <FraseGlosario texto={f.tag} style={{ ...letrista, fontSize: 16, color: C.amarillo }} />
+          <Pressable onPress={() => setI(i + 1)} accessibilityRole="button" accessibilityLabel="Otra sugerencia"
+            style={{ height: 32, paddingHorizontal: 12, borderRadius: R(16), borderWidth: 1.5, borderColor: '#FFFFFF66', justifyContent: 'center' }}>
+            <Text style={{ fontFamily: F.negrita, fontSize: 12, color: '#FFFFFF' }}>{t('Otra', "Siguiente")}</Text>
+          </Pressable>
+        </View>
+        <FraseGlosario texto={f.texto} style={{ ...letrista, fontSize: 20, lineHeight: 26, color: '#FFFFFF', minHeight: 78 }} />
+        {f.drop && (
+          <Pressable onPress={() => alAbrir(f.drop)} style={{ alignSelf: 'flex-start', height: 40, paddingHorizontal: 16, borderRadius: R(16), backgroundColor: C.amarillo, justifyContent: 'center' }}>
+            <Text style={{ fontFamily: F.negrita, fontSize: 14 }}>{t('Ir al drop →', "Ver drop →")}</Text>
+          </Pressable>
+        )}
+      </View>
+
+    </>
+  );
+  const bloqueDrops = (
+    <>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingTop: 18 }}>
+        {CATEGORIAS.map((c) => <Pildora key={c.id} texto={tur ? categoriaTur(c.id, lang) || c.texto : c.texto} categoria={c.id} activa={filtro === c.id} onPress={() => setFiltro(c.id)} />)}
+      </ScrollView>
+
+      <View style={{ marginTop: 14 }}>
+        <Ola color={C.rojo} abajo={false} />
+        <View style={{ backgroundColor: C.rojo, paddingTop: 4, paddingBottom: 18, gap: 12 }}>
+          <Text style={{ ...letrista, fontSize: 24, color: C.amarillo, paddingHorizontal: 20 }}>{t('CERCA DE TI', "CERCA · NEAR YOU")}</Text>
+          {visibles.length === 0 && (
+            <Text style={{ fontFamily: F.media, color: '#FFFFFF', paddingHorizontal: 20 }}>{t(`No hay drops de ${textoCategoria(filtro).toLowerCase()} ahora. Vuelve más rato.`, "No drops acá right now. Vuelve más rato.")}</Text>
+          )}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 16, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 6 }}>
+            {visibles.map((d, k) => (
+              sobrio() ? (
+              <Pressable key={d.drop_id} onPress={() => alAbrir(d)} style={{ width: 216, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.borde, borderRadius: R(16), padding: 14, gap: 6 }}>
+                <EtiquetaPrecio valor={d.tipo === 'sorpresa' ? '¿?' : precio(d.precio)} giro={k % 2 ? '-4deg' : '5deg'} />
+                <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.rojoTexto, textTransform: 'uppercase' }}>{tur ? categoriaTur(d.categoria, lang) || textoCategoria(d.categoria) : textoCategoria(d.categoria)} · {t('quedan', "quedan:")} {d.quedan}</Text>
+                <Text style={{ fontFamily: F.negrita, fontSize: 17 }} numberOfLines={1}>{d.local_nombre}</Text>
+                <FraseGlosario texto={(d.frase || d.titulo).toUpperCase()} colorAyuda={C.rojoTexto} numberOfLines={3} style={{ ...letrista, fontSize: 14, lineHeight: 18 }} />
+                <Text style={{ fontFamily: F.media, fontSize: 13, color: C.gris }}>
+                  {cuad(d.cuadras)} · {t('hasta las', "hasta")} {new Date(d.termina_at).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
+                </Text>
+                {d.tipo === 'grupal' && d.nivel_actual ? <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.azul }}>{t('Nivel actual', "Ahora")}: {d.nivel_actual}</Text> : null}
+              </Pressable>
+              ) : (
+              <Pressable key={d.drop_id} onPress={() => alAbrir(d)} style={{ width: 236, borderWidth: 3, borderColor: C.borde, backgroundColor: C.papel, shadowColor: C.sombra, shadowOffset: { width: 5, height: 5 }, shadowOpacity: 1, shadowRadius: 0 }}>
+                <View style={{ height: 118, borderBottomWidth: 3, borderColor: C.borde, overflow: 'hidden', padding: 10, justifyContent: 'flex-start' }}>
+                  <PuntosPop color={k % 2 ? C.azul : C.rojo} fondo={k % 2 ? '#DDE8F6' : '#FFE3E3'} />
+                  <GloboPop>
+                    <FraseGlosario texto={d.frase || d.titulo} colorAyuda={C.rojoTexto} numberOfLines={3} style={{ fontFamily: F.negrita, fontSize: 13, lineHeight: 16, textTransform: 'uppercase' }} />
+                  </GloboPop>
+                  <Estallido texto={d.tipo === 'sorpresa' ? '¿?' : precio(d.precio) || ONOMATOPEYAS[k % ONOMATOPEYAS.length]} tam={66} style={{ position: 'absolute', right: 4, bottom: 2 }} />
+                </View>
+                <View style={{ padding: 10, gap: 3 }}>
+                  <Text style={{ fontFamily: F.negrita, fontSize: 11, color: C.rojoTexto, textTransform: 'uppercase' }}>{tur ? categoriaTur(d.categoria, lang) || textoCategoria(d.categoria) : textoCategoria(d.categoria)} · {t('quedan', "quedan:")} {d.quedan}</Text>
+                  <Text style={{ ...letrista, fontSize: 18 }} numberOfLines={1}>{d.local_nombre}</Text>
+                  <Text style={{ fontFamily: F.media, fontSize: 12, color: C.gris }}>
+                    {cuad(d.cuadras)} · {t('hasta las', "hasta")} {new Date(d.termina_at).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
+                  </Text>
+                  {d.tipo === 'grupal' && d.nivel_actual ? <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.azul }}>{t('Nivel actual', "Ahora")}: {d.nivel_actual}</Text> : null}
+                </View>
+              </Pressable>
+              )
+            ))}
+          </ScrollView>
+        </View>
+        <Ola color={C.rojo} />
+      </View>
+
+    </>
+  );
 
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 110 }}
@@ -133,80 +223,20 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
         </View>
       )}
 
-      <SelectorBarrios barrios={barrios} vista={visita} alElegir={alVisitar} flotante={false} titulo={t('¿A qué barrio vas?', '¿A qué barrio vas? Pick a barrio')} />
-      {visita ? (
-        <View style={{ marginHorizontal: 16, marginTop: 8, backgroundColor: C.papel, borderWidth: 2, borderColor: C.azul, borderRadius: R(16), padding: 10 }}>
-          <Text style={{ fontFamily: F.media, fontSize: 13 }}>
-            {t(`Estás viendo los drops de ${visita.nombre}. Cuando llegues, la app vuelve sola a "Aquí" y se activa tu QR en cada local.`,
-               `Estás viendo los drops de ${visita.nombre}. When you get there, la app vuelve a "Aquí" y tu QR se activa.`)}
-          </Text>
-        </View>
-      ) : null}
-
-      <View style={{ marginHorizontal: 16, marginTop: 14, backgroundColor: C.negro, borderRadius: R(16), padding: 16, gap: 10 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <FraseGlosario texto={f.tag} style={{ ...letrista, fontSize: 16, color: C.amarillo }} />
-          <Pressable onPress={() => setI(i + 1)} accessibilityRole="button" accessibilityLabel="Otra sugerencia"
-            style={{ height: 32, paddingHorizontal: 12, borderRadius: R(16), borderWidth: 1.5, borderColor: '#FFFFFF66', justifyContent: 'center' }}>
-            <Text style={{ fontFamily: F.negrita, fontSize: 12, color: '#FFFFFF' }}>{t('Otra', "Siguiente")}</Text>
-          </Pressable>
-        </View>
-        <FraseGlosario texto={f.texto} style={{ ...letrista, fontSize: 20, lineHeight: 26, color: '#FFFFFF', minHeight: 78 }} />
-        {f.drop && (
-          <Pressable onPress={() => alAbrir(f.drop)} style={{ alignSelf: 'flex-start', height: 40, paddingHorizontal: 16, borderRadius: R(16), backgroundColor: C.amarillo, justifyContent: 'center' }}>
-            <Text style={{ fontFamily: F.negrita, fontSize: 14 }}>{t('Ir al drop →', "Ver drop →")}</Text>
-          </Pressable>
-        )}
-      </View>
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingTop: 18 }}>
-        {CATEGORIAS.map((c) => <Pildora key={c.id} texto={tur ? categoriaTur(c.id, lang) || c.texto : c.texto} categoria={c.id} activa={filtro === c.id} onPress={() => setFiltro(c.id)} />)}
-      </ScrollView>
-
-      <View style={{ marginTop: 14 }}>
-        <Ola color={C.rojo} abajo={false} />
-        <View style={{ backgroundColor: C.rojo, paddingTop: 4, paddingBottom: 18, gap: 12 }}>
-          <Text style={{ ...letrista, fontSize: 24, color: C.amarillo, paddingHorizontal: 20 }}>{t('CERCA DE TI', "CERCA · NEAR YOU")}</Text>
-          {visibles.length === 0 && (
-            <Text style={{ fontFamily: F.media, color: '#FFFFFF', paddingHorizontal: 20 }}>{t(`No hay drops de ${textoCategoria(filtro).toLowerCase()} ahora. Vuelve más rato.`, "No drops acá right now. Vuelve más rato.")}</Text>
-          )}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 16, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 6 }}>
-            {visibles.map((d, k) => (
-              sobrio() ? (
-              <Pressable key={d.drop_id} onPress={() => alAbrir(d)} style={{ width: 216, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.borde, borderRadius: R(16), padding: 14, gap: 6 }}>
-                <EtiquetaPrecio valor={d.tipo === 'sorpresa' ? '¿?' : precio(d.precio)} giro={k % 2 ? '-4deg' : '5deg'} />
-                <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.rojoTexto, textTransform: 'uppercase' }}>{tur ? categoriaTur(d.categoria, lang) || textoCategoria(d.categoria) : textoCategoria(d.categoria)} · {t('quedan', "quedan:")} {d.quedan}</Text>
-                <Text style={{ fontFamily: F.negrita, fontSize: 17 }} numberOfLines={1}>{d.local_nombre}</Text>
-                <FraseGlosario texto={(d.frase || d.titulo).toUpperCase()} colorAyuda={C.rojoTexto} numberOfLines={3} style={{ ...letrista, fontSize: 14, lineHeight: 18 }} />
-                <Text style={{ fontFamily: F.media, fontSize: 13, color: C.gris }}>
-                  {cuad(d.cuadras)} · {t('hasta las', "hasta")} {new Date(d.termina_at).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
-                </Text>
-                {d.tipo === 'grupal' && d.nivel_actual ? <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.azul }}>{t('Nivel actual', "Ahora")}: {d.nivel_actual}</Text> : null}
-              </Pressable>
-              ) : (
-              <Pressable key={d.drop_id} onPress={() => alAbrir(d)} style={{ width: 236, borderWidth: 3, borderColor: C.borde, backgroundColor: C.papel, shadowColor: C.sombra, shadowOffset: { width: 5, height: 5 }, shadowOpacity: 1, shadowRadius: 0 }}>
-                <View style={{ height: 118, borderBottomWidth: 3, borderColor: C.borde, overflow: 'hidden', padding: 10, justifyContent: 'flex-start' }}>
-                  <PuntosPop color={k % 2 ? C.azul : C.rojo} fondo={k % 2 ? '#DDE8F6' : '#FFE3E3'} />
-                  <GloboPop>
-                    <FraseGlosario texto={d.frase || d.titulo} colorAyuda={C.rojoTexto} numberOfLines={3} style={{ fontFamily: F.negrita, fontSize: 13, lineHeight: 16, textTransform: 'uppercase' }} />
-                  </GloboPop>
-                  <Estallido texto={d.tipo === 'sorpresa' ? '¿?' : precio(d.precio) || ONOMATOPEYAS[k % ONOMATOPEYAS.length]} tam={66} style={{ position: 'absolute', right: 4, bottom: 2 }} />
-                </View>
-                <View style={{ padding: 10, gap: 3 }}>
-                  <Text style={{ fontFamily: F.negrita, fontSize: 11, color: C.rojoTexto, textTransform: 'uppercase' }}>{tur ? categoriaTur(d.categoria, lang) || textoCategoria(d.categoria) : textoCategoria(d.categoria)} · {t('quedan', "quedan:")} {d.quedan}</Text>
-                  <Text style={{ ...letrista, fontSize: 18 }} numberOfLines={1}>{d.local_nombre}</Text>
-                  <Text style={{ fontFamily: F.media, fontSize: 12, color: C.gris }}>
-                    {cuad(d.cuadras)} · {t('hasta las', "hasta")} {new Date(d.termina_at).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
-                  </Text>
-                  {d.tipo === 'grupal' && d.nivel_actual ? <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.azul }}>{t('Nivel actual', "Ahora")}: {d.nivel_actual}</Text> : null}
-                </View>
-              </Pressable>
-              )
-            ))}
-          </ScrollView>
-        </View>
-        <Ola color={C.rojo} />
-      </View>
+      {moderno ? (
+        <>
+          <MiniMapa pos={visita ? { lat: visita.lat, lng: visita.lng } : pos} yo={!visita && pos && !pos.aprox ? pos : null} drops={drops} alAbrir={alAbrir} alVerMapa={alVerMapa} t={t} />
+          {bloqueDrops}
+          {bloqueFrase}
+          {bloqueBarrios}
+        </>
+      ) : (
+        <>
+          {bloqueBarrios}
+          {bloqueFrase}
+          {bloqueDrops}
+        </>
+      )}
 
       <View style={{ marginTop: 18 }}>
         <Ola color={C.amarillo} abajo={false} />
