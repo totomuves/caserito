@@ -154,6 +154,19 @@ function Caserito() {
       return Math.hypot((b.lat - pos.lat) * 111320, (b.lng - pos.lng) * 93000) > 40 ? pos : b;
     });
   }, [pos]);
+  // Mapa: TODOS los drops vigentes de la ciudad (no solo los cercanos); el inicio sigue mostrando lo de cerca
+  const [dropsMapa, setDropsMapa] = useState([]);
+  useEffect(() => {
+    if (!usuario) return;
+    let vivo = true;
+    const base = posBusqueda && !posBusqueda.aprox ? posBusqueda : BARRIO_ITALIA;
+    const traer = () => supabase.rpc('drops_cerca', { lat: base.lat, lng: base.lng, radio_m: 60000 }).then(({ data, error }) => {
+      if (vivo && !error && data) setDropsMapa(data);
+    });
+    traer();
+    const t = setInterval(traer, 60000);
+    return () => { vivo = false; clearInterval(t); };
+  }, [usuario, posBusqueda && Math.round(posBusqueda.lat * 100), posBusqueda && Math.round(posBusqueda.lng * 100)]);
   const turno = useRef(0);
   const dropsRef = useRef([]);
   dropsRef.current = drops; // si llegan respuestas desordenadas, solo vale la última pedida
@@ -303,7 +316,7 @@ function Caserito() {
           ) : pestana === 'tu' ? (
             <Cuenta key={usuario.id} usuario={usuario} alAyuda={() => setPestana('ayuda')} />
           ) : pestana === 'mapa' ? (
-            <Mapa drops={drops} pos={visita ? { lat: visita.lat, lng: visita.lng } : lejos ? (centroLejos || { ...BARRIO_ITALIA }) : pos} yo={pos && !pos.aprox ? pos : null} alAbrir={abrir} barrios={barrios} visita={visita} alVisitar={setVisita} lugares={lugares} alAbrirLugar={setLugarAbierto} />
+            <Mapa drops={(() => { const m = new Map(dropsMapa.map((d) => [d.drop_id, d])); drops.forEach((d) => m.set(d.drop_id, d)); return [...m.values()]; })()} pos={visita ? { lat: visita.lat, lng: visita.lng } : lejos ? (centroLejos || { ...BARRIO_ITALIA }) : pos} yo={pos && !pos.aprox ? pos : null} alAbrir={abrir} barrios={barrios} visita={visita} alVisitar={setVisita} lugares={lugares} alAbrirLugar={setLugarAbierto} />
           ) : (
             <Album usuario={usuario} alIrAlMapa={() => setPestana('mapa')} barrios={barrios} barrioInicial={(visita || barrioDe(pos, barrios).barrio || {}).id} />
           )}
