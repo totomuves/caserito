@@ -22,7 +22,7 @@ function estilos() {
     .droper-mini { background:#FFF3B0; }
     .droper-mini .leaflet-tile-pane { filter: sepia(.55) saturate(1.6) hue-rotate(-8deg) brightness(1.04) contrast(1.05); }
     .droper-mini .leaflet-control-attribution { font-size:8px; background:rgba(255,255,255,.7); }
-    .mini-yo { width:18px; height:18px; border-radius:9px; background:#1D4ED8; border:3px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.35); box-sizing:border-box; }
+    .mini-yo { width:18px; height:18px; border-radius:9px; background:#1D4ED8; border:3px solid #fff; box-shadow:0 0 0 8px rgba(29,78,216,.18), 0 1px 4px rgba(0,0,0,.35); box-sizing:border-box; }
     .mini-lam { display:flex; flex-direction:column; align-items:center; cursor:pointer; }
     .mini-lam .carta { position:relative; width:40px; height:40px; box-sizing:border-box; overflow:hidden; background:#fff; border:1px solid #D9D9DF; border-radius:8px; padding:2px; box-shadow:0 3px 8px rgba(17,17,17,.18); }
     .mini-lam.con-drop .carta { border:2px solid #111; }
@@ -49,21 +49,25 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
     L.tileLayer(LLAVE_CARTO
       ? `https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${LLAVE_CARTO}`
       : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(m);
+    m.setView([centro.lat, centro.lng], 17, { animate: false });
     capa.current = L.layerGroup().addTo(m);
     mapa.current = m;
     setTimeout(() => m.invalidateSize(), 50);
     return () => { m.remove(); mapa.current = null; capa.current = null; };
   }, [!!centro]);
 
+  // Tú siempre al centro: el mapa se mueve contigo (2 cuadras a cada lado)
+  useEffect(() => {
+    const m = mapa.current;
+    if (!m || !centro) return;
+    m.setView([centro.lat, centro.lng], 17, { animate: false });
+  }, [centro && centro.lat, centro && centro.lng, !!mapa.current]);
+
   useEffect(() => {
     const m = mapa.current;
     const g = capa.current;
-    if (!m || !g || !centro || !m.hasLayer(g)) return;
+    if (!m || !g || !m.hasLayer(g)) return;
     g.clearLayers();
-    // Encuadre calculado sin depender del círculo (getBounds del círculo se cae si aún no está pegado al mapa)
-    m.setView([centro.lat, centro.lng], 17, { animate: false });
-    L.circle([centro.lat, centro.lng], { radius: RADIO, color: '#111', weight: 1.5, dashArray: '6 6', fillColor: C.amarillo, fillOpacity: 0.14, interactive: false }).addTo(g);
-    if (yo) L.marker([yo.lat, yo.lng], { icon: L.divIcon({ className: '', html: '<div class="mini-yo"></div>', iconSize: [18, 18] }), interactive: false, zIndexOffset: 1000 }).addTo(g);
     const dropDe = {};
     drops.forEach((d) => { if (!dropDe[d.local_id]) dropDe[d.local_id] = d; });
     const puntos = locales.map((l) => ({ l, p: l.punto }));
@@ -77,13 +81,14 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
       L.marker([p.lat, p.lng], { icon: L.divIcon({ className: '', html, iconSize: [46, d ? 78 : 62], iconAnchor: [23, d ? 76 : 60] }), zIndexOffset: d ? 500 : 0 })
         .on('click', () => (d ? alAbrir(d) : alVerMapa())).addTo(g);
     });
-  }, [centro && centro.lat, centro && centro.lng, !!yo, drops, coords, locales, !!mapa.current]);
+  }, [drops, coords, locales, !!mapa.current]);
 
   return (
     <View style={{ marginHorizontal: 16, marginTop: 14, height: 300, borderRadius: R(20), overflow: 'hidden', borderWidth: 1, borderColor: C.borde, backgroundColor: '#FFF3B0' }}>
       <div ref={caja} style={{ position: 'absolute', inset: 0 }} />
+      {yo ? <div className="mini-yo" style={{ position: 'absolute', left: '50%', top: '50%', marginLeft: -9, marginTop: -9, zIndex: 450, pointerEvents: 'none' }} /> : null}
       <View style={{ position: 'absolute', left: 10, top: 10, backgroundColor: C.papel, borderRadius: 14, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: C.borde, zIndex: 500 }}>
-        <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{yo ? t('Tú · 2 cuadras a la redonda', 'You · 2 cuadras around') : t('Activa tu ubicación', 'Turn on location')}</Text>
+        <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{yo ? t('Tú · 2 cuadras a la redonda', 'You · 2 blocks around') : t('Activa tu ubicación', 'Turn on location')}</Text>
       </View>
       <Pressable onPress={alVerMapa} accessibilityRole="button" accessibilityLabel={t('Abrir mapa', 'Open map')}
         style={{ position: 'absolute', right: 10, bottom: 10, backgroundColor: C.negro, borderRadius: 16, paddingHorizontal: 14, height: 34, justifyContent: 'center', zIndex: 500 }}>

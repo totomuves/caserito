@@ -1,12 +1,11 @@
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
-import MapView, { Circle, Marker } from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 import { C, F, R, precio } from './tema';
 import { useCoordenadas, useLocalesMapa } from './MapaComun';
 import { ArteLocal } from './arteLocal';
 import { ESTILO as ESTILO_MAPA } from './Mapa';
 
-const RADIO = 200; // 2 cuadras a la redonda
 
 export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVerMapa = () => {}, t = (a) => a }) {
   const coords = useCoordenadas(drops);
@@ -19,7 +18,6 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
       <MapView style={{ flex: 1 }} scrollEnabled={false} zoomEnabled={false} rotateEnabled={false} pitchEnabled={false}
         showsUserLocation={!!yo} showsPointsOfInterest={false} toolbarEnabled={false} customMapStyle={ESTILO_MAPA}
         region={{ latitude: centro.lat, longitude: centro.lng, latitudeDelta: delta, longitudeDelta: delta }}>
-        <Circle center={{ latitude: centro.lat, longitude: centro.lng }} radius={RADIO} strokeColor="#111111" strokeWidth={1.5} lineDashPattern={[6, 6]} fillColor="rgba(255,209,0,0.16)" />
         {(() => {
           const dropDe = {};
           drops.forEach((d) => { if (!dropDe[d.local_id]) dropDe[d.local_id] = d; });
@@ -47,7 +45,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
         })()}
       </MapView>
       <View style={{ position: 'absolute', left: 10, top: 10, backgroundColor: C.papel, borderRadius: 14, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: C.borde }}>
-        <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{yo ? t('Tú · 2 cuadras a la redonda', 'You · 2 cuadras around') : t('Activa tu ubicación', 'Turn on location')}</Text>
+        <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{yo ? t('Tú · 2 cuadras a la redonda', 'You · 2 blocks around') : t('Activa tu ubicación', 'Turn on location')}</Text>
       </View>
       <Pressable onPress={alVerMapa} accessibilityRole="button" accessibilityLabel={t('Abrir mapa', 'Open map')}
         style={{ position: 'absolute', right: 10, bottom: 10, backgroundColor: C.negro, borderRadius: 16, paddingHorizontal: 14, height: 34, justifyContent: 'center' }}>
