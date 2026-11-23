@@ -51,17 +51,20 @@ export default function Suscripcion({ local }) {
   if (s === null || s === false) return null; // sin el SQL 030 todavía: no se muestra
   const hoy = new Date().toISOString().slice(0, 10);
   const gratis = s.gratis_hasta && s.gratis_hasta >= hoy;
+  const porCorreo = s.tarjeta === 'Pago por correo (Flow)';
   const fecha = (d) => new Date(d + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' });
   return (
     <div className="tarjeta" style={{ display: 'grid', gap: 8 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
         <b className="letrista" style={{ fontSize: 20 }}>MI SUSCRIPCIÓN</b>
         <span className="pildora" style={{ background: s.estado === 'activa' ? '#FFD100' : s.estado === 'morosa' ? '#E30A2F' : '#fff', color: s.estado === 'morosa' ? '#fff' : '#111' }}>
-          {gratis && s.estado !== 'activa' ? `Gratis hasta el ${fecha(s.gratis_hasta)}` : TEXTO[s.estado] || s.estado}
+          {gratis && s.estado !== 'activa' ? `Gratis hasta el ${fecha(s.gratis_hasta)}` : porCorreo && s.estado === 'activa' ? 'Activa · pago por correo' : TEXTO[s.estado] || s.estado}
         </span>
       </div>
-      <span>Plan Droper Local · <b>{PRECIO}</b> · se cobra solo a tu tarjeta con Flow. Sin comisión por canje.</span>
-      {s.tarjeta && <span className="ayuda">Tarjeta: {s.tarjeta}</span>}
+      {porCorreo
+        ? <span>Plan Droper Local · <b>{PRECIO}</b> · <b>sin tarjeta</b>: cada mes Flow te manda un correo con el link para pagar. Sin comisión por canje.</span>
+        : <span>Plan Droper Local · <b>{PRECIO}</b> · se cobra solo a tu tarjeta con Flow. Sin comisión por canje.</span>}
+      {s.tarjeta && !porCorreo && <span className="ayuda">Tarjeta: {s.tarjeta}</span>}
       {s.estado === 'morosa' && <span style={{ fontWeight: 700 }}>Flow no pudo cobrar la última cuota. Revisa tu tarjeta o regístrala de nuevo.</span>}
       {!s.al_dia && <span style={{ fontWeight: 700 }}>Para publicar drops nuevos necesitas la suscripción activa.</span>}
       {s.estado !== 'activa' && (
