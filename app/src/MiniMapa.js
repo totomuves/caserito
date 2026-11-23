@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import * as Location from 'expo-location';
 import { Pressable, Text, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { C, F, R, precio, ESTILO as SKIN } from './tema';
@@ -16,6 +17,17 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
   useEffect(() => {
     if (mapa.current && centro) mapa.current.animateCamera({ center: { latitude: centro.lat, longitude: centro.lng } }, { duration: 400 });
   }, [centro && centro.lat, centro && centro.lng]);
+  // Brújula: el mapa gira con el teléfono
+  const [brujula, setBrujula] = useState(false);
+  useEffect(() => {
+    if (!brujula) { if (mapa.current) mapa.current.animateCamera({ heading: 0 }, { duration: 300 }); return; }
+    let sub;
+    Location.watchHeadingAsync((h) => {
+      const rumbo = h.trueHeading >= 0 ? h.trueHeading : h.magHeading;
+      if (mapa.current) mapa.current.animateCamera({ heading: rumbo }, { duration: 250 });
+    }).then((s) => { sub = s; }).catch(() => setBrujula(false));
+    return () => sub && sub.remove();
+  }, [brujula]);
   if (!centro) return null;
   const delta = 0.0045; // como el zoom 17 del mapa
   return (
@@ -52,6 +64,11 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
       <View style={{ position: 'absolute', left: 10, top: 10, backgroundColor: C.papel, borderRadius: 14, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: C.borde }}>
         <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{yo ? t('Tú · 2 cuadras a la redonda', 'You · 2 blocks around') : t('Activa tu ubicación', 'Turn on location')}</Text>
       </View>
+      <Pressable onPress={() => setBrujula(!brujula)} accessibilityRole="switch" accessibilityState={{ checked: brujula }} accessibilityLabel={t('Brújula: girar el mapa con el teléfono', 'Compass')}
+        style={{ position: 'absolute', left: 10, bottom: 10, height: 34, paddingHorizontal: 12, borderRadius: 16, backgroundColor: brujula ? C.amarillo : C.papel, borderWidth: 1, borderColor: C.borde, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+        <Text style={{ fontSize: 14 }}>🧭</Text>
+        <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{brujula ? t('Brújula activa', 'Compass on') : t('Brújula', 'Compass')}</Text>
+      </Pressable>
       <Pressable onPress={alVerMapa} accessibilityRole="button" accessibilityLabel={t('Abrir mapa', 'Open map')}
         style={{ position: 'absolute', right: 10, bottom: 10, backgroundColor: C.negro, borderRadius: 16, paddingHorizontal: 14, height: 34, justifyContent: 'center' }}>
         <Text style={{ fontFamily: F.negrita, fontSize: 12, color: '#FFFFFF' }}>{t('Ver mapa →', 'Map →')}</Text>

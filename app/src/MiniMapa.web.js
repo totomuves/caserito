@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { C, F, R, precio, ESTILO } from './tema';
 import { useCoordenadas, useLocalesMapa, useTiendasOsm, especialidad } from './MapaComun';
@@ -25,6 +25,7 @@ function estilos() {
     ${CSS_CALLES('.droper-mini.moderno')}
     .droper-mini .leaflet-control-attribution { font-size:8px; background:rgba(255,255,255,.7); }
     .mini-yo { width:18px; height:18px; border-radius:9px; background:#1D4ED8; border:3px solid #fff; box-shadow:0 0 0 8px rgba(29,78,216,.18), 0 1px 4px rgba(0,0,0,.35); box-sizing:border-box; }
+    .droper-mini .mini-lam { transform: rotate(var(--contra, 0deg)); transition: transform .25s linear; }
     .mini-lam { display:flex; flex-direction:column; align-items:center; cursor:pointer; }
     .mini-lam .carta { position:relative; width:40px; height:40px; box-sizing:border-box; overflow:hidden; background:#fff; border:1px solid #D9D9DF; border-radius:8px; padding:2px; box-shadow:0 3px 8px rgba(17,17,17,.18); }
     .mini-lam.con-drop .carta { border:2px solid #111; }
@@ -43,6 +44,41 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
   const locales = useLocalesMapa();
   const tiendas = useTiendasOsm();
   const centro = yo || pos;
+
+  // Brújula: el mapa gira según hacia dónde apunta el teléfono (lo de adelante queda arriba)
+  const [brujula, setBrujula] = useState(false);
+  const [rumbo, setRumbo] = useState(0);
+  const [avisoBrujula, setAvisoBrujula] = useState('');
+  useEffect(() => {
+    if (!brujula) { setRumbo(0); return; }
+    let ultimo = null;
+    const leer = (e) => {
+      let h = null;
+      if (typeof e.webkitCompassHeading === 'number') h = e.webkitCompassHeading; // iPhone
+      else if (e.absolute && typeof e.alpha === 'number') h = 360 - e.alpha; // Android
+      if (h == null) return;
+      // Suavizado (y sin saltos al cruzar el norte)
+      if (ultimo == null) ultimo = h;
+      let d = ((h - ultimo + 540) % 360) - 180;
+      ultimo = ultimo + d * 0.25;
+      setRumbo(ultimo);
+    };
+    window.addEventListener('deviceorientationabsolute', leer, true);
+    window.addEventListener('deviceorientation', leer, true);
+    return () => { window.removeEventListener('deviceorientationabsolute', leer, true); window.removeEventListener('deviceorientation', leer, true); };
+  }, [brujula]);
+  async function alternarBrujula() {
+    setAvisoBrujula('');
+    if (brujula) { setBrujula(false); return; }
+    try {
+      const D = window.DeviceOrientationEvent;
+      if (D && typeof D.requestPermission === 'function') {
+        const r = await D.requestPermission(); // iPhone pide permiso
+        if (r !== 'granted') { setAvisoBrujula(t('Sin permiso para la brújula', 'No compass permission')); return; }
+      } else if (!D) { setAvisoBrujula(t('Este equipo no tiene brújula', 'No compass here')); return; }
+      setBrujula(true);
+    } catch (e) { setAvisoBrujula(t('No se pudo activar la brújula', 'Compass failed')); }
+  }
 
   useEffect(() => {
     estilos();
@@ -91,7 +127,12 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
 
   return (
     <View style={{ marginHorizontal: 16, marginTop: 14, height: 300, borderRadius: R(20), overflow: 'hidden', borderWidth: 1, borderColor: C.borde, backgroundColor: ESTILO === 'moderno' ? '#FFFFFF' : '#FFF3B0' }}>
-      <div ref={caja} style={{ position: 'absolute', inset: 0 }} />
+      <div ref={caja} style={{ position: 'absolute', left: '-25%', top: '-25%', width: '150%', height: '150%', transform: `rotate(${-rumbo}deg)`, transition: 'transform .25s linear', '--contra': `${rumbo}deg` }} />
+      <Pressable onPress={alternarBrujula} accessibilityRole="switch" accessibilityState={{ checked: brujula }} accessibilityLabel={t('Brújula: girar el mapa con el teléfono', 'Compass: rotate the map')}
+        style={{ position: 'absolute', left: 10, bottom: 10, height: 34, paddingHorizontal: 12, borderRadius: 16, backgroundColor: brujula ? C.amarillo : C.papel, borderWidth: 1, borderColor: C.borde, flexDirection: 'row', alignItems: 'center', gap: 6, zIndex: 500 }}>
+        <Text style={{ fontSize: 14, transform: [{ rotate: `${-rumbo}deg` }] }}>🧭</Text>
+        <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{avisoBrujula || (brujula ? t('Brújula activa', 'Compass on') : t('Brújula', 'Compass'))}</Text>
+      </Pressable>
       {yo ? <div className="mini-yo" style={{ position: 'absolute', left: '50%', top: '50%', marginLeft: -9, marginTop: -9, zIndex: 450, pointerEvents: 'none' }} /> : null}
       <View style={{ position: 'absolute', left: 10, top: 10, backgroundColor: C.papel, borderRadius: 14, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: C.borde, zIndex: 500 }}>
         <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{yo ? t('Tú · 2 cuadras a la redonda', 'You · 2 blocks around') : t('Activa tu ubicación', 'Turn on location')}</Text>
