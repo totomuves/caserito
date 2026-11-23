@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, Text, View, useWindowDimensions } from 'react-native';
+import { Animated, Pressable, Text, Vibration, View, useWindowDimensions } from 'react-native';
 import Svg, { Path, Defs, Pattern, Circle, Rect } from 'react-native-svg';
 import { C, F, letrista, R, ESTILO } from './tema';
 
@@ -236,4 +236,25 @@ export class Seguro extends React.Component {
   static getDerivedStateFromError() { return { error: true }; }
   componentDidCatch(e) { console.warn('Parte de la pantalla falló:', e && e.message); }
   render() { return this.state.error ? null : this.props.children; }
+}
+
+// Tintineo: la tarjeta se mueve y vibra el teléfono cuando estás a menos de 20 m del drop
+export function Tintineo({ activo, children, style }) {
+  const giro = React.useRef(new Animated.Value(0)).current;
+  React.useEffect(() => {
+    if (!activo) { giro.setValue(0); return; }
+    try { Vibration.vibrate([0, 120, 80, 120, 80, 200]); } catch (e) { /* sin vibración */ }
+    const loop = Animated.loop(Animated.sequence([
+      Animated.timing(giro, { toValue: 1, duration: 90, useNativeDriver: true }),
+      Animated.timing(giro, { toValue: -1, duration: 140, useNativeDriver: true }),
+      Animated.timing(giro, { toValue: 0.6, duration: 120, useNativeDriver: true }),
+      Animated.timing(giro, { toValue: 0, duration: 110, useNativeDriver: true }),
+      Animated.delay(650),
+    ]));
+    loop.start();
+    return () => loop.stop();
+  }, [activo]);
+  const rotate = giro.interpolate({ inputRange: [-1, 1], outputRange: ['-3deg', '3deg'] });
+  const scale = giro.interpolate({ inputRange: [-1, 0, 1], outputRange: [1.03, 1, 1.03] });
+  return <Animated.View style={[style, { transform: [{ rotate }, { scale }] }]}>{children}</Animated.View>;
 }

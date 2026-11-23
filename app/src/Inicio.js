@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { supabase } from './supabase';
 import { C, F, letrista, CATEGORIAS, textoCategoria, tieneCategoria, precio, cuadras, R, ESTILO, sobrio, fondoBanner, tintaBanner, acentoBanner, bannerClaro } from './tema';
-import { Ola, Brillo, Pildora, EtiquetaPrecio, Boton, FondoBauhaus, PuntosPop, GloboPop, Estallido, ONOMATOPEYAS, Seguro } from './componentes';
+import { Ola, Brillo, Pildora, EtiquetaPrecio, Boton, FondoBauhaus, PuntosPop, GloboPop, Estallido, ONOMATOPEYAS, Seguro, Tintineo } from './componentes';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR, categoriaTur, SelectorIdioma } from './idioma';
 import Logo from './Logo';
 import { SelectorBarrios, useCoordenadas, lugarDe } from './MapaComun';
@@ -163,7 +163,8 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
           {visibles.map((d) => {
             const p = coords[d.local_id];
             return (
-              <View key={d.drop_id} style={{ width: 240, backgroundColor: '#FFFFFF', borderRadius: 22, borderWidth: 1, borderColor: C.borde, shadowColor: '#111111', shadowOpacity: 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 3 }}>
+              <Tintineo key={d.drop_id} activo={!!(p && pos && !pos.aprox && Math.hypot((p.lat - pos.lat) * 111320, (p.lng - pos.lng) * 93000) <= 20)}
+                style={{ width: 240, backgroundColor: '#FFFFFF', borderRadius: 22, borderWidth: 1, borderColor: C.borde, shadowColor: '#111111', shadowOpacity: 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 3 }}>
                 <Pressable onPress={() => alAbrir(d)} accessibilityRole="button" accessibilityLabel={`${d.local_nombre}, ${d.frase || d.titulo}`}>
                   <View style={{ height: 120, borderTopLeftRadius: 22, borderTopRightRadius: 22, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: C.crema }}>
                     <ArteLocal id={d.local_id} categoria={d.categoria} pista={d.local_nombre} ancho={240} alto={240} borde={false} />
@@ -193,7 +194,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
                     </Pressable>
                   ) : null}
                 </View>
-              </View>
+              </Tintineo>
             );
           })}
         </ScrollView>

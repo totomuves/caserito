@@ -34,6 +34,7 @@ function estilos() {
 
 export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVerMapa = () => {}, t = (a) => a, lugares = [], alAbrirLugar = () => {}, destino = null, alCerrarRuta = () => {} }) {
   const [ruta, setRuta] = useState(null);
+  const vibrados = useRef(new Set());
   const capaRuta = useRef(null);
   const caja = useRef(null);
   const mapa = useRef(null);
@@ -140,10 +141,12 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
     drops.forEach((d) => { if (!locales.some((l) => l.id === d.local_id) && coords[d.local_id]) puntos.push({ l: { id: d.local_id, nombre: d.local_nombre, categoria: d.categoria }, p: coords[d.local_id] }); });
     puntos.forEach(({ l, p }) => {
       const d = dropDe[l.id];
-      L.marker([p.lat, p.lng], { icon: L.divIcon({ className: '', html: laminaPinHtml(l, d), ...tamLamina(d) }), zIndexOffset: d ? 500 : 0 })
+      const tintinea = !!(d && yo && Math.hypot((p.lat - yo.lat) * 111320, (p.lng - yo.lng) * 93000) <= 20);
+      if (tintinea && !vibrados.current.has(d.drop_id)) { vibrados.current.add(d.drop_id); try { navigator.vibrate && navigator.vibrate([120, 80, 120, 80, 200]); } catch (e) { /* sin vibración */ } }
+      L.marker([p.lat, p.lng], { icon: L.divIcon({ className: '', html: laminaPinHtml(l, d, tintinea), ...tamLamina(d) }), zIndexOffset: d ? (tintinea ? 900 : 500) : 0 })
         .on('click', () => (d ? alAbrir(d) : alVerMapa())).addTo(g);
     });
-  }, [drops, coords, locales, tiendas, lugares, !!mapa.current]);
+  }, [drops, coords, locales, tiendas, lugares, !!mapa.current, yo && Math.round(yo.lat * 11132), yo && Math.round(yo.lng * 9300)]);
 
   return (
     <View style={{ marginHorizontal: 16, marginTop: 14, height: 300, borderRadius: R(20), overflow: 'hidden', borderWidth: 1, borderColor: C.borde, backgroundColor: ESTILO === 'moderno' ? '#FFFFFF' : '#FFF3B0' }}>

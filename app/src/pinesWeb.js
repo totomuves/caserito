@@ -12,6 +12,11 @@ export const CSS_PINES = `
   .mini-lam .nom { font:800 8px Archivo, sans-serif; color:#111; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:56px; margin-top:1px; text-shadow:0 0 3px #fff, 0 0 3px #fff; }
   .mini-lam .precio { font:800 10px Archivo, sans-serif; background:#FFD100; color:#111; border-radius:8px; padding:1px 6px; margin-bottom:2px; box-shadow:0 2px 5px rgba(17,17,17,.2); white-space:nowrap; }
   .mini-lam .punta { width:6px; height:6px; border-radius:3px; background:#111; margin-top:2px; }
+  /* A menos de 20 m del drop: la lámina tintinea */
+  @keyframes droper-tintineo { 0%,100% { transform: rotate(0deg) scale(1); } 15% { transform: rotate(-9deg) scale(1.12); } 30% { transform: rotate(8deg) scale(1.12); } 45% { transform: rotate(-6deg) scale(1.08); } 60% { transform: rotate(4deg) scale(1.05); } 75% { transform: rotate(0deg) scale(1); } }
+  @keyframes droper-brillo { 0%,100% { box-shadow: 0 0 0 0 rgba(255,209,0,.9), 0 3px 8px rgba(17,17,17,.18); } 50% { box-shadow: 0 0 0 10px rgba(255,209,0,0), 0 3px 8px rgba(17,17,17,.18); } }
+  .mini-lam.tintinea .carta { animation: droper-tintineo 1.1s ease-in-out infinite, droper-brillo 1.1s ease-out infinite; border-color: #E30A2F; }
+  .mini-lam.tintinea .precio { background: #E30A2F; color: #fff; animation: droper-tintineo 1.1s ease-in-out infinite; }
   .poster-pin { display:flex; flex-direction:column; align-items:center; cursor:pointer; transform: rotate(var(--contra, 0deg)); }
   .poster-pin .p { position:relative; width:54px; height:81px; border:2px solid #111; box-shadow:0 6px 14px rgba(17,17,17,.3); overflow:hidden; }
   .poster-pin .p svg { position:absolute; inset:0; width:100%; height:100%; }
@@ -20,8 +25,8 @@ export const CSS_PINES = `
   .poster-pin .punta { width:0; height:0; border-left:7px solid transparent; border-right:7px solid transparent; border-top:9px solid #111; }
 `;
 
-export function laminaPinHtml(l, d) {
-  return `<div class="mini-lam${d ? ' con-drop' : ''}" title="${esc(l.nombre)}">`
+export function laminaPinHtml(l, d, tintinea = false) {
+  return `<div class="mini-lam${d ? ' con-drop' : ''}${tintinea ? ' tintinea' : ''}" title="${esc(l.nombre)}">`
     + (d ? `<div class="precio">${d.tipo === 'sorpresa' ? '¿?' : esc(precio(d.precio) || 'DROP')}</div>` : '')
     + `<div class="carta">${arteHtml(l.id, l.categoria, l.nombre)}</div><div class="nom">${esc(l.nombre)}</div><div class="punta"></div></div>`;
 }

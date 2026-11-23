@@ -247,12 +247,13 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
         L.circleMarker([p.lat, p.lng], { radius: 5, color: '#FFFFFF', weight: 2, fillColor: '#111111', fillOpacity: 1 }).bindTooltip(escapar(l.nombre)).addTo(capa.current);
         return;
       }
-      const mk = L.marker([p.lat, p.lng], { icon: L.divIcon({ className: '', html: laminaPinHtml(l, d), ...tamLamina(d) }), title: l.nombre, keyboard: true, zIndexOffset: d ? 500 : 0 });
+      const tintinea = !!(d && yo && Math.hypot((p.lat - yo.lat) * 111320, (p.lng - yo.lng) * 93000) <= 20);
+      const mk = L.marker([p.lat, p.lng], { icon: L.divIcon({ className: '', html: laminaPinHtml(l, d, tintinea), ...tamLamina(d) }), title: l.nombre, keyboard: true, zIndexOffset: d ? (tintinea ? 900 : 500) : 0 });
       if (d) mk.on('click', () => setSel(d));
       else mk.bindPopup(`<b>${escapar(l.nombre)}</b><br>${escapar(textoCategoria(l.categoria))}${l.producto_estrella ? ' · ★ ' + escapar(l.producto_estrella) : ''}<br><span style="color:#4A4A4A">Sin drop ahora</span>`);
       mk.addTo(capa.current);
     });
-  }, [drops, coords, locales, filtro, cerca]);
+  }, [drops, coords, locales, filtro, cerca, yo && Math.round(yo.lat * 11132), yo && Math.round(yo.lng * 9300)]);
 
   return (
     <View style={{ flex: 1, zIndex: 0, isolation: 'isolate' }}>
