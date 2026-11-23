@@ -54,7 +54,7 @@ export const useIdioma = () => useContext(Ctx);
 export const CATEGORIA_TUR = {
   todo: 'All', comer: 'Comer · Food', tomar: 'Tomar · Drinks', cafe: 'Café · Coffee', dulce: 'Dulce · Sweets',
   almacen: 'Almacén · Deli', diseno: 'Diseño · Design', deco: 'Deco · Home', antiguedades: 'Antigüedades · Antiques',
-  ropa: 'Ropa · Vintage', accesorios: 'Accesorios', libros: 'Libros · Books', musica: 'Música · Vinyl', arte: 'Arte · Art',
+  ropa: 'Ropa · Vintage', accesorios: 'Accesorios', libros: 'Libros · Books', musica: 'Música · Vinyl', envivo: 'En vivo · Live music', arte: 'Arte · Art',
   plantas: 'Plantas · Plants', belleza: 'Belleza · Beauty', bienestar: 'Bienestar · Wellness', mascotas: 'Mascotas · Pets', otros: 'Otros · More',
 };
 

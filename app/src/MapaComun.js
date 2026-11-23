@@ -22,7 +22,7 @@ export const FILTROS = [
   { id: 'todo', es: 'Todo', en: 'All', pasa: () => true },
   { id: 'comida', es: 'Comida', en: 'Food', figura: 'circulo', color: C.rojo, pasa: (d) => COMIDA.includes(d.categoria) || (d.categorias || []).some((c) => COMIDA.includes(c)) },
   { id: 'cafe', es: 'Café', en: 'Coffee', figura: 'cuadrado', color: C.azul, pasa: (d) => d.categoria === 'cafe' || (d.categorias || []).includes('cafe') },
-  { id: 'musica', es: 'Música', en: 'Music', figura: 'circulo', color: C.amarillo, pasa: (d) => d.categoria === 'musica' || (d.categorias || []).includes('musica') },
+  { id: 'musica', es: 'Música', en: 'Music', figura: 'circulo', color: C.amarillo, pasa: (d) => ['musica', 'envivo'].includes(d.categoria) || (d.categorias || []).some((c) => c === 'musica' || c === 'envivo') },
   { id: 'grupal', es: 'Grupales', en: 'Group', figura: 'triangulo', color: C.negro, pasa: (d) => d.tipo === 'grupal' },
 ];
 export function filtrar(drops, id) {

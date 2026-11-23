@@ -64,6 +64,7 @@ export const CATEGORIAS = [
   { id: 'tomar', texto: 'Tomar' },
   { id: 'cafe', texto: 'Café' },
   { id: 'musica', texto: 'Música' },
+  { id: 'envivo', texto: 'En vivo' },
   { id: 'dulce', texto: 'Dulce' },
   { id: 'almacen', texto: 'Almacén' },
   { id: 'diseno', texto: 'Diseño' },

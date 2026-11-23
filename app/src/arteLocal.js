@@ -127,6 +127,7 @@ const M = {
   nota: ([a, b, c, f, t]) => [circ(32, 72, 13, a), circ(70, 64, 13, a), rect(40, 20, 6, 52, t), rect(78, 12, 6, 52, t), path('M40 20L84 12L84 26L40 34Z', b), circ(18, 24, 6, c)],
   parlante: ([a, b, c, f, t]) => [rect(26, 10, 48, 80, a), circ(50, 62, 17, a === NEGRO ? '#FFFFFF' : NEGRO), circ(50, 62, 8, b), circ(50, 30, 9, a === NEGRO ? '#FFFFFF' : NEGRO), circ(50, 30, 4, c), rect(26, 86, 48, 4, f)],
   audifonos: ([a, b, c, f]) => [semi(50, 54, 32, true, a), semi(50, 54, 24, true, f), rect(14, 50, 16, 30, b), rect(70, 50, 16, 30, b), rect(10, 56, 6, 18, c), rect(84, 56, 6, 18, c)],
+  escenario: ([a, b, c, f, t]) => [semi(50, 84, 42, true, a), rect(8, 84, 84, 8, t), tri(18, 6, 30, 6, 44, 70, b), tri(70, 6, 82, 6, 56, 70, b), circ(50, 46, 7, c), rect(48, 52, 4, 30, c)],
   pata: ([a, b]) => [circ(50, 62, 18, a), circ(28, 40, 8, b), circ(42, 28, 8, b), circ(58, 28, 8, b), circ(72, 40, 8, b)],
 };
 const MOTIVO_RUBRO = {
@@ -136,7 +137,7 @@ const MOTIVO_RUBRO = {
 };
 const PALABRAS = [
   // Música primero (un "bar de rock" es rock antes que bar)
-  [/rock|metal|punk|grunge|heavy/, 'rayo'], [/guitar|luthier|instrument/, 'guitarra'], [/jazz|blues|piano|conservatorio|escuela de m[uú]sica|ensayo/, 'nota'],
+  [/sala|concierto|en vivo|live|club de jazz|escenario|tocata/, 'escenario'], [/rock|metal|punk|grunge|heavy/, 'rayo'], [/guitar|luthier|instrument/, 'guitarra'], [/jazz|blues|piano|conservatorio|escuela de m[uú]sica|ensayo/, 'nota'],
   [/audio|sonido|parlante|amplific/, 'parlante'], [/aud[ií]fono|headphone|\bdj\b/, 'audifonos'],
   [/pizz/, 'pizza'], [/sushi|nikkei|japon/, 'sushi'], [/burger|hamburg|sanguch|sandw/, 'burger'], [/helad|gelat|ice ?cream/, 'helado'],
   [/panad|bakery|pan |masa madre|pasteler|reposter|torta/, 'pan'], [/cervec|beer|chopp|pub/, 'jarra'], [/vino|wine|bar\b|cocktail|coctel/, 'copa'],
@@ -147,6 +148,7 @@ const PALABRAS = [
 function motivoDe(categoria, pista, s = 0) {
   const p = String(pista || '').toLowerCase() + ' ';
   for (const [re, m] of PALABRAS) if (re.test(p)) return m;
+  if (categoria === 'envivo') return ['escenario', 'nota', 'rayo', 'guitarra'][s % 4];
   if (categoria === 'musica') return ['disco', 'guitarra', 'nota', 'parlante', 'rayo'][s % 5]; // música: cada local con su instrumento
   return MOTIVO_RUBRO[categoria] || null;
 }
