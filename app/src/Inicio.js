@@ -113,7 +113,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
       {verIdiomas ? <SelectorIdioma alElegir={() => setVerIdiomas(false)} style={{ paddingTop: 10 }} /> : null}
       <Text style={{ fontFamily: F.negrita, fontSize: 26, lineHeight: 28, letterSpacing: -0.8, marginTop: 12, color: tintaBanner('cabecera') }}>
         {apodo ? t(`Hola, ${apodo}.`, `Hi, ${apodo}.`) : t('Hola.', 'Hi.')}{'\n'}
-        {lejos ? t(`Nada a 2 cuadras: mira lo de ${barrioLejos || 'otro barrio'}.`, `Nada cerca: mira ${barrioLejos || 'otro barrio'}.`) : cercanos ? t(`${cercanos} ${cercanos === 1 ? 'drop' : 'drops'} a 2 cuadras.`, `${cercanos} drops a 2 cuadras.`) : drops.length ? t(`${drops.length} ${drops.length === 1 ? 'drop' : 'drops'} en el barrio.`, `${drops.length} drops en el barrio.`) : t('Hoy el barrio está tranquilo.', 'El barrio está tranqui today.')}
+        {pos && pos.aprox ? t('Activa tu ubicación para ver lo que tienes cerca.', 'Turn on location to see what’s near.') : lejos ? t(`Nada a 2 cuadras: mira lo de ${barrioLejos || 'otro barrio'}.`, `Nada cerca: mira ${barrioLejos || 'otro barrio'}.`) : cercanos ? t(`${cercanos} ${cercanos === 1 ? 'drop' : 'drops'} a 2 cuadras.`, `${cercanos} drops a 2 cuadras.`) : drops.length ? t(`${drops.length} ${drops.length === 1 ? 'drop' : 'drops'} en el barrio.`, `${drops.length} drops en el barrio.`) : t('Hoy el barrio está tranquilo.', 'El barrio está tranqui today.')}
       </Text>
       <Text style={{ fontFamily: F.negrita, fontSize: 13, marginTop: 6, color: tintaBanner('cabecera') }}>
         📍 {visita ? t(`Vas a ${visita.nombre} · ${visita.comuna}`, `Going to ${visita.nombre}`) : lugar}

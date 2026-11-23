@@ -126,24 +126,31 @@ function Caserito() {
   }, []);
 
   // 3) Drops vigentes cerca
+  const turno = useRef(0); // si llegan respuestas desordenadas, solo vale la última pedida
   const cargar = useCallback(async () => {
     if (!usuario || !pos) return;
+    const mio = ++turno.current;
+    const vigente = () => mio === turno.current;
     // Visitando otro barrio: sus drops, medidos desde el centro del barrio
     if (visita) {
       const r = await supabase.rpc('drops_cerca', { lat: visita.lat, lng: visita.lng, radio_m: 2000 });
+      if (!vigente()) return;
       if (r.error) setError(explicar(r.error));
       else { setError(''); setDrops((r.data || []).map((d) => ({ ...d, dentro_del_radio: false, cuadras: Math.max(d.cuadras, 99) }))); setLejos(false); setCentroLejos(null); }
       setCargando(false);
       return;
     }
-    let { data, error } = await supabase.rpc('drops_cerca', { lat: pos.lat, lng: pos.lng, radio_m: 3000 });
-    // Sin drops cerca: mostramos los del barrio más cercano que tenga, para que cualquiera pueda mirar
+    let data = [], error = null;
+    if (!pos.aprox) {
+      const r = await supabase.rpc('drops_cerca', { lat: pos.lat, lng: pos.lng, radio_m: 3000 });
+      data = r.data || []; error = r.error;
+    }
+    // Sin drops cerca (o sin tu ubicación): los del barrio más cercano que tenga, para que cualquiera pueda mirar
     let lejos = false, mostrado = null;
-    if (!error && (!data || data.length === 0) && !pos.aprox) {
-      const { barrio } = barrioDe(pos, barrios);
-      const candidatos = [barrio, ...barrios.filter((b) => b.lanzado && b !== barrio)].filter(Boolean)
-        .map((b) => ({ lat: b.lat, lng: b.lng, nombre: b.nombre }));
-      if (!candidatos.length) candidatos.push({ ...BARRIO_ITALIA, nombre: 'Barrio Italia' });
+    if (!error && data.length === 0) {
+      const lista = barrios.length ? barrios : [{ ...BARRIO_ITALIA, nombre: 'Barrio Italia' }];
+      const cerca = (b) => (pos.aprox ? (b.lanzado ? 0 : 1) : Math.hypot(b.lat - pos.lat, b.lng - pos.lng));
+      const candidatos = [...lista].sort((a, b) => cerca(a) - cerca(b)).map((b) => ({ lat: b.lat, lng: b.lng, nombre: b.nombre }));
       for (const c of candidatos) {
         const r = await supabase.rpc('drops_cerca', { lat: c.lat, lng: c.lng, radio_m: 2000 });
         if (!r.error && r.data && r.data.length) {
@@ -153,6 +160,7 @@ function Caserito() {
         }
       }
     }
+    if (!vigente()) return;
     if (error) setError(explicar(error)); else { setError(''); setDrops(data || []); setLejos(lejos); setCentroLejos(mostrado); }
     setCargando(false);
   }, [usuario, pos, barrios, visita]);
