@@ -142,3 +142,35 @@ export async function avisarBarrio(barrio, cuantos, tur) {
     trigger: null,
   }).catch(() => {});
 }
+
+// Aviso "apareció un drop": cuando entra un drop nuevo dentro de la distancia que elegiste.
+// Máximo 3 al día y nunca de noche (22:00 a 9:00). Una sola vez por drop.
+const CLAVE_NUEVOS = 'droper_avisos_nuevos';
+export function puedeAvisarAhora() { const h = new Date().getHours(); return h >= 9 && h < 22; }
+export async function avisarNuevos(drops, tur, distancia) {
+  let estado = { vistos: [], dia: '', n: 0 };
+  try { estado = { ...estado, ...JSON.parse((await AsyncStorage.getItem(CLAVE_NUEVOS)) || '{}') }; } catch { /* nada */ }
+  const hoy = new Date().toISOString().slice(0, 10);
+  if (estado.dia !== hoy) { estado.dia = hoy; estado.n = 0; }
+  const primeraVez = !estado.vistos.length;
+  const nuevos = drops.filter((d) => !estado.vistos.includes(d.drop_id));
+  estado.vistos = [...estado.vistos, ...nuevos.map((d) => d.drop_id)].slice(-300);
+  await AsyncStorage.setItem(CLAVE_NUEVOS, JSON.stringify(estado)).catch(() => {});
+  if (primeraVez || !nuevos.length || !puedeAvisarAhora() || estado.n >= 3) return; // la primera vez solo aprende lo que ya había
+  const p = await Notifications.getPermissionsAsync().catch(() => null);
+  if (!p || !p.granted) return;
+  await prepararCanal().catch(() => {});
+  const d = [...nuevos].sort((a, b) => a.cuadras - b.cuadras)[0];
+  estado.n += 1;
+  await AsyncStorage.setItem(CLAVE_NUEVOS, JSON.stringify(estado)).catch(() => {});
+  const donde = d.cuadras <= 1 ? (tur ? 'right here' : 'aquí al lado') : `a ${d.cuadras} ${tur ? 'blocks' : 'cuadras'}`;
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: tur ? `🔥 Nuevo drop ${donde}` : `🔥 Nuevo drop ${donde}`,
+      body: `${d.local_nombre} · ${d.tipo === 'sorpresa' ? (tur ? 'caja sorpresa' : 'caja sorpresa') : d.titulo}${d.quedan ? ` · quedan ${d.quedan}` : ''}`,
+      data: { drop_id: d.drop_id },
+      sound: 'default',
+    },
+    trigger: null,
+  }).catch(() => {});
+}
