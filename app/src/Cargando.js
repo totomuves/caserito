@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, Text, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
-// Pantalla de carga con el ícono de Droper (la D sobre la lámina), latiendo suave
+// Pantalla de carga con el ícono de Dropper (la D sobre la lámina), latiendo suave
 const ICONO = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#FFD100"/><path d="M100 100L100 52A48 48 0 0 0 52 100Z" fill="#E30A2F"/><rect width="30" height="30" fill="#1E5AA8"/><rect x="26" y="22" width="16" height="56" fill="#1E5AA8" stroke="#111" stroke-width="2.2"/><path d="M42 22A28 28 0 0 1 42 78Z" fill="#1E5AA8" stroke="#111" stroke-width="2.2"/><circle cx="51" cy="50" r="8" fill="#FFF6E5" stroke="#111" stroke-width="2.2"/></svg>`;
 
 export default function Cargando({ texto = 'Buscando drops cerca…', fuente }) {

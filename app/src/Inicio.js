@@ -121,7 +121,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
             style={{ height: 36, paddingHorizontal: 12, borderRadius: 14, backgroundColor: tur ? C.negro : '#FFFFFF', justifyContent: 'center' }}>
             <Text style={{ fontFamily: F.negrita, fontSize: 12, color: tur ? C.amarillo : C.negro }}>{tur ? `🌍 ${lang.toUpperCase()}` : 'Tourist?'}</Text>
           </Pressable>
-          <Pressable onPress={alAyuda} accessibilityRole="button" accessibilityLabel={t('¿Cómo funciona Droper?', '¿Cómo funciona Droper?')}
+          <Pressable onPress={alAyuda} accessibilityRole="button" accessibilityLabel={t('¿Cómo funciona Dropper?', '¿Cómo funciona Dropper?')}
             style={{ width: 36, height: 36, borderRadius: 14, backgroundColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>
             <Text style={{ fontFamily: F.negrita, fontSize: 16, color: C.amarillo }}>?</Text>
           </Pressable>
@@ -312,7 +312,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
           <Text style={{ fontFamily: F.negrita, fontSize: 12, color: tur ? C.amarillo : C.negro }}>{tur ? `🌍 ${lang.toUpperCase()}` : 'Tourist?'}</Text>
         </Pressable>
         {verIdiomas ? <SelectorIdioma alElegir={() => setVerIdiomas(false)} style={{ paddingLeft: 26, paddingTop: 8, paddingBottom: 6 }} /> : null}
-        <Pressable onPress={alAyuda} accessibilityRole="button" accessibilityLabel={t('¿Cómo funciona Droper?', "¿Cómo funciona Droper?")}
+        <Pressable onPress={alAyuda} accessibilityRole="button" accessibilityLabel={t('¿Cómo funciona Dropper?', "¿Cómo funciona Dropper?")}
           style={{ position: 'absolute', right: 16, top: 14, minWidth: 44, height: 44, paddingHorizontal: 14, borderRadius: R(16), borderWidth: 2.5, borderColor: C.borde, backgroundColor: C.papel, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ ...letrista, fontSize: 20 }}>?</Text>
         </Pressable>
@@ -332,7 +332,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
 
       {avisoQr === 'sin_drops' && (
         <View style={{ marginHorizontal: 16, marginTop: 12, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.azul, borderRadius: R(16), padding: 14, gap: 8 }}>
-          <Text style={{ ...letrista, fontSize: 17 }}>{t('¡BIENVENIDO A DROPER!', '¡BIENVENIDO! WELCOME TO DROPER')}</Text>
+          <Text style={{ ...letrista, fontSize: 17 }}>{t('¡BIENVENIDO A DROPPER!', '¡BIENVENIDO! WELCOME TO DROPPER')}</Text>
           <Text style={{ fontFamily: F.normal, fontSize: 14 }}>
             {t('Este local no tiene un drop en vivo justo ahora. Mira abajo lo que hay en el barrio, y vuelve más rato: los locales sueltan ofertas durante el día.',
                'Este local no tiene drop right now. Mira lo que hay en el barrio abajo y vuelve más rato: los locales sueltan ofertas all day.')}
@@ -351,7 +351,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
           </View>
           <Text style={{ fontFamily: F.normal, fontSize: 14 }}>
             {avisos === 'bloqueado'
-              ? t('Tienes las notificaciones apagadas para Droper. Actívalas en Ajustes del teléfono → Droper → Notificaciones.', "Las notifications están off para Droper. Actívalas en Settings → Droper → Notifications.")
+              ? t('Tienes las notificaciones apagadas para Dropper. Actívalas en Ajustes del teléfono → Dropper → Notificaciones.', "Las notifications están off para Dropper. Actívalas en Settings → Dropper → Notifications.")
               : t('Cuando un local a pocas cuadras suelta un drop y cuando llegas a su puerta con tu QR listo. Máximo 3 al día y nunca de noche.', "Cuando un local a pocas cuadras suelta un drop, y cuando llegas a su puerta con tu QR listo. Max 3 al día, nunca de noche.")}
           </Text>
           {avisoMotivo === 'no_soportado' ? (
@@ -390,7 +390,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
       <View style={{ marginTop: 18 }}>
         <Ola color={fondoBanner('aprendio')} abajo={false} />
         <View style={{ backgroundColor: fondoBanner('aprendio'), paddingHorizontal: 16, paddingBottom: 20, gap: 10 }}>
-          <Text style={{ ...letrista, fontSize: 21, color: acentoBanner('aprendio') }}>{t('DROPER APRENDIÓ QUE…', "DROPER APRENDIÓ QUE…")}</Text>
+          <Text style={{ ...letrista, fontSize: 21, color: acentoBanner('aprendio') }}>{t('DROPPER APRENDIÓ QUE…', "DROPPER APRENDIÓ QUE…")}</Text>
           {gustos.length === 0 ? (
             <Text style={{ fontFamily: F.normal, fontSize: 14, color: tintaBanner('aprendio') }}>{t('Todavía te estamos conociendo. Súmate a un drop y aquí aparece lo que te tinca.', "Todavía te estamos conociendo. Súmate a un drop y tus gustos show up here.")}</Text>
           ) : (

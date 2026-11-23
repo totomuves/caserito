@@ -370,7 +370,7 @@ function Premios({ local, desde, hasta }) {
             {!local.repetidas_premio && <span className="ayuda">Todavía no ofreces premio por repetidas. Ponlo en "Editar mi local" para que tus caseritos vuelvan.</span>}
             {filas.length === 0 ? <span className="ayuda">Aquí vas a ver cada premio que entregues: quién, qué y cuándo.</span> : (
               <table className="tabla">
-                <thead><tr><th>Droper</th><th>Premio</th><th>Pidió</th><th>Estado</th></tr></thead>
+                <thead><tr><th>Dropper</th><th>Premio</th><th>Pidió</th><th>Estado</th></tr></thead>
                 <tbody>
                   {filas.slice(0, 12).map((f, i) => (
                     <tr key={i}>

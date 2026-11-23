@@ -7,7 +7,7 @@ const PASOS = [
   ['Suelta un drop', 'En Crear: elige el tipo, escribe qué ofreces, el precio del drop y el normal, cuántos hay y hasta qué hora. Elige una frase (o edítala), apruébala y toca "Soltar drop". Aparece al tiro en el mapa.'],
   ['Atiende al caserito', 'Cuando llegue, abre Escanear y apunta a su QR (o escribe el código que te dicta). Te dice "¡Canjeado!" y cuánto cobrar. Cada código sirve una sola vez.'],
   ['Repite lo que funciona', 'En Mis drops: Duplicar copia un drop con todo para soltarlo otra vez. También puedes editarlo, terminarlo antes o eliminarlo si nadie se anotó.'],
-  ['Mira tus números', 'En Resultados ves cuántos se anotaron, cuántos canjearon, cuánto te trajo Droper, tu hora más tranquila y tus reseñas (y las puedes responder).'],
+  ['Mira tus números', 'En Resultados ves cuántos se anotaron, cuántos canjearon, cuánto te trajo Dropper, tu hora más tranquila y tus reseñas (y las puedes responder).'],
 ];
 
 const TIPOS = [
@@ -36,7 +36,7 @@ export default function Ayuda({ alCerrar }) {
         <h1 className="letrista">CÓMO FUNCIONA</h1>
         <button className="pildora" onClick={alCerrar}>Volver</button>
       </div>
-      <p className="ayuda">Droper reemplaza los flyers: sueltas una oferta con cupo y hora, la ven los vecinos que pasan cerca y sabes exactamente cuántos llegaron.</p>
+      <p className="ayuda">Dropper reemplaza los flyers: sueltas una oferta con cupo y hora, la ven los vecinos que pasan cerca y sabes exactamente cuántos llegaron.</p>
 
       {PASOS.map(([t, d], i) => (
         <div className="tarjeta" key={t} style={{ flexDirection: 'row', gap: 12 }}>
@@ -90,7 +90,7 @@ function Comentarios() {
   return (
     <form className="pizarra" onSubmit={enviar}>
       <span className="etiqueta">Estamos en prueba</span>
-      <span>Droper lo están probando locales amigos. ¿Algo no funcionó o te falta algo? Cuéntanos.</span>
+      <span>Dropper lo están probando locales amigos. ¿Algo no funcionó o te falta algo? Cuéntanos.</span>
       <label className="campo" style={{ color: 'inherit' }}>Tu comentario
         <textarea value={texto} maxLength={1000} rows={3} onChange={(e) => { setTexto(e.target.value); setEstado(''); }}
           placeholder="Ej: no pude escanear con la cámara del iPhone" />

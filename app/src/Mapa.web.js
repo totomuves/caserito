@@ -186,7 +186,7 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
     });
   }, [barrios]);
 
-  // Tiendas que aún no están en Droper (de OpenStreetMap): puntos grises, solo de cerca
+  // Tiendas que aún no están en Dropper (de OpenStreetMap): puntos grises, solo de cerca
   useEffect(() => {
     const g = capaTiendas.current;
     if (!g) return;
@@ -194,7 +194,7 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
     if (!cerca) return;
     tiendas.forEach((t) => {
       L.circleMarker([t.lat, t.lng], { radius: 4.5, color: '#FFFFFF', weight: 1.5, fillColor: '#8A8A8A', fillOpacity: 1 })
-        .bindTooltip(`${escapar(t.nombre)}<br><span style="color:#777">Aún no está en Droper</span>`, { direction: 'top', offset: [0, -4] })
+        .bindTooltip(`${escapar(t.nombre)}<br><span style="color:#777">Aún no está en Dropper</span>`, { direction: 'top', offset: [0, -4] })
         .addTo(g);
     });
   }, [tiendas, cerca, !!mapa.current]);

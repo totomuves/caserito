@@ -20,7 +20,7 @@ export function esDeRed(error) {
 
 export function explicar(error) {
   const m = (error && (error.message || String(error))) || 'Error desconocido';
-  if (/Could not find the function|function .* does not exist|PGRST202/i.test(m)) return 'Esta parte de Droper se está actualizando. Prueba en un rato.';
+  if (/Could not find the function|function .* does not exist|PGRST202/i.test(m)) return 'Esta parte de Dropper se está actualizando. Prueba en un rato.';
   if (/schema must be one of|Invalid schema/i.test(m)) return 'Falta exponer el schema "caserito" en Supabase (Settings → API → Exposed schemas).';
   if (/Anonymous sign-ins are disabled/i.test(m)) return 'Falta activar el ingreso anónimo en Supabase (Authentication → Sign In / Providers → Allow anonymous sign-ins).';
   if (/rate limit|over_email_send_rate_limit|you can only request this/i.test(m)) return 'Mandamos varios correos seguidos. Espera unos minutos e inténtalo de nuevo.';

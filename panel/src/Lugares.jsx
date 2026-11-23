@@ -103,7 +103,7 @@ function Lugar({ g, barrios, locales, tiendas, alCambiar }) {
     if (error) setMsg(explicar(error)); else { setNivel(''); alCambiar(); }
   }
   const [trayendo, setTrayendo] = useState(false);
-  // Trae las tiendas del mall desde OpenStreetMap: crea los pisos, arma el plano base y ubica a los locales de Droper que calcen por nombre
+  // Trae las tiendas del mall desde OpenStreetMap: crea los pisos, arma el plano base y ubica a los locales de Dropper que calcen por nombre
   async function traerDeOsm() {
     setTrayendo(true); setMsg('Buscando tiendas en OpenStreetMap…');
     try {
@@ -157,7 +157,7 @@ function Lugar({ g, barrios, locales, tiendas, alCambiar }) {
         await supabase.from('pisos').update({ plano_url: url, proporcion: Math.round(prop * 1000) / 1000 }).eq('id', p.id);
         dibujados++;
       }
-      // Locales de Droper que calzan por nombre
+      // Locales de Dropper que calzan por nombre
       let ubicados = 0;
       const filas = tiendas.map((t) => {
         const p = existentes.get(t.nivel != null ? t.nivel : nivelBase);
@@ -171,7 +171,7 @@ function Lugar({ g, barrios, locales, tiendas, alCambiar }) {
       }
       const up = await supabase.from('tiendas_osm').upsert(filas, { onConflict: 'osm_id' });
       if (up.error) throw up.error;
-      setMsg(`Listo ✓ ${dibujados ? `Plano del edificio dibujado en ${dibujados} ${dibujados === 1 ? 'piso' : 'pisos'}. ` : 'OpenStreetMap no tiene el contorno del edificio: quedó un plano solo con puntos. '}${tiendas.length} tiendas en ${existentes.size} ${existentes.size === 1 ? 'piso' : 'pisos'}${sinPiso ? ` (${sinPiso} sin piso en OpenStreetMap: quedaron en ${existentes.get(nivelBase).nombre})` : ''}. ${ubicados} locales de Droper ubicados solos.`);
+      setMsg(`Listo ✓ ${dibujados ? `Plano del edificio dibujado en ${dibujados} ${dibujados === 1 ? 'piso' : 'pisos'}. ` : 'OpenStreetMap no tiene el contorno del edificio: quedó un plano solo con puntos. '}${tiendas.length} tiendas en ${existentes.size} ${existentes.size === 1 ? 'piso' : 'pisos'}${sinPiso ? ` (${sinPiso} sin piso en OpenStreetMap: quedaron en ${existentes.get(nivelBase).nombre})` : ''}. ${ubicados} locales de Dropper ubicados solos.`);
       alCambiar();
     } catch (e) {
       setMsg(/tiendas_osm/.test(e.message || '') ? 'Falta correr el SQL 028 (tiendas de OpenStreetMap).' : explicar(e));

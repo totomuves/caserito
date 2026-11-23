@@ -1,4 +1,4 @@
-// Droper · Suscripción mensual de los locales con Flow (cargo automático a tarjeta)
+// Dropper · Suscripción mensual de los locales con Flow (cargo automático a tarjeta)
 //
 // Secretos en Supabase → Edge Functions → Secrets:
 //   FLOW_API_KEY, FLOW_SECRET_KEY  (Flow → Mis datos → Integración / API)
@@ -64,7 +64,7 @@ async function autorizar(req: Request, local: string) {
   return s ? u.user : null;
 }
 
-// Lee la suscripción en Flow y la guarda en Droper
+// Lee la suscripción en Flow y la guarda en Dropper
 async function sincronizar(local: string) {
   const { data: fila } = await admin.from('suscripciones').select('*').eq('local_id', local).maybeSingle();
   if (!fila) return { estado: 'sin_suscripcion' };

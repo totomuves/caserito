@@ -47,7 +47,7 @@ export default function Resultados({ local }) {
       {drops.length === 0 && <div className="tarjeta">Todavía no sueltas drops esta semana. Parte por uno en tu hora más tranquila.</div>}
 
       <div className="pizarra">
-        <span className="etiqueta">Te trajo Droper</span>
+        <span className="etiqueta">Te trajo Dropper</span>
         <span className="precio" style={{ fontSize: 38 }}>{formatoPrecio(ventas) || '$0'}</span>
         <span style={{ fontSize: 13 }}>{canjes} ventas en {drops.length} drops</span>
       </div>

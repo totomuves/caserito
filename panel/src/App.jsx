@@ -50,7 +50,7 @@ export default function App() {
       if (error) { setAvisoInv(explicar(error)); return; }
       const r = await supabase.from('locales').select('*').eq('id', local.id).single();
       if (r.data) setLocal(r.data);
-      setAvisoInv('¡Bienvenido a Droper! Tu local quedó aprobado y tus drops ya se ven en el mapa.');
+      setAvisoInv('¡Bienvenido a Dropper! Tu local quedó aprobado y tus drops ya se ven en el mapa.');
     });
   }, [local]);
 
@@ -115,7 +115,7 @@ export default function App() {
       <Marco>
         <Admin usuario={sesion.user} alEntrarLocal={async (l) => {
           const r = await supabase.from('locales').select('*').eq('id', l.id).single();
-          if (r.data) { setLocal(r.data); setPermisos(TODOS); setRol('Admin Droper'); setSoloAdmin(false); }
+          if (r.data) { setLocal(r.data); setPermisos(TODOS); setRol('Admin Dropper'); setSoloAdmin(false); }
         }} />
         {!local && (
           <div className="contenido" style={{ paddingTop: 0 }}>
@@ -135,7 +135,7 @@ export default function App() {
             <button className="pildora" onClick={() => setVerQr(false)}>Volver</button>
           </div>
           <Qr url={`${URL_APP}/?local=${local.id}`} titulo={local.nombre} archivo={`caserito-qr-${local.nombre.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.png`}
-            bajada="Imprímelo y ponlo en la caja y en la vitrina. Quien lo escanea abre Droper directo, sin instalar nada, y ve tus drops." />
+            bajada="Imprímelo y ponlo en la caja y en la vitrina. Quien lo escanea abre Dropper directo, sin instalar nada, y ve tus drops." />
           <div className="tarjeta" style={{ alignItems: 'center', textAlign: 'center' }}>
             <b className="letrista" style={{ fontSize: 20 }}>KIT DEL LOCAL</b>
             <span>Póster para la vitrina, 6 stickers y tarjeta de mesa, con tu QR y tu lámina. Listo para imprimir o guardar en PDF.</span>
@@ -214,7 +214,7 @@ function Marco({ local, rol, children, alAyuda }) {
     <div className="app">
       <header className="barra">
         <div>
-          <span className="marca"><img src="/logo.svg" alt="Droper" style={{ height: 30, display: 'block' }} /><small style={{ color: 'var(--amarillo)', fontWeight: 800 }}>Local</small></span>
+          <span className="marca"><img src="/logo.svg" alt="Dropper" style={{ height: 30, display: 'block' }} /><small style={{ color: 'var(--amarillo)', fontWeight: 800 }}>Local</small></span>
           {local && <small style={{ display: 'flex', alignItems: 'center', gap: 6 }}><LaminaLocal id={local.id} categoria={local.categoria} pista={local.nombre} tam={22} />{local.nombre}{rol && rol !== 'Dueño' ? ` · ${rol}` : ''}</small>}
           {correo && <small className="correo-sesion" title={correo}>Conectado como {correo}</small>}
         </div>

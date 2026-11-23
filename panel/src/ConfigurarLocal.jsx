@@ -161,7 +161,7 @@ export default function ConfigurarLocal({ usuario, local, alGuardar, alCancelar,
         <p className="ayuda">{editando ? 'Solo si cambió: aprieta el botón estando dentro del local.' : 'Aprieta el botón estando dentro del local. Así los caseritos te encuentran a la cuadra exacta.'}</p>
         <button type="button" className="boton negro" onClick={ubicar}>{pos ? 'Ubicación marcada ✓' : 'Estoy en mi local'}</button>
         {pos && <p className="ayuda">Precisión: ±{pos.precision} m</p>}
-        {editando && !pos && local.barrio && <p className="ayuda">Tu local está en <b>{local.barrio}</b>{local.barrio_id === null ? ' (fuera de los barrios de Droper por ahora)' : ''}. El barrio se reconoce solo por la ubicación.</p>}
+        {editando && !pos && local.barrio && <p className="ayuda">Tu local está en <b>{local.barrio}</b>{local.barrio_id === null ? ' (fuera de los barrios de Dropper por ahora)' : ''}. El barrio se reconoce solo por la ubicación.</p>}
       </div>
       {error && <div className="error">{error}</div>}
       <button className="boton grande" disabled={guardando || subiendo}>{editando ? 'Guardar cambios' : 'Guardar local'}</button>

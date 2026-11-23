@@ -144,7 +144,7 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
         <View style={{ marginHorizontal: 16, marginTop: 6, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.borde, borderRadius: R(16), padding: 16, gap: 6 }}>
           <Text style={{ ...letrista, fontSize: 20 }}>{t('¡LLEGAMOS PRONTO!', '¡LLEGAMOS PRONTO! SOON')}</Text>
           <Text style={{ fontFamily: F.normal, fontSize: 14 }}>
-            {t(`Todavía no hay locales de ${barrio ? barrio.nombre : 'este barrio'} en Droper. Cuando se sumen, aquí aparecen sus láminas.`,
+            {t(`Todavía no hay locales de ${barrio ? barrio.nombre : 'este barrio'} en Dropper. Cuando se sumen, aquí aparecen sus láminas.`,
                `Todavía no hay locales de ${barrio ? barrio.nombre : 'este barrio'}. Cuando se sumen, sus láminas show up here.`)}
           </Text>
         </View>

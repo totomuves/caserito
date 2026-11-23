@@ -98,7 +98,7 @@ export function PlanoLugar({ lugar, drops = [], alAbrir = () => {}, compacto = f
         {tocada && alto ? (
           <View pointerEvents="none" style={{ position: 'absolute', left: Math.min(Math.max(tocada.plano_x * W - 70, 6), W - 146), top: Math.max(tocada.plano_y * H - 40, 4), width: 140, backgroundColor: C.negro, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 5, zIndex: 5 }}>
             <Text numberOfLines={2} style={{ fontFamily: F.negrita, fontSize: 11, color: '#FFFFFF' }}>{tocada.nombre}</Text>
-            <Text style={{ fontFamily: F.media, fontSize: 9, color: '#CCCCCC' }}>{t('Aún no está en Droper', 'Not on Droper yet')}</Text>
+            <Text style={{ fontFamily: F.media, fontSize: 9, color: '#CCCCCC' }}>{t('Aún no está en Dropper', 'Not on Dropper yet')}</Text>
           </View>
         ) : null}
         {alto ? aca.map((l) => {

@@ -10,7 +10,7 @@ export const COCINAS = [
 
 const PLANTILLAS = {
   Chilena: [
-    'Droper, {p} a {$}, ¡al tiro que se acaba!',
+    'Dropper, {p} a {$}, ¡al tiro que se acaba!',
     'Está la media promo: {p} a {$} hasta las {h}.',
     'Cachai que quedan {n} no más. ¡Ven altiro por tu {p}!',
   ],

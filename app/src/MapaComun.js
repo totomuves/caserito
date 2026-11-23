@@ -261,7 +261,7 @@ function metrosEntre(a, b) {
   return 2 * r * Math.asin(Math.sqrt(h));
 }
 
-// Tiendas del barrio traídas de OpenStreetMap que aún no están en Droper (puntos grises en el mapa)
+// Tiendas del barrio traídas de OpenStreetMap que aún no están en Dropper (puntos grises en el mapa)
 export function useTiendasOsm() {
   const [tiendas, setTiendas] = useState([]);
   useEffect(() => {

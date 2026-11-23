@@ -29,7 +29,7 @@ export default function Admin({ usuario, alEntrarLocal }) {
   const [seccion, setSeccion] = useState('resumen');
   return (
     <div className="contenido">
-      <h1 className="letrista">ADMIN DROPER</h1>
+      <h1 className="letrista">ADMIN DROPPER</h1>
       <div className="pildoras">
         {SECCIONES.map((s) => (
           <button key={s.id} className={'pildora' + (seccion === s.id ? ' activa' : '')} onClick={() => setSeccion(s.id)}>{s.texto}</button>
@@ -47,7 +47,7 @@ export default function Admin({ usuario, alEntrarLocal }) {
       {seccion === 'suscripciones' && <SuscripcionesAdmin />}
       {seccion === 'envivo' && <DropsEnVivo />}
       {seccion === 'qr' && (
-        <Qr url={URL_APP} titulo="DROPER" archivo="caserito-qr-app.png"
+        <Qr url={URL_APP} titulo="DROPPER" archivo="caserito-qr-app.png"
           bajada="QR general de la app para caseritos: one-pager, flyers, redes y el 'último flyer'." />
       )}
     </div>
@@ -82,7 +82,7 @@ function Resumen({ irA }) {
   return (
     <>
       <div className="pizarra">
-        <span className="etiqueta">Ventas por Droper · últimos 7 días</span>
+        <span className="etiqueta">Ventas por Dropper · últimos 7 días</span>
         <span className="precio" style={{ fontSize: 38 }}>{formatoPrecio(k.ventas_semana) || '$0'}</span>
         <span style={{ fontSize: 13 }}>{k.canjes_semana} canjes · {k.canjes_hoy} hoy · {cambio(k.canjes_semana, k.canjes_semana_ant)}</span>
       </div>
@@ -188,7 +188,7 @@ function ResumenSimple({ d }) {
   return (
     <>
       <div className="pizarra">
-        <span className="etiqueta">Ventas por Droper · últimos 7 días</span>
+        <span className="etiqueta">Ventas por Dropper · últimos 7 días</span>
         <span className="precio" style={{ fontSize: 38 }}>{formatoPrecio(d.ventas_semana) || '$0'}</span>
         <span style={{ fontSize: 13 }}>{d.canjes_semana} canjes · {d.canjes_hoy} hoy</span>
       </div>
@@ -298,7 +298,7 @@ function Entrega({ local, e, alCambiar }) {
   if (!e.dueno_es_admin) return null;
   const vigente = e.codigo && new Date(e.expira_at) > new Date();
   const link = vigente ? `${window.location.origin}/?entrega=${e.codigo}` : '';
-  const texto = `¡Hola! Tu local ${local.nombre} ya está en Droper. Entra con este link, crea tu cuenta y queda a tu nombre: ${link}`;
+  const texto = `¡Hola! Tu local ${local.nombre} ya está en Dropper. Entra con este link, crea tu cuenta y queda a tu nombre: ${link}`;
   async function crear() {
     setMsg('');
     const { error } = await supabase.rpc('crear_entrega', { p_local: local.id });
@@ -420,7 +420,7 @@ function Comentarios() {
       {datos.map((c) => (
         <div className="tarjeta" key={c.id} style={{ opacity: c.leido ? 0.6 : 1 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
-            <b>{c.origen === 'panel' ? 'Local' : 'Droper'}{c.perfiles && c.perfiles.nombre ? ` · ${c.perfiles.nombre}` : ''}</b>
+            <b>{c.origen === 'panel' ? 'Local' : 'Dropper'}{c.perfiles && c.perfiles.nombre ? ` · ${c.perfiles.nombre}` : ''}</b>
             <span className="ayuda">{new Date(c.creado_at).toLocaleString('es-CL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}{c.plataforma ? ` · ${c.plataforma}` : ''}</span>
           </div>
           <span style={{ whiteSpace: 'pre-wrap' }}>{c.texto}</span>
@@ -535,7 +535,7 @@ function Invitar() {
   const [nueva, setNueva] = useState(null);
 
   const link = (c) => `${window.location.origin}/?invitacion=${c}`;
-  const textoWsp = (n, c) => `¡Hola${n ? ' ' + n : ''}! Te invito a Droper, la app de drops de tu barrio. Inscribe tu local aquí y queda aprobado al tiro: ${link(c)}`;
+  const textoWsp = (n, c) => `¡Hola${n ? ' ' + n : ''}! Te invito a Dropper, la app de drops de tu barrio. Inscribe tu local aquí y queda aprobado al tiro: ${link(c)}`;
 
   async function crear(e) {
     e.preventDefault();
@@ -645,7 +645,7 @@ const BANNERS = [
   { id: 'cabecera', nombre: 'Cabecera (logo arriba)', base: 'amarillo' },
   { id: 'cerca', nombre: '"Cerca de ti" (los drops)', base: 'rojo' },
   { id: 'frase', nombre: 'La frase del momento', base: 'negro' },
-  { id: 'aprendio', nombre: '"Droper aprendió que…"', base: 'amarillo' },
+  { id: 'aprendio', nombre: '"Dropper aprendió que…"', base: 'amarillo' },
 ];
 function ColoresBanners() {
   const [b, setB] = useState(null);
@@ -686,11 +686,11 @@ function ColoresBanners() {
           ))}
         </div>
         <div aria-label="Vista previa" style={{ width: 220, border: '2px solid #111', borderRadius: 18, overflow: 'hidden', background: '#F4F4F6', fontFamily: 'Archivo, sans-serif' }}>
-          <div style={{ background: hex(b.cabecera), padding: '14px 12px', fontWeight: 800, fontSize: 20, color: claro(b.cabecera) ? '#111' : '#fff' }}>DROPER</div>
+          <div style={{ background: hex(b.cabecera), padding: '14px 12px', fontWeight: 800, fontSize: 20, color: claro(b.cabecera) ? '#111' : '#fff' }}>DROPPER</div>
           <div style={{ height: 70, background: '#fff', margin: 10, borderRadius: 12, border: '1px solid #ddd' }} />
           <div style={{ background: hex(b.cerca), padding: '10px 12px', fontWeight: 800, color: b.cerca === 'blanco' ? '#E30A2F' : claro(b.cerca) ? '#111' : '#FFD100' }}>CERCA DE TI</div>
           <div style={{ background: hex(b.frase), margin: 10, borderRadius: 12, padding: 10, border: '1px solid #ddd', fontWeight: 800, fontSize: 12, color: claro(b.frase) ? '#111' : '#fff' }}>MENÚ DEL DÍA A $5.990…</div>
-          <div style={{ background: hex(b.aprendio), padding: '10px 12px', fontWeight: 800, fontSize: 12, color: claro(b.aprendio) ? '#111' : '#fff' }}>DROPER APRENDIÓ QUE…</div>
+          <div style={{ background: hex(b.aprendio), padding: '10px 12px', fontWeight: 800, fontSize: 12, color: claro(b.aprendio) ? '#111' : '#fff' }}>DROPPER APRENDIÓ QUE…</div>
         </div>
       </div>
       {msg && <p style={{ margin: 0, fontWeight: 700 }}>{msg}</p>}
@@ -711,13 +711,13 @@ function InterruptorTiendas() {
     const { error } = await supabase.rpc('fijar_tiendas_osm', { p_mostrar: nuevo });
     if (error) { setMsg(/fijar_tiendas_osm/.test(error.message || '') ? 'Falta correr el SQL 028.' : error.message); return; }
     setOn(nuevo);
-    setMsg(nuevo ? 'Activado ✓ Las tiendas grises se ven en el mapa al abrir la app.' : 'Desactivado ✓ El mapa muestra solo los locales de Droper.');
+    setMsg(nuevo ? 'Activado ✓ Las tiendas grises se ven en el mapa al abrir la app.' : 'Desactivado ✓ El mapa muestra solo los locales de Dropper.');
   }
   if (on === null) return null;
   return (
     <div className="tarjeta" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <h2 className="letrista" style={{ margin: 0 }}>Tiendas de OpenStreetMap en el mapa</h2>
-      <p style={{ margin: 0 }}>Puntos grises con las tiendas del barrio que aún no están en Droper (las traes en Barrios y arte). Los planos de patios y malls las muestran siempre.</p>
+      <p style={{ margin: 0 }}>Puntos grises con las tiendas del barrio que aún no están en Dropper (las traes en Barrios y arte). Los planos de patios y malls las muestran siempre.</p>
       <label style={{ display: 'flex', gap: 10, alignItems: 'center', fontWeight: 800, minHeight: 44, cursor: 'pointer' }}>
         <input type="checkbox" role="switch" checked={on} onChange={cambiar} style={{ width: 24, height: 24 }} />
         {on ? 'Se muestran en el mapa' : 'No se muestran'}

@@ -1,4 +1,4 @@
-// En la web: avisos con las notificaciones del navegador (Android/computador; en iPhone, solo si Droper
+// En la web: avisos con las notificaciones del navegador (Android/computador; en iPhone, solo si Dropper
 // está agregada a la pantalla de inicio). No hay push con la app cerrada: avisa mientras está abierta.
 const CLAVE_DESCARTADO = 'droper_avisos_web_descartado';
 const hay = () => typeof window !== 'undefined' && 'Notification' in window;

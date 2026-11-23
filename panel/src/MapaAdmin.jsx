@@ -74,7 +74,7 @@ export default function MapaAdmin({ puntos = [], poligono = null, circulo = null
   return (
     <div style={{ display: 'grid', gap: 6 }}>
       <div ref={caja} style={{ height: alto, borderRadius: 12, border: '2px solid #111', overflow: 'hidden', background: '#eee' }} />
-      <span className="ayuda">{error || '● Negro = ya en Droper · ● Gris = aún no está en Droper. Toca un punto para ver el nombre.'}</span>
+      <span className="ayuda">{error || '● Negro = ya en Dropper · ● Gris = aún no está en Dropper. Toca un punto para ver el nombre.'}</span>
     </div>
   );
 }

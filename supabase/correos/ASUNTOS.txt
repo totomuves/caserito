@@ -1,4 +1,4 @@
-magic_link: Tu código para entrar a Droper
-change_email: Tu código para guardar tu cuenta Droper
-confirm_signup: Confirma tu cuenta de Droper
-reset_password: Cambia tu clave de Droper
+magic_link: Tu código para entrar a Dropper
+change_email: Tu código para guardar tu cuenta Dropper
+confirm_signup: Confirma tu cuenta de Dropper
+reset_password: Cambia tu clave de Dropper

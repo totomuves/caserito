@@ -1,6 +1,6 @@
 {
-  "name": "Droper",
-  "short_name": "Droper",
+  "name": "Dropper",
+  "short_name": "Dropper",
   "description": "Ofertas de barrio que se activan cuando llegas.",
   "start_url": "/",
   "display": "standalone",

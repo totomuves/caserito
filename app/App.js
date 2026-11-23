@@ -305,7 +305,7 @@ function Caserito() {
   useEffect(() => { setEstiloBarrio(estiloBarrio); }, [estiloBarrio]);
 
   // Si las fuentes fallan o se demoran, seguimos con las del sistema (nunca quedarse pegado)
-  if (!fuentes && !errorFuentes && !paciencia) return <Cargando texto="Droper" />;
+  if (!fuentes && !errorFuentes && !paciencia) return <Cargando texto="Dropper" />;
 
   const abrir = (d) => setAbierto(d.drop_id);
   const dropAbierto = drops.find((d) => d.drop_id === abierto);

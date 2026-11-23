@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, explicar } from './supabase.js';
 
-// Mi suscripción: plan mensual de Droper pagado con tarjeta en Flow (cargo automático)
+// Mi suscripción: plan mensual de Dropper pagado con tarjeta en Flow (cargo automático)
 const PRECIO = '$10.000 al mes';
 const TEXTO = {
   sin_suscripcion: 'Sin suscripción',
@@ -62,8 +62,8 @@ export default function Suscripcion({ local }) {
         </span>
       </div>
       {porCorreo
-        ? <span>Plan Droper Local · <b>{PRECIO}</b> · <b>sin tarjeta</b>: cada mes Flow te manda un correo con el link para pagar. Sin comisión por canje.</span>
-        : <span>Plan Droper Local · <b>{PRECIO}</b> · se cobra solo a tu tarjeta con Flow. Sin comisión por canje.</span>}
+        ? <span>Plan Dropper Local · <b>{PRECIO}</b> · <b>sin tarjeta</b>: cada mes Flow te manda un correo con el link para pagar. Sin comisión por canje.</span>
+        : <span>Plan Dropper Local · <b>{PRECIO}</b> · se cobra solo a tu tarjeta con Flow. Sin comisión por canje.</span>}
       {s.tarjeta && !porCorreo && <span className="ayuda">Tarjeta: {s.tarjeta}</span>}
       {s.estado === 'morosa' && <span style={{ fontWeight: 700 }}>Flow no pudo cobrar la última cuota. Revisa tu tarjeta o regístrala de nuevo.</span>}
       {!s.al_dia && <span style={{ fontWeight: 700 }}>Para publicar drops nuevos necesitas la suscripción activa.</span>}

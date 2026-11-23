@@ -43,7 +43,7 @@ export default function Login() {
 
   return (
     <div className="app">
-      <header className="barra"><span className="marca"><img src="/logo.svg" alt="Droper" style={{ height: 30, display: 'block' }} /><small style={{ color: 'var(--amarillo)', fontWeight: 800 }}>Local</small></span></header>
+      <header className="barra"><span className="marca"><img src="/logo.svg" alt="Dropper" style={{ height: 30, display: 'block' }} /><small style={{ color: 'var(--amarillo)', fontWeight: 800 }}>Local</small></span></header>
       <div className="toldo" />
       <form className="contenido" onSubmit={enviar}>
         <h1 className="letrista">{codigoEquipo && modo === 'crear' ? 'CREA TU CUENTA' : modo === 'entrar' ? 'ENTRA A TU LOCAL' : modo === 'crear' ? 'INSCRIBE TU LOCAL' : 'RECUPERA TU CLAVE'}</h1>
@@ -58,13 +58,13 @@ export default function Login() {
         ))}
         {codigoEntrega && entrega && (entrega.vigente ? (
           <div className="tarjeta" style={{ borderColor: 'var(--rojo)' }}>
-            <b>¡Tu local {entrega.local_nombre} ya está en Droper!</b>
+            <b>¡Tu local {entrega.local_nombre} ya está en Dropper!</b>
             <span className="ayuda">Lo dejamos listo{entrega.barrio ? ` en ${entrega.barrio}` : ''}. Crea tu cuenta con tu correo (o entra si ya tienes una) y queda a tu nombre.</span>
           </div>
         ) : (
-          <div className="error">Ese link de entrega ya se usó o venció. Pídele uno nuevo a Droper.</div>
+          <div className="error">Ese link de entrega ya se usó o venció. Pídele uno nuevo a Dropper.</div>
         ))}
-        {invitado && !codigoEquipo && !codigoEntrega && <div className="tarjeta" style={{ borderColor: 'var(--azul)' }}><b>¡Te invitaron a Droper!</b><span className="ayuda">Crea tu cuenta e inscribe tu local: queda aprobado al tiro.</span></div>}
+        {invitado && !codigoEquipo && !codigoEntrega && <div className="tarjeta" style={{ borderColor: 'var(--azul)' }}><b>¡Te invitaron a Dropper!</b><span className="ayuda">Crea tu cuenta e inscribe tu local: queda aprobado al tiro.</span></div>}
         <label className="campo">Correo
           <input type="email" autoComplete="email" required value={correo} onChange={(e) => setCorreo(e.target.value)} />
         </label>

@@ -17,11 +17,11 @@ export async function abrirKit(local) {
   const nombre = esc(local.nombre);
   const sticker = `<div class="sticker">${lamina('22mm')}<img class="qr" src="${qr}" alt=""><b>ESCANEA</b><span>${nombre}</span></div>`;
   const mitadMesa = (giro) => `<div class="mesa-mitad" style="transform:rotate(${giro}deg)">
-      <div>${lamina('34mm')}<img src="${logo}" class="logo-chico" alt="Droper"></div>
+      <div>${lamina('34mm')}<img src="${logo}" class="logo-chico" alt="Dropper"></div>
       <div class="mesa-texto"><h2>¿Ya viste el drop de hoy?</h2><p>Escanea, súmate y gana la lámina de <b>${nombre}</b> para tu álbum.</p></div>
       <img class="qr" src="${qr}" alt="">
     </div>`;
-  const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Kit Droper · ${nombre}</title>
+  const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Kit Dropper · ${nombre}</title>
 <style>
   @page { size: A4; margin: 0; }
   * { box-sizing: border-box; }
@@ -60,12 +60,12 @@ export async function abrirKit(local) {
   @media print { body { background: none; } .hoja { margin: 0 !important; } .barra { display: none !important; } }
   .nota { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); text-align: center; font-size: 3mm; color: #999; }
 </style></head><body>
-<div class="barra"><b>Kit Droper · ${nombre}</b><span>3 hojas A4: póster de vitrina, stickers y tarjeta de mesa.</span><button onclick="print()">Imprimir o guardar PDF</button></div>
+<div class="barra"><b>Kit Dropper · ${nombre}</b><span>3 hojas A4: póster de vitrina, stickers y tarjeta de mesa.</span><button onclick="print()">Imprimir o guardar PDF</button></div>
 <section class="hoja poster"><div class="circulo"></div><div class="cuadro"></div>
   <h1>AQUÍ<br>HAY<br>DROPS</h1>
   <div class="fila"><img class="qr" src="${qr}" alt="QR">${lamina('52mm')}</div>
   <p>Escanea con la cámara, súmate al drop del día y gana la lámina de ${nombre} para tu álbum. Sin descargar nada.</p>
-  <div class="pie"><img src="${logo}" alt="Droper"><span>${esc(url.replace('https://', ''))}</span></div>
+  <div class="pie"><img src="${logo}" alt="Dropper"><span>${esc(url.replace('https://', ''))}</span></div>
 </section>
 <section class="hoja stickers"><h3>Stickers · recórtalos para la caja, la puerta y las mesas</h3>${sticker.repeat(6)}</section>
 <section class="hoja mesa">${mitadMesa(180)}${mitadMesa(0)}<div class="nota">— doblar aquí —</div></section>
