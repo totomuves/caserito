@@ -39,7 +39,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
   const [apodo, setApodo] = useState('');
   useEffect(() => {
     if (estilo !== 'moderno') return;
-    supabase.rpc('mi_perfil').then(({ data }) => setApodo(((data && data.nombre) || '').trim().split(' ')[0]));
+    supabase.rpc('mi_perfil').then(({ data }) => setApodo(((data && data.nombre) || '').trim().slice(0, 20)));
   }, [estilo, usuario.id]);
 
   useEffect(() => {

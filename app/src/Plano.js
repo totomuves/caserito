@@ -5,6 +5,7 @@ import { C, F, R, letrista, precio, textoCategoria } from './tema';
 import { ArteLocal } from './arteLocal';
 import { useIdioma } from './idioma';
 import { PosterLugar } from './Poster';
+import { useRumbo, pedirPermisoRumbo } from './rumbo';
 
 // Locales ubicados en los pisos de un patio o mall
 function useLocalesDelLugar(lugar) {
@@ -47,6 +48,12 @@ export function PlanoLugar({ lugar, drops = [], alAbrir = () => {}, compacto = f
   const conDrop = aca.filter((l) => dropDe[l.id]);
   const alto = ancho && piso ? ancho / (piso.proporcion || 1.4) : 0;
   const lam = compacto ? 30 : 40;
+  // Zoom (botones) y brújula: el plano sale con el norte arriba, así que puede girar con el teléfono
+  const [zoom, setZoom] = useState(1);
+  const [brujula, setBrujula] = useState(false);
+  const rumbo = useRumbo(brujula && !compacto);
+  const W = ancho * zoom, H = alto * zoom;
+  const derecho = { transform: [{ rotate: `${rumbo}deg` }] }; // las láminas no se dan vuelta
 
   return (
     <View style={{ gap: 10 }}>
@@ -66,6 +73,9 @@ export function PlanoLugar({ lugar, drops = [], alAbrir = () => {}, compacto = f
 
       <View onLayout={(e) => setAncho(e.nativeEvent.layout.width)}
         style={{ width: '100%', height: alto || 220, borderRadius: R(18), overflow: 'hidden', borderWidth: 1, borderColor: C.borde, backgroundColor: '#FFF3B0' }}>
+        <ScrollView horizontal scrollEnabled={zoom > 1} showsHorizontalScrollIndicator={false} nestedScrollEnabled style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }}>
+          <ScrollView scrollEnabled={zoom > 1} showsVerticalScrollIndicator={false} nestedScrollEnabled style={{ width: ancho, height: alto || 220 }}>
+            <View style={{ width: W || ancho, height: H || 220, transform: [{ rotate: `${-rumbo}deg` }] }}>
         {piso && !piso.plano_url && grises.length ? (
           <View pointerEvents="none" style={{ position: 'absolute', left: 6, bottom: 4 }}>
             <Text style={{ fontFamily: F.media, fontSize: 9, color: '#777' }}>{t('Tiendas: © OpenStreetMap', 'Shops: © OpenStreetMap')}</Text>
@@ -80,13 +90,13 @@ export function PlanoLugar({ lugar, drops = [], alAbrir = () => {}, compacto = f
         )}
         {alto ? grises.map((x) => (
           <Pressable key={x.osm_id} onPress={() => setTocada(tocada && tocada.osm_id === x.osm_id ? null : x)} hitSlop={8} accessibilityLabel={x.nombre}
-            style={{ position: 'absolute', left: x.plano_x * ancho - 4, top: x.plano_y * alto - 4, flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+            style={{ position: 'absolute', left: x.plano_x * W - 4, top: x.plano_y * H - 4, flexDirection: 'row', alignItems: 'center', gap: 3, ...derecho }}>
             <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: tocada && tocada.osm_id === x.osm_id ? C.negro : '#9A9A9A', borderWidth: 1, borderColor: '#FFFFFF' }} />
             {conNombres ? <Text numberOfLines={1} style={{ fontFamily: F.media, fontSize: 8, color: '#666', maxWidth: 70 }}>{x.nombre}</Text> : null}
           </Pressable>
         )) : null}
         {tocada && alto ? (
-          <View pointerEvents="none" style={{ position: 'absolute', left: Math.min(Math.max(tocada.plano_x * ancho - 70, 6), ancho - 146), top: Math.max(tocada.plano_y * alto - 40, 4), width: 140, backgroundColor: C.negro, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 5, zIndex: 5 }}>
+          <View pointerEvents="none" style={{ position: 'absolute', left: Math.min(Math.max(tocada.plano_x * W - 70, 6), W - 146), top: Math.max(tocada.plano_y * H - 40, 4), width: 140, backgroundColor: C.negro, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 5, zIndex: 5 }}>
             <Text numberOfLines={2} style={{ fontFamily: F.negrita, fontSize: 11, color: '#FFFFFF' }}>{tocada.nombre}</Text>
             <Text style={{ fontFamily: F.media, fontSize: 9, color: '#CCCCCC' }}>{t('Aún no está en Droper', 'Not on Droper yet')}</Text>
           </View>
@@ -95,7 +105,7 @@ export function PlanoLugar({ lugar, drops = [], alAbrir = () => {}, compacto = f
           const d = dropDe[l.id];
           return (
             <Pressable key={l.id} onPress={() => (d ? alAbrir(d) : null)} accessibilityLabel={`${l.nombre}${d ? ' · drop' : ''}`}
-              style={{ position: 'absolute', left: l.plano_x * ancho - (lam + 6) / 2, top: l.plano_y * alto - (lam + (d ? 34 : 20)), width: lam + 6, alignItems: 'center', zIndex: d ? 2 : 1 }}>
+              style={{ position: 'absolute', left: l.plano_x * W - (lam + 6) / 2, top: l.plano_y * H - (lam + (d ? 34 : 20)), width: lam + 6, alignItems: 'center', zIndex: d ? 2 : 1, ...derecho }}>
               {d ? (
                 <View style={{ backgroundColor: C.amarillo, borderRadius: 8, paddingHorizontal: 5, paddingVertical: 1, marginBottom: 2 }}>
                   <Text style={{ fontFamily: F.negrita, fontSize: 10 }}>{d.tipo === 'sorpresa' ? '¿?' : (precio(d.precio) || 'DROP')}</Text>
@@ -108,6 +118,25 @@ export function PlanoLugar({ lugar, drops = [], alAbrir = () => {}, compacto = f
             </Pressable>
           );
         }) : null}
+            </View>
+          </ScrollView>
+        </ScrollView>
+        {!compacto && alto ? (
+          <View style={{ position: 'absolute', right: 8, top: 8, gap: 6 }}>
+            <Pressable onPress={() => setZoom(Math.min(4, zoom * 1.5))} accessibilityRole="button" accessibilityLabel={t('Acercar', 'Zoom in')}
+              style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: C.borde, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ fontFamily: F.negrita, fontSize: 20 }}>+</Text>
+            </Pressable>
+            <Pressable onPress={() => setZoom(Math.max(1, zoom / 1.5))} accessibilityRole="button" accessibilityLabel={t('Alejar', 'Zoom out')}
+              style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: C.borde, alignItems: 'center', justifyContent: 'center', opacity: zoom > 1 ? 1 : 0.4 }}>
+              <Text style={{ fontFamily: F.negrita, fontSize: 20 }}>−</Text>
+            </Pressable>
+            <Pressable onPress={async () => { if (brujula) setBrujula(false); else if (await pedirPermisoRumbo()) setBrujula(true); }} accessibilityRole="switch" accessibilityState={{ checked: brujula }} accessibilityLabel={t('Brújula', 'Compass')}
+              style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: brujula ? C.amarillo : '#FFFFFF', borderWidth: 1, borderColor: C.borde, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ fontSize: 17, transform: [{ rotate: `${-rumbo}deg` }] }}>🧭</Text>
+            </Pressable>
+          </View>
+        ) : null}
         {alVerTodo ? (
           <Pressable onPress={alVerTodo} accessibilityRole="button"
             style={{ position: 'absolute', right: 10, bottom: 10, backgroundColor: C.negro, borderRadius: 16, paddingHorizontal: 14, height: 34, justifyContent: 'center' }}>
