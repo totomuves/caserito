@@ -48,7 +48,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
     if (!caja.current || mapa.current || !centro) return;
     caja.current.classList.add('droper-mini');
     if (ESTILO === 'moderno') caja.current.classList.add('moderno');
-    const m = L.map(caja.current, { zoomControl: false, attributionControl: true, dragging: false, scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false, boxZoom: false, keyboard: false, zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false });
+    const m = L.map(caja.current, { zoomControl: false, attributionControl: true, dragging: false, scrollWheelZoom: false, doubleClickZoom: 'center', touchZoom: 'center', minZoom: 14, maxZoom: 19, boxZoom: false, keyboard: false, zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false });
     L.tileLayer(LLAVE_CARTO
       ? `https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${LLAVE_CARTO}`
       : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(m);
@@ -64,7 +64,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
   useEffect(() => {
     const m = mapa.current;
     if (!m || !centro) return;
-    m.setView([centro.lat, centro.lng], 17, { animate: false });
+    m.setView([centro.lat, centro.lng], m.getZoom() || 17, { animate: false }); // mantiene el zoom que elegiste con los dedos
   }, [centro && centro.lat, centro && centro.lng, !!mapa.current]);
 
   useEffect(() => {

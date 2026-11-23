@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { C, F, R, precio, ESTILO as SKIN } from './tema';
@@ -11,13 +11,18 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
   const coords = useCoordenadas(drops);
   const locales = useLocalesMapa();
   const centro = yo || pos;
+  const mapa = useRef(null);
+  // Te sigue sin cambiar el zoom que elegiste con los dedos
+  useEffect(() => {
+    if (mapa.current && centro) mapa.current.animateCamera({ center: { latitude: centro.lat, longitude: centro.lng } }, { duration: 400 });
+  }, [centro && centro.lat, centro && centro.lng]);
   if (!centro) return null;
   const delta = 0.0045; // como el zoom 17 del mapa
   return (
     <View style={{ marginHorizontal: 16, marginTop: 14, height: 300, borderRadius: R(20), overflow: 'hidden', borderWidth: 1, borderColor: C.borde, backgroundColor: SKIN === 'moderno' ? '#FFFFFF' : '#FFF3B0' }}>
-      <MapView style={{ flex: 1 }} scrollEnabled={false} zoomEnabled={false} rotateEnabled={false} pitchEnabled={false}
+      <MapView ref={mapa} style={{ flex: 1 }} scrollEnabled={false} zoomEnabled rotateEnabled={false} pitchEnabled={false}
         showsUserLocation={!!yo} showsPointsOfInterest={false} toolbarEnabled={false} customMapStyle={SKIN === 'moderno' ? ESTILO_MODERNO : ESTILO_MAPA}
-        region={{ latitude: centro.lat, longitude: centro.lng, latitudeDelta: delta, longitudeDelta: delta }}>
+        initialRegion={{ latitude: centro.lat, longitude: centro.lng, latitudeDelta: delta, longitudeDelta: delta }}>
         {(() => {
           const dropDe = {};
           drops.forEach((d) => { if (!dropDe[d.local_id]) dropDe[d.local_id] = d; });
