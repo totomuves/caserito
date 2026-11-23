@@ -34,8 +34,7 @@ async function traerZona(z) {
     .then((d) => {
       const calles = (d.elements || []).filter((x) => x.geometry && x.geometry.length > 1)
         .map((x) => ({ tipo: x.tags && x.tags.highway || '', puntos: x.geometry.map((p) => [p.lat, p.lon]) }));
-      cache[z] = calles;
-      if (calles.length) guardar(z, calles);
+      if (calles.length) { cache[z] = calles; guardar(z, calles); }
       delete pidiendo[z];
       return calles;
     })
