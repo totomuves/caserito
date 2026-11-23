@@ -115,8 +115,17 @@ function Caserito() {
       // Nunca quedarse pegado esperando el GPS: primero la última conocida, y si nada llega en 8 s, Barrio Italia (aprox)
       setTimeout(() => setPos((x) => x || { ...BARRIO_ITALIA, aprox: true }), 8000);
       // Seguimiento continuo desde el principio: aunque la primera lectura falle, la ubicación real llega igual
-      Location.watchPositionAsync({ accuracy: Location.Accuracy.High, distanceInterval: 10 },
-        (q) => setPos({ lat: q.coords.latitude, lng: q.coords.longitude })).then((s) => { sub = s; }).catch(() => {});
+      if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.geolocation) {
+        // En el navegador vamos directo al GPS del teléfono (más confiable para seguirte mientras caminas)
+        const id = navigator.geolocation.watchPosition(
+          (q) => setPos({ lat: q.coords.latitude, lng: q.coords.longitude }),
+          () => {},
+          { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
+        sub = { remove: () => navigator.geolocation.clearWatch(id) };
+      } else {
+        Location.watchPositionAsync({ accuracy: Location.Accuracy.High, distanceInterval: 5, timeInterval: 3000 },
+          (q) => setPos({ lat: q.coords.latitude, lng: q.coords.longitude })).then((s) => { sub = s; }).catch(() => {});
+      }
       const u = await Location.getLastKnownPositionAsync().catch(() => null);
       if (u) setPos((x) => (x && !x.aprox ? x : { lat: u.coords.latitude, lng: u.coords.longitude }));
       const p = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }).catch(() => null);
