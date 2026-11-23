@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 
 // Dirección pública de la app para caseritos (cámbiala aquí cuando esté caserito.cl)
-export const URL_APP = 'https://www.caserito.store';
+export const URL_APP = 'https://dropper.site';
 
 // QR listo para imprimir y descargar
 export default function Qr({ url, titulo, bajada, archivo = 'caserito-qr.png' }) {

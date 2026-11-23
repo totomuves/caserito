@@ -4,7 +4,7 @@
 //   FLOW_API_KEY, FLOW_SECRET_KEY  (Flow → Mis datos → Integración / API)
 //   FLOW_PLAN_ID                   (el ID del plan que creaste en Flow → Suscripciones → Planes, ej: droper-local)
 //   FLOW_SANDBOX                   ("si" para probar en sandbox.flow.cl; vacío o "no" para producción)
-//   PANEL_URL                      (opcional; por defecto https://caserito-yc5f.vercel.app)
+//   PANEL_URL                      (opcional; por defecto https://local.dropper.site)
 // IMPORTANTE: esta función debe tener "Verify JWT" APAGADO (Flow la llama sin sesión). La seguridad va adentro.
 //
 // Acciones:
@@ -24,7 +24,7 @@ const SECRET = Deno.env.get('FLOW_SECRET_KEY') || '';
 const PLAN = Deno.env.get('FLOW_PLAN_ID') || '';
 const SANDBOX = (Deno.env.get('FLOW_SANDBOX') || '').toLowerCase() === 'si';
 const BASE = SANDBOX ? 'https://sandbox.flow.cl/api' : 'https://www.flow.cl/api';
-const PANEL = Deno.env.get('PANEL_URL') || 'https://caserito-yc5f.vercel.app';
+const PANEL = Deno.env.get('PANEL_URL') || 'https://local.dropper.site';
 const URL_SB = Deno.env.get('SUPABASE_URL')!;
 const FUNCION = `${URL_SB}/functions/v1/flow`;
 

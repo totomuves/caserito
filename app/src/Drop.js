@@ -148,7 +148,7 @@ export default function Drop({ drop, usuario, alCerrar, alComoLlegar = null }) {
           <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.amarillo }}>{t('Termina en', "Termina en")}</Text>
           <Text style={{ ...letrista, fontSize: 24, color: C.papel }}>{reloj}</Text>
         </View>
-        <Pressable onPress={() => Share.share({ message: t(`¡Dropper! ${drop.local_nombre} soltó un drop: ${drop.frase || drop.titulo}. Míralo aquí: https://www.caserito.store/?local=${drop.local_id}`, `¡Dropper! ${drop.local_nombre} soltó un drop: ${drop.frase || drop.titulo}. Check it: https://www.caserito.store/?local=${drop.local_id}`) })}
+        <Pressable onPress={() => Share.share({ message: t(`¡Dropper! ${drop.local_nombre} soltó un drop: ${drop.frase || drop.titulo}. Míralo aquí: https://dropper.site/?local=${drop.local_id}`, `¡Dropper! ${drop.local_nombre} soltó un drop: ${drop.frase || drop.titulo}. Check it: https://dropper.site/?local=${drop.local_id}`) })}
           style={{ flex: 1, backgroundColor: C.azul, borderRadius: R(16), borderWidth: 2.5, borderColor: C.borde, padding: 12, justifyContent: 'center' }}>
           <Text style={{ fontFamily: F.negrita, fontSize: 15, color: '#FFFFFF' }}>{t('Pasarle el dato a un amigo', "Pásale el dato · Tell a friend")}</Text>
         </Pressable>

@@ -7,7 +7,7 @@
 <meta name="description" content="Dropper: ofertas limitadas de los locales de tu barrio que se activan cuando llegas. Junta las láminas de cada local y los pósters de cada mall. Arte para el pueblo.">
 <meta property="og:title" content="Dropper · Tu barrio suelta drops">
 <meta property="og:description" content="Ofertas de barrio por cuadra, láminas para tu álbum y pósters de cada mall.">
-<meta property="og:image" content="https://www.caserito.store/conoce/img/inicio.png">
+<meta property="og:image" content="https://dropper.site/conoce/img/inicio.png">
 <link rel="icon" type="image/svg+xml" href="/icono.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -184,7 +184,7 @@
         <li>Panel con visitas, canjes, premios y tu equipo.</li>
       </ul>
       <div class="botones">
-        <a class="btn amarillo" href="https://caserito-yc5f.vercel.app" id="btn-panel">Entrar al panel de locales →</a>
+        <a class="btn amarillo" href="https://local.dropper.site" id="btn-panel">Entrar al panel de locales →</a>
         <a class="btn blanco" style="background:transparent;color:#fff" href="/locales/">Ver el dossier</a>
       </div>
     </div>
@@ -216,7 +216,7 @@
     <span>Arte para el pueblo · Santiago de Chile</span>
     <a href="/">App</a>
     <a href="/locales/">Dossier locales</a>
-    <a href="https://caserito-yc5f.vercel.app">Panel de locales</a>
+    <a href="https://local.dropper.site">Panel de locales</a>
   </div>
 </footer>
 
@@ -224,7 +224,7 @@
 <script>
   // Cuando la app esté en las tiendas, pega aquí los links y todo se activa solo (botones y QR)
   var TIENDAS = { ios: '', android: '' };
-  var DESCARGA = 'https://www.caserito.store/conoce/#descargar';
+  var DESCARGA = 'https://dropper.site/conoce/#descargar';
 
   // El QR lleva a esta página con #descargar: si ya hay tienda, redirige según el teléfono
   (function () {
@@ -248,10 +248,6 @@
     } catch (e) { caja.innerHTML = '<a href="/" style="font-weight:800">Abrir Dropper</a>'; }
   })();
 
-  // Panel de locales: si ya está el subdominio, úsalo
-  fetch('https://local.caserito.store', { mode: 'no-cors' }).then(function () {
-    document.querySelectorAll('a[href="https://caserito-yc5f.vercel.app"]').forEach(function (a) { a.href = 'https://local.caserito.store'; });
-  }).catch(function () {});
 </script>
 </body>
 </html>
