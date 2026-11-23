@@ -9,10 +9,16 @@ import { F } from './tema';
 const AM = '#FFD100', RO = '#E30A2F', AZ = '#1E5AA8', NE = '#111111', PA = '#FFF6E5';
 function semilla(t) { let h = 2166136261; for (const ch of String(t)) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
 
-export function PosterLugar({ lugar, ancho = 180, bloqueado = false }) {
+export const semillaPoster = semilla;
+const PALETAS = [[AM, RO, AZ, NE], [RO, AM, NE, AZ], [AZ, AM, RO, NE], [PA, RO, AZ, NE], [NE, AM, RO, AZ]];
+export function paletaPoster(s) {
+  const [f, a, b, c] = PALETAS[s % PALETAS.length];
+  return { f, a, b, c, tinta: f === NE || f === AZ || f === RO ? '#FFFFFF' : NE, v: (s >>> 5) % 3 };
+}
+
+export function PosterLugar({ lugar, ancho = 180, bloqueado = false, compacto = false }) {
   const s = semilla(lugar.id);
-  const paletas = [[AM, RO, AZ, NE], [RO, AM, NE, AZ], [AZ, AM, RO, NE], [PA, RO, AZ, NE], [NE, AM, RO, AZ]];
-  const [f, a, b, c] = bloqueado ? ['#E4E4E9', '#CFCFD6', '#BDBDC6', '#9A9AA5'] : paletas[s % paletas.length];
+  const [f, a, b, c] = bloqueado ? ['#E4E4E9', '#CFCFD6', '#BDBDC6', '#9A9AA5'] : PALETAS[s % PALETAS.length];
   const tinta = f === NE || f === AZ || f === RO ? '#FFFFFF' : NE;
   const pisos = (lugar.pisos || []).length || 1;
   const alto = ancho * 1.5;

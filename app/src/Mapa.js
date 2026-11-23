@@ -6,6 +6,7 @@ import { puntosDe } from './barrios';
 import { C, letrista, cuadras, textoCategoria, ESTILO as SKIN } from './tema';
 import { figuraDe } from './componentes';
 import { ArteLocal } from './arteLocal';
+import { LaminaPin, PosterPin } from './pinesNativo';
 import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa } from './MapaComun';
 
 // Estilo amarillo pálido del diseño "pantallas" (Google Maps en Android)
@@ -65,28 +66,31 @@ export default function Mapa({ drops, pos, alAbrir, barrios = [], visita = null,
         ))}
         {lugares.map((lg) => (
           <Marker key={'g' + lg.id} coordinate={{ latitude: lg.lat, longitude: lg.lng }} anchor={{ x: 0.5, y: 1 }} onPress={() => alAbrirLugar(lg)} tracksViewChanges={false} zIndex={800}>
-            <View style={{ alignItems: 'center' }}>
-              <View style={{ backgroundColor: C.negro, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6, minWidth: 110 }}>
-                <Text style={{ fontFamily: 'Archivo_800ExtraBold', fontSize: 9, letterSpacing: 1.5, color: C.amarillo }}>{lg.tipo === 'mall' ? 'MALL' : 'PATIO'}</Text>
-                <Text style={{ fontFamily: 'Archivo_800ExtraBold', fontSize: 14, color: '#FFFFFF' }} numberOfLines={1}>{lg.nombre}</Text>
-                <Text style={{ fontFamily: 'Archivo_600SemiBold', fontSize: 10, color: '#DDDDDD' }}>{Number(lg.locales || 0)} locales · ver plano</Text>
-              </View>
-              <View style={{ width: 0, height: 0, borderLeftWidth: 8, borderRightWidth: 8, borderTopWidth: 10, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderTopColor: C.negro }} />
-            </View>
+            <PosterPin g={lg} />
           </Marker>
         ))}
-        {locales.filter((l) => !conDrop.has(l.id)).map((l, k) => (
-          <Marker key={'l' + l.id + (cerca ? 'c' : 'l')} anchor={cerca ? { x: 0.5, y: 0.92 } : { x: 0.5, y: 0.5 }} coordinate={{ latitude: l.punto.lat, longitude: l.punto.lng }} title={l.nombre}
-            description={`${textoCategoria(l.categoria)}${l.producto_estrella ? ' · ★ ' + l.producto_estrella : ''} · sin drop ahora`} tracksViewChanges={false}>
-            {cerca ? <LaminaMapa l={l} k={k} /> : <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: C.papel, borderWidth: 3, borderColor: C.borde }} />}
-          </Marker>
-        ))}
-        {visibles.map((d) => coords[d.local_id] && (
-          <Marker key={d.drop_id} coordinate={{ latitude: coords[d.local_id].lat, longitude: coords[d.local_id].lng }}
-            onPress={() => setSel(d)} accessibilityLabel={`${d.local_nombre}, ${cuadras(d.cuadras)}`}>
-            <Pin d={d} />
-          </Marker>
-        ))}
+        {(() => {
+          // Igual que en el inicio: cada local es su lámina chica; los que tienen drop, con borde y precio
+          const dropDe = {};
+          visibles.forEach((d) => { if (!dropDe[d.local_id]) dropDe[d.local_id] = d; });
+          const puntos = locales.map((l) => ({ l, p: l.punto }));
+          visibles.forEach((d) => { if (!locales.some((l) => l.id === d.local_id) && coords[d.local_id]) puntos.push({ l: { id: d.local_id, nombre: d.local_nombre, categoria: d.categoria }, p: coords[d.local_id] }); });
+          return puntos.map(({ l, p }) => {
+            const d = dropDe[l.id];
+            if (!cerca && !d) {
+              return <Marker key={'p' + l.id} coordinate={{ latitude: p.lat, longitude: p.lng }} title={l.nombre} anchor={{ x: 0.5, y: 0.5 }} tracksViewChanges={false}>
+                <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: '#111111', borderWidth: 2, borderColor: '#FFFFFF' }} />
+              </Marker>;
+            }
+            return (
+              <Marker key={'l' + l.id} coordinate={{ latitude: p.lat, longitude: p.lng }} anchor={{ x: 0.5, y: 1 }} tracksViewChanges={false} zIndex={d ? 500 : 0}
+                title={d ? undefined : l.nombre} description={d ? undefined : `${textoCategoria(l.categoria)} · sin drop ahora`}
+                onPress={d ? () => setSel(d) : undefined} accessibilityLabel={d ? `${d.local_nombre}, ${cuadras(d.cuadras)}` : l.nombre}>
+                <LaminaPin l={l} d={d} />
+              </Marker>
+            );
+          });
+        })()}
       </MapView>
       <SelectorBarrios barrios={barrios} vista={vista} alElegir={irA} />
       <FiltrosMapa drops={drops} filtro={filtro} alElegir={(f) => { setFiltro(f); setSel(null); }} arriba={barrios.length > 1 ? 58 : 10} />

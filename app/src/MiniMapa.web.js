@@ -4,7 +4,7 @@ import { C, F, R, precio, ESTILO } from './tema';
 import { useCoordenadas, useLocalesMapa, useTiendasOsm, especialidad } from './MapaComun';
 import { arteHtml } from './arteLocal';
 import { conectarCalles, CSS_CALLES } from './callesWeb';
-import { lugarHtml } from './Plano';
+import { CSS_PINES, laminaPinHtml, tamLamina, posterPinHtml, tamPoster } from './pinesWeb';
 
 const L = require('leaflet');
 const LLAVE_CARTO = process.env.EXPO_PUBLIC_CARTO_KEY || '';
@@ -26,19 +26,7 @@ function estilos() {
     ${CSS_CALLES('.droper-mini.moderno')}
     .droper-mini .leaflet-control-attribution { font-size:8px; background:rgba(255,255,255,.7); }
     .mini-yo { width:18px; height:18px; border-radius:9px; background:#1D4ED8; border:3px solid #fff; box-shadow:0 0 0 8px rgba(29,78,216,.18), 0 1px 4px rgba(0,0,0,.35); box-sizing:border-box; }
-    .droper-mini .mini-lam { transform: rotate(var(--contra, 0deg)); transition: transform .3s ease-out; will-change: transform; }
-    .lugar-pin { display:flex; flex-direction:column; align-items:center; cursor:pointer; }
-    .lugar-carta { background:#111; color:#fff; border-radius:12px; padding:5px 9px; box-shadow:0 6px 14px rgba(17,17,17,.3); font-family:Archivo, sans-serif; }
-    .lugar-carta i { display:block; font-style:normal; font:800 8px Archivo, sans-serif; letter-spacing:1.5px; color:#FFD100; }
-    .lugar-carta b { display:block; font:800 12px Archivo, sans-serif; white-space:nowrap; }
-    .lugar-carta span { display:block; font:600 9px Archivo, sans-serif; color:#ddd; white-space:nowrap; }
-    .lugar-punta { width:0; height:0; border-left:7px solid transparent; border-right:7px solid transparent; border-top:9px solid #111; }
-    .mini-lam { display:flex; flex-direction:column; align-items:center; cursor:pointer; }
-    .mini-lam .carta { position:relative; width:40px; height:40px; box-sizing:border-box; overflow:hidden; background:#fff; border:1px solid #D9D9DF; border-radius:8px; padding:2px; box-shadow:0 3px 8px rgba(17,17,17,.18); }
-    .mini-lam.con-drop .carta { border:2px solid #111; }
-    .mini-lam .nom { font:800 8px Archivo, sans-serif; color:#111; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:40px; margin-top:1px; }
-    .mini-lam .precio { font:800 10px Archivo, sans-serif; background:#FFD100; color:#111; border-radius:8px; padding:1px 6px; margin-bottom:2px; box-shadow:0 2px 5px rgba(17,17,17,.2); white-space:nowrap; }
-    .mini-lam .punta { width:6px; height:6px; border-radius:3px; background:#111; margin-top:2px; }
+  ${CSS_PINES}
   `;
   document.head.appendChild(st);
 }
@@ -125,18 +113,14 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
     if (!m || !g || !m.hasLayer(g)) return;
     g.clearLayers();
     tiendas.forEach((t) => L.circleMarker([t.lat, t.lng], { radius: 4, color: '#FFFFFF', weight: 1.5, fillColor: '#8A8A8A', fillOpacity: 1 }).bindTooltip(t.nombre, { direction: 'top' }).addTo(g));
-    lugares.forEach((lg) => L.marker([lg.lat, lg.lng], { icon: L.divIcon({ className: '', html: `<div style="transform:rotate(var(--contra,0deg))">${lugarHtml(lg)}</div>`, iconSize: [150, 70], iconAnchor: [75, 68] }), zIndexOffset: 900 }).on('click', () => alAbrirLugar(lg)).addTo(g));
+    lugares.forEach((lg) => L.marker([lg.lat, lg.lng], { icon: L.divIcon({ className: '', html: posterPinHtml(lg), ...tamPoster }), zIndexOffset: 900, title: lg.nombre }).on('click', () => alAbrirLugar(lg)).addTo(g));
     const dropDe = {};
     drops.forEach((d) => { if (!dropDe[d.local_id]) dropDe[d.local_id] = d; });
     const puntos = locales.map((l) => ({ l, p: l.punto }));
     drops.forEach((d) => { if (!locales.some((l) => l.id === d.local_id) && coords[d.local_id]) puntos.push({ l: { id: d.local_id, nombre: d.local_nombre, categoria: d.categoria }, p: coords[d.local_id] }); });
     puntos.forEach(({ l, p }) => {
       const d = dropDe[l.id];
-      const esc = (x) => String(x || '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-      const html = `<div class="mini-lam${d ? ' con-drop' : ''}" title="${esc(l.nombre)} · ${esc(especialidad(l))}">`
-        + (d ? `<div class="precio">${d.tipo === 'sorpresa' ? '¿?' : esc(precio(d.precio) || 'DROP')}</div>` : '')
-        + `<div class="carta">${arteHtml(l.id, l.categoria, l.nombre)}</div><div class="nom">${esc(l.nombre)}</div><div class="punta"></div></div>`;
-      L.marker([p.lat, p.lng], { icon: L.divIcon({ className: '', html, iconSize: [46, d ? 78 : 62], iconAnchor: [23, d ? 76 : 60] }), zIndexOffset: d ? 500 : 0 })
+      L.marker([p.lat, p.lng], { icon: L.divIcon({ className: '', html: laminaPinHtml(l, d), ...tamLamina(d) }), zIndexOffset: d ? 500 : 0 })
         .on('click', () => (d ? alAbrir(d) : alVerMapa())).addTo(g);
     });
   }, [drops, coords, locales, tiendas, lugares, !!mapa.current]);

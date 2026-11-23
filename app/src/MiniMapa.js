@@ -5,6 +5,7 @@ import MapView, { Marker } from 'react-native-maps';
 import { C, F, R, precio, ESTILO as SKIN } from './tema';
 import { useCoordenadas, useLocalesMapa } from './MapaComun';
 import { ArteLocal } from './arteLocal';
+import { LaminaPin, PosterPin } from './pinesNativo';
 import { ESTILO as ESTILO_MAPA, ESTILO_MODERNO } from './Mapa';
 
 
@@ -44,13 +45,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
         initialRegion={{ latitude: centro.lat, longitude: centro.lng, latitudeDelta: delta, longitudeDelta: delta }}>
         {lugares.map((lg) => (
           <Marker key={'g' + lg.id} coordinate={{ latitude: lg.lat, longitude: lg.lng }} anchor={{ x: 0.5, y: 1 }} onPress={() => alAbrirLugar(lg)} tracksViewChanges={false} zIndex={900}>
-            <View style={{ alignItems: 'center' }}>
-              <View style={{ backgroundColor: '#111111', borderRadius: 12, paddingHorizontal: 9, paddingVertical: 5 }}>
-                <Text style={{ fontFamily: F.negrita, fontSize: 8, letterSpacing: 1.5, color: C.amarillo }}>{lg.tipo === 'mall' ? 'MALL' : 'PATIO'}</Text>
-                <Text style={{ fontFamily: F.negrita, fontSize: 12, color: '#FFFFFF' }} numberOfLines={1}>{lg.nombre}</Text>
-              </View>
-              <View style={{ width: 0, height: 0, borderLeftWidth: 7, borderRightWidth: 7, borderTopWidth: 9, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderTopColor: '#111111' }} />
-            </View>
+            <PosterPin g={lg} />
           </Marker>
         ))}
         {(() => {
@@ -62,18 +57,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
             const d = dropDe[l.id];
             return (
               <Marker key={l.id} coordinate={{ latitude: p.lat, longitude: p.lng }} anchor={{ x: 0.5, y: 1 }} onPress={() => (d ? alAbrir(d) : alVerMapa())} tracksViewChanges={false}>
-                <View style={{ alignItems: 'center', width: 50 }}>
-                  {d ? (
-                    <View style={{ backgroundColor: C.amarillo, borderRadius: 8, paddingHorizontal: 6, paddingVertical: 1, marginBottom: 2 }}>
-                      <Text style={{ fontFamily: F.negrita, fontSize: 10 }}>{d.tipo === 'sorpresa' ? '¿?' : (precio(d.precio) || 'DROP')}</Text>
-                    </View>
-                  ) : null}
-                  <View style={{ backgroundColor: '#FFFFFF', borderRadius: 8, padding: 2, borderWidth: d ? 2 : 1, borderColor: d ? '#111111' : '#D9D9DF' }}>
-                    <ArteLocal id={l.id} categoria={l.categoria} pista={l.nombre} ancho={36} alto={36} borde={false} />
-                  </View>
-                  <Text numberOfLines={1} style={{ fontFamily: F.negrita, fontSize: 8, maxWidth: 48, marginTop: 1 }}>{l.nombre}</Text>
-                  <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#111111', marginTop: 2 }} />
-                </View>
+                <LaminaPin l={l} d={d} />
               </Marker>
             );
           });

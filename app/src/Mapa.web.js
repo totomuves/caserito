@@ -3,7 +3,7 @@ import { Pressable, View } from 'react-native';
 import { C, cuadras, textoCategoria, ESTILO } from './tema';
 import { figuraDe } from './componentes';
 import { arteHtml } from './arteLocal';
-import { lugarHtml } from './Plano';
+import { CSS_PINES, laminaPinHtml, tamLamina, posterPinHtml, tamPoster } from './pinesWeb';
 import { conectarCalles, CSS_CALLES } from './callesWeb';
 import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, useTiendasOsm, SelectorBarrios, FiltrosMapa, HojaMapa } from './MapaComun';
 
@@ -25,6 +25,7 @@ function prepararEstilos() {
     .caserito-mapa { background:#FFF3B0; }
     .caserito-mapa .leaflet-tile-pane { filter: sepia(.5) saturate(1.5) hue-rotate(-8deg) brightness(1.02) contrast(1.3); }
     ${CSS_CALLES('.caserito-mapa.moderno')}
+    ${CSS_PINES}
     .caserito-pin { background: none; border: none; }
     .lugar-pin { display:flex; flex-direction:column; align-items:center; cursor:pointer; }
     .lugar-carta { background:${C.negro}; color:#fff; border:2.5px solid ${C.negro}; border-radius:12px; padding:6px 10px; box-shadow:0 6px 14px rgba(17,17,17,.3); font-family:Archivo, sans-serif; min-width:110px; }
@@ -193,7 +194,7 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
     if (!g) return;
     g.clearLayers();
     lugares.forEach((lg) => {
-      L.marker([lg.lat, lg.lng], { icon: L.divIcon({ className: 'caserito-pin', html: lugarHtml(lg), iconSize: [150, 70], iconAnchor: [75, 68] }), title: lg.nombre, keyboard: true, zIndexOffset: 800 })
+      L.marker([lg.lat, lg.lng], { icon: L.divIcon({ className: '', html: posterPinHtml(lg), ...tamPoster }), title: lg.nombre, keyboard: true, zIndexOffset: 800 })
         .on('click', () => alAbrirLugar(lg)).addTo(g);
     });
   }, [lugares, !!mapa.current]);
@@ -202,32 +203,21 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
   useEffect(() => {
     if (!capa.current) return;
     capa.current.clearLayers();
-    const conDrop = new Set(drops.map((d) => d.local_id));
-    locales.filter((l) => !conDrop.has(l.id)).forEach((l, k) => {
-      const html = cerca
-        ? `<div class="lam-flota" style="--rot:${[-3, 2, -1, 3][k % 4]}deg;--delay:-${(k % 5) * 0.6}s"><div class="lam-mapa"><div class="lam-arte">${arteHtml(l.id, l.categoria, l.nombre)}`
-          + `</div><b>${escapar(l.nombre)}</b><i>★ ${escapar(especialidad(l))}</i></div><div class="hilo"></div><div class="ubic"></div><div class="sombra"></div></div>`
-        : '<div class="local-sin-drop"></div>';
-      const icono = L.divIcon({ className: 'caserito-pin', html, iconSize: cerca ? [94, 150] : [18, 18], iconAnchor: cerca ? [47, 138] : [9, 9] });
-      L.marker([l.punto.lat, l.punto.lng], { icon: icono, title: l.nombre, keyboard: true, zIndexOffset: -100 })
-        .bindPopup(`<b>${escapar(l.nombre)}</b><br>${escapar(textoCategoria(l.categoria))}${l.producto_estrella ? ' · ★ ' + escapar(l.producto_estrella) : ''}<br><span style="color:#4A4A4A">Sin drop ahora · gana su lámina con el próximo drop</span>`)
-        .addTo(capa.current);
-    });
-    visibles.forEach((d) => {
-      const p = coords[d.local_id];
-      if (!p) return;
-      const color = COLOR_TIPO[d.tipo] || C.rojo;
-      const giro = [-7, 5, -4, 6][(d.drop_id || '').charCodeAt(0) % 4 || 0];
-      const fp = figuraPin(d);
-      const clase = `tag${d.tipo === 'sorpresa' ? ' sorpresa' : ''}${d.tipo === 'grupal' ? ' grupal' : ''}${urgente(d) ? ' urgente' : ''}`;
-      const html = `<div class="pin-wrap" style="--color:${color}">`
-        + `<div class="${clase}" >${escapar(etiquetaTag(d))}`
-        + (d.dentro_del_radio ? '<div class="aqui-tag">¡AQUÍ!</div>' : '') + '</div>'
-        + `<div class="palito"></div><div class="figura-pin" style="--bajar:${fp.forma === 'triangulo' ? '10px' : fp.forma === 'cuarto' ? '8px' : '0'}"><svg viewBox="0 0 36 36"><path d="${RUTA_PIN[fp.forma]}" fill="${fp.color}" stroke="${C.negro}" stroke-width="3" stroke-linejoin="miter"/></svg><b style="color:${fp.texto}">${escapar(centroPin(d))}</b></div><div class="pulso"></div></div>`;
-      const icono = L.divIcon({ className: 'caserito-pin', html, iconSize: [110, 96], iconAnchor: [55, 96] });
-      L.marker([p.lat, p.lng], { icon: icono, title: `${d.local_nombre}, ${cuadras(d.cuadras)}`, keyboard: true })
-        .on('click', () => setSel(d))
-        .addTo(capa.current);
+    // Igual que en el inicio: cada local es su lámina chica; los que tienen drop, con borde y precio
+    const dropDe = {};
+    visibles.forEach((d) => { if (!dropDe[d.local_id]) dropDe[d.local_id] = d; });
+    const puntos = locales.map((l) => ({ l, p: l.punto }));
+    visibles.forEach((d) => { if (!locales.some((l) => l.id === d.local_id) && coords[d.local_id]) puntos.push({ l: { id: d.local_id, nombre: d.local_nombre, categoria: d.categoria }, p: coords[d.local_id] }); });
+    puntos.forEach(({ l, p }) => {
+      const d = dropDe[l.id];
+      if (!cerca && !d) {
+        L.circleMarker([p.lat, p.lng], { radius: 5, color: '#FFFFFF', weight: 2, fillColor: '#111111', fillOpacity: 1 }).bindTooltip(escapar(l.nombre)).addTo(capa.current);
+        return;
+      }
+      const mk = L.marker([p.lat, p.lng], { icon: L.divIcon({ className: '', html: laminaPinHtml(l, d), ...tamLamina(d) }), title: l.nombre, keyboard: true, zIndexOffset: d ? 500 : 0 });
+      if (d) mk.on('click', () => setSel(d));
+      else mk.bindPopup(`<b>${escapar(l.nombre)}</b><br>${escapar(textoCategoria(l.categoria))}${l.producto_estrella ? ' · ★ ' + escapar(l.producto_estrella) : ''}<br><span style="color:#4A4A4A">Sin drop ahora</span>`);
+      mk.addTo(capa.current);
     });
   }, [drops, coords, locales, filtro, cerca]);
 
