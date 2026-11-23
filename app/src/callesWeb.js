@@ -13,8 +13,18 @@ function grosor(tipo, zoom) {
   return Math.max(2, base * Math.pow(2, (zoom - 17) * 0.8));
 }
 
+const GUARDADO = 'droper_calles_v1_';
+function leerGuardado(z) {
+  try { const v = localStorage.getItem(GUARDADO + z); if (!v) return null; const d = JSON.parse(v); return Date.now() - d.t < 7 * 864e5 ? d.c : null; } catch (e) { return null; }
+}
+function guardar(z, calles) {
+  try { localStorage.setItem(GUARDADO + z, JSON.stringify({ t: Date.now(), c: calles.map((c) => ({ tipo: c.tipo, puntos: c.puntos.map(([a, b]) => [+a.toFixed(5), +b.toFixed(5)]) })) })); } catch (e) { /* sin espacio: no importa */ }
+}
+
 async function traerZona(z) {
   if (cache[z]) return cache[z];
+  const g = leerGuardado(z); // ya bajadas antes en este teléfono: aparecen al tiro
+  if (g) { cache[z] = g; return g; }
   if (pidiendo[z]) return pidiendo[z];
   const [i, j] = z.split(':').map(Number);
   const s = i * ZONA, w = j * ZONA, n = s + ZONA, e = w + ZONA;
@@ -25,10 +35,12 @@ async function traerZona(z) {
       const calles = (d.elements || []).filter((x) => x.geometry && x.geometry.length > 1)
         .map((x) => ({ tipo: x.tags && x.tags.highway || '', puntos: x.geometry.map((p) => [p.lat, p.lon]) }));
       cache[z] = calles;
+      if (calles.length) guardar(z, calles);
       delete pidiendo[z];
       return calles;
     })
     .catch(() => { delete pidiendo[z]; return []; });
+  // OpenStreetMap a veces está ocupado: si vino vacío, se reintenta en la próxima vista
   return pidiendo[z];
 }
 
@@ -59,6 +71,7 @@ export function conectarCalles(L, m, { color = '#FFD100' } = {}) {
       dibujadas[z] = true;
       traerZona(z).then((calles) => {
         if (!vivo) return;
+        if (!calles.length) { dibujadas[z] = false; return; } // falló o vino vacío: reintenta al moverte
         const zoom = m.getZoom();
         calles.forEach((c) => L.polyline(c.puntos, { pane: 'calles', tipo: c.tipo, color, weight: grosor(c.tipo, zoom), opacity: 1, lineCap: 'round', lineJoin: 'round', interactive: false }).addTo(capa));
       });
