@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Caserito",
+    "name": "Droper",
     "slug": "caserito",
     "scheme": "caserito",
     "version": "0.1.0",
@@ -21,21 +21,21 @@
     "ios": {
       "bundleIdentifier": "cl.caserito.app",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Caserito usa tu ubicación para mostrarte los drops del barrio a pocas cuadras."
+        "NSLocationWhenInUseUsageDescription": "Droper usa tu ubicación para mostrarte los drops del barrio a pocas cuadras."
       }
     },
     "plugins": [
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Caserito usa tu ubicación para mostrarte los drops del barrio a pocas cuadras."
+          "locationWhenInUsePermission": "Droper usa tu ubicación para mostrarte los drops del barrio a pocas cuadras."
         }
       ],
       [
         "expo-image-picker",
         {
-          "cameraPermission": "Caserito usa la cámara para tu lámina de Caserito de Honor.",
-          "photosPermission": "Caserito usa una foto tuya para tu lámina de Caserito de Honor."
+          "cameraPermission": "Droper usa la cámara para tu lámina de Caserito de Honor.",
+          "photosPermission": "Droper usa una foto tuya para tu lámina de Caserito de Honor."
         }
       ]
     ],
@@ -54,12 +54,12 @@
     "web": {
       "bundler": "metro",
       "output": "single",
-      "name": "Caserito",
-      "shortName": "Caserito",
+      "name": "Droper",
+      "shortName": "Droper",
       "themeColor": "#FFD100",
       "backgroundColor": "#FFD100",
       "lang": "es",
-      "description": "Caserito — tu barrio te tiene ofertas. Drops de Barrio Italia.",
+      "description": "Droper — tu barrio te tiene ofertas. Drops de Barrio Italia.",
       "favicon": "./assets/favicon.png"
     },
     "icon": "./assets/icon.png",

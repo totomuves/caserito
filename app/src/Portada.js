@@ -84,7 +84,7 @@ export default function Portada({ drops, nombreBarrio, barrios, visita, alVisita
       {/* Cabecera */}
       <View style={{ flexDirection: 'row', marginTop: 10, marginHorizontal: 10, borderWidth: 2, borderColor: C.negro }}>
         <View style={{ flex: 1, backgroundColor: ROJO, paddingHorizontal: 10, paddingTop: 6, paddingBottom: 4 }}>
-          <Text style={{ ...T, fontSize: 44, lineHeight: 46, color: '#FFFFFF', transform: [{ skewX: '-10deg' }], textShadowColor: C.negro, textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 0 }}>CASERITO</Text>
+          <Text style={{ ...T, fontSize: 44, lineHeight: 46, color: '#FFFFFF', transform: [{ skewX: '-10deg' }], textShadowColor: C.negro, textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 0 }}>DROPER</Text>
           <Text style={{ ...N, fontSize: 10, letterSpacing: 3, color: AMARILLO }}>{t('EL DIARIO POPULAR DEL BARRIO', 'THE BARRIO DAILY · DIARIO POPULAR')}</Text>
         </View>
         <View style={{ width: 72, backgroundColor: AMARILLO, borderLeftWidth: 2, borderColor: C.negro, alignItems: 'center', justifyContent: 'center' }}>

@@ -57,7 +57,7 @@ export default function Cuenta({ usuario, alAyuda }) {
         <SelectorIdioma />
       </View>
       <View style={{ marginHorizontal: 16, marginTop: 18, gap: 8 }}>
-        <Boton texto={t('¿Cómo funciona Caserito?', "¿Cómo funciona Caserito?")} fondo={C.papel} color={C.negro} onPress={alAyuda} />
+        <Boton texto={t('¿Cómo funciona Droper?', "¿Cómo funciona Droper?")} fondo={C.papel} color={C.negro} onPress={alAyuda} />
       </View>
 
       <Comentarios />
@@ -187,7 +187,7 @@ function Comentarios() {
     <View style={[tarjeta, { backgroundColor: C.negro }]}>
       <Text style={{ ...letrista, fontSize: 18, color: C.amarillo }}>{t('ESTAMOS EN PRUEBA', "BETA · EN PRUEBA")}</Text>
       <Text style={{ fontFamily: F.normal, fontSize: 14, color: C.papel }}>
-        {t('Caserito lo están probando amigos y locales amigos. ¿Algo no funcionó o se te ocurre algo? Cuéntanos.', "Amigos y locales amigos are testing Caserito. ¿Algo falló o tienes una idea? Cuéntanos.")}
+        {t('Droper lo están probando amigos y locales amigos. ¿Algo no funcionó o se te ocurre algo? Cuéntanos.', "Amigos y locales amigos are testing Droper. ¿Algo falló o tienes una idea? Cuéntanos.")}
       </Text>
       <TextInput value={texto} onChangeText={(v) => { setTexto(v); setEstado(''); }} maxLength={1000} multiline
         placeholder={t('Ej: no me apareció el QR en el café de la esquina', "Ej: my QR no apareció en el café")} placeholderTextColor={C.gris}

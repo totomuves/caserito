@@ -1,6 +1,6 @@
 {
-  "name": "Caserito",
-  "short_name": "Caserito",
+  "name": "Droper",
+  "short_name": "Droper",
   "description": "Ofertas de barrio que se activan cuando llegas.",
   "start_url": "/",
   "display": "standalone",

@@ -23,7 +23,7 @@ export default function Admin({ usuario, alEntrarLocal }) {
   const [seccion, setSeccion] = useState('resumen');
   return (
     <div className="contenido">
-      <h1 className="letrista">ADMIN CASERITO</h1>
+      <h1 className="letrista">ADMIN DROPER</h1>
       <div className="pildoras">
         {SECCIONES.map((s) => (
           <button key={s.id} className={'pildora' + (seccion === s.id ? ' activa' : '')} onClick={() => setSeccion(s.id)}>{s.texto}</button>
@@ -38,7 +38,7 @@ export default function Admin({ usuario, alEntrarLocal }) {
       {seccion === 'estilo' && <EstiloApp />}
       {seccion === 'invitar' && <Invitar />}
       {seccion === 'qr' && (
-        <Qr url={URL_APP} titulo="CASERITO" archivo="caserito-qr-app.png"
+        <Qr url={URL_APP} titulo="DROPER" archivo="caserito-qr-app.png"
           bajada="QR general de la app para caseritos: one-pager, flyers, redes y el 'último flyer'." />
       )}
     </div>
@@ -73,7 +73,7 @@ function Resumen({ irA }) {
   return (
     <>
       <div className="pizarra">
-        <span className="etiqueta">Ventas por Caserito · últimos 7 días</span>
+        <span className="etiqueta">Ventas por Droper · últimos 7 días</span>
         <span className="precio" style={{ fontSize: 38 }}>{formatoPrecio(k.ventas_semana) || '$0'}</span>
         <span style={{ fontSize: 13 }}>{k.canjes_semana} canjes · {k.canjes_hoy} hoy · {cambio(k.canjes_semana, k.canjes_semana_ant)}</span>
       </div>
@@ -179,7 +179,7 @@ function ResumenSimple({ d }) {
   return (
     <>
       <div className="pizarra">
-        <span className="etiqueta">Ventas por Caserito · últimos 7 días</span>
+        <span className="etiqueta">Ventas por Droper · últimos 7 días</span>
         <span className="precio" style={{ fontSize: 38 }}>{formatoPrecio(d.ventas_semana) || '$0'}</span>
         <span style={{ fontSize: 13 }}>{d.canjes_semana} canjes · {d.canjes_hoy} hoy</span>
       </div>
@@ -286,7 +286,7 @@ function Entrega({ local, e, alCambiar }) {
   if (!e.dueno_es_admin) return null;
   const vigente = e.codigo && new Date(e.expira_at) > new Date();
   const link = vigente ? `${window.location.origin}/?entrega=${e.codigo}` : '';
-  const texto = `¡Hola! Tu local ${local.nombre} ya está en Caserito. Entra con este link, crea tu cuenta y queda a tu nombre: ${link}`;
+  const texto = `¡Hola! Tu local ${local.nombre} ya está en Droper. Entra con este link, crea tu cuenta y queda a tu nombre: ${link}`;
   async function crear() {
     setMsg('');
     const { error } = await supabase.rpc('crear_entrega', { p_local: local.id });
@@ -408,7 +408,7 @@ function Comentarios() {
       {datos.map((c) => (
         <div className="tarjeta" key={c.id} style={{ opacity: c.leido ? 0.6 : 1 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
-            <b>{c.origen === 'panel' ? 'Local' : 'Caserito'}{c.perfiles && c.perfiles.nombre ? ` · ${c.perfiles.nombre}` : ''}</b>
+            <b>{c.origen === 'panel' ? 'Local' : 'Droper'}{c.perfiles && c.perfiles.nombre ? ` · ${c.perfiles.nombre}` : ''}</b>
             <span className="ayuda">{new Date(c.creado_at).toLocaleString('es-CL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}{c.plataforma ? ` · ${c.plataforma}` : ''}</span>
           </div>
           <span style={{ whiteSpace: 'pre-wrap' }}>{c.texto}</span>
@@ -521,7 +521,7 @@ function Invitar() {
   const [nueva, setNueva] = useState(null);
 
   const link = (c) => `${window.location.origin}/?invitacion=${c}`;
-  const textoWsp = (n, c) => `¡Hola${n ? ' ' + n : ''}! Te invito a Caserito, la app de drops de tu barrio. Inscribe tu local aquí y queda aprobado al tiro: ${link(c)}`;
+  const textoWsp = (n, c) => `¡Hola${n ? ' ' + n : ''}! Te invito a Droper, la app de drops de tu barrio. Inscribe tu local aquí y queda aprobado al tiro: ${link(c)}`;
 
   async function crear(e) {
     e.preventDefault();

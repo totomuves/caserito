@@ -1,4 +1,4 @@
-magic_link: Tu código para entrar a Caserito
-change_email: Tu código para guardar tu cuenta Caserito
-confirm_signup: Confirma tu cuenta de Caserito
-reset_password: Cambia tu clave de Caserito
+magic_link: Tu código para entrar a Droper
+change_email: Tu código para guardar tu cuenta Droper
+confirm_signup: Confirma tu cuenta de Droper
+reset_password: Cambia tu clave de Droper

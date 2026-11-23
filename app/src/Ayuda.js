@@ -17,13 +17,13 @@ const PASOS = [
 const DUDAS = [
   ['¿Qué es un drop grupal?', 'Una oferta que mejora mientras más gente canjea: por ejemplo 10% con 10 personas, 20% con 25. Invita a tus amigos para subir de nivel.'],
   ['¿Qué es un drop sorpresa?', 'No sabes qué es hasta que llegas al local. Puede ser un descuento, un regalo o la lámina dorada.'],
-  ['¿Por qué no me aparece el QR?', 'El QR aparece cuando estás en el local (a unos 50 m). Revisa que Caserito tenga permiso de ubicación precisa; si estás adentro y no aparece, sal a la puerta un momento para que el GPS te ubique.'],
-  ['¿Me avisan cuando hay un drop?', 'Sí, si activas los avisos en Inicio. Te llega una notificación cuando un local a pocas cuadras de donde andas suelta un drop (máximo 3 al día y nunca entre las 22:00 y las 9:00), y otra cuando llegas a la puerta de un local con drop, con tu QR listo. Se apagan en Ajustes del teléfono → Caserito → Notificaciones.'],
+  ['¿Por qué no me aparece el QR?', 'El QR aparece cuando estás en el local (a unos 50 m). Revisa que Droper tenga permiso de ubicación precisa; si estás adentro y no aparece, sal a la puerta un momento para que el GPS te ubique.'],
+  ['¿Me avisan cuando hay un drop?', 'Sí, si activas los avisos en Inicio. Te llega una notificación cuando un local a pocas cuadras de donde andas suelta un drop (máximo 3 al día y nunca entre las 22:00 y las 9:00), y otra cuando llegas a la puerta de un local con drop, con tu QR listo. Se apagan en Ajustes del teléfono → Droper → Notificaciones.'],
   ['¿Y las láminas repetidas?', 'Tu primer canje en un local te da su lámina; cada canje siguiente ahí es una repetida. Si el local las cambia, en tu álbum ves qué te dan (ej. 5 repetidas = 1 cortado) y pides el cambio: te sale un QR para mostrar en la caja.'],
   ['¿Qué es el arte del barrio?', 'Algunos barrios tienen su arte: una ilustración o póster de un artista del barrio. Si juntas las láminas que pide (de locales distintos del barrio), lo pides en tu álbum y lo retiras con un QR en el local que se indica. Uno por persona.'],
-  ['¿Necesito cuenta?', 'No para empezar: Caserito te reconoce en este teléfono. Pero te conviene guardar tu cuenta en "Tú" con tu correo (sin clave, te llega un código): así no pierdes tus láminas si cambias de teléfono o borras la app.'],
+  ['¿Necesito cuenta?', 'No para empezar: Droper te reconoce en este teléfono. Pero te conviene guardar tu cuenta en "Tú" con tu correo (sin clave, te llega un código): así no pierdes tus láminas si cambias de teléfono o borras la app.'],
   ['¿Qué datos guardan de mí?', 'Tus drops, láminas y gustos, para mostrarte primero lo que te tinca. Los locales no ven quién eres; solo cuántos canjearon.'],
-  ['¿Cómo apago lo que Caserito aprendió?', 'En Inicio, abajo, en "Caserito aprendió que…": toca un gusto para apagarlo.'],
+  ['¿Cómo apago lo que Droper aprendió?', 'En Inicio, abajo, en "Droper aprendió que…": toca un gusto para apagarlo.'],
 ];
 
 const PASOS_TUR = [

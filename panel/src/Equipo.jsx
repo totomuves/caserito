@@ -150,7 +150,7 @@ function Invitar({ local, roles, alCrear }) {
 function CopiarLink({ codigo, local, rol }) {
   const [copiado, setCopiado] = useState(false);
   const link = `${window.location.origin}/?equipo=${codigo}`;
-  const texto = `Hola! Te invito al equipo de ${local.nombre} en Caserito${rol ? ` como ${rol}` : ''}. Entra con este link y crea tu cuenta: ${link}`;
+  const texto = `Hola! Te invito al equipo de ${local.nombre} en Droper${rol ? ` como ${rol}` : ''}. Entra con este link y crea tu cuenta: ${link}`;
   async function copiar() {
     try { await navigator.clipboard.writeText(link); setCopiado(true); setTimeout(() => setCopiado(false), 2000); } catch { /* nada */ }
   }

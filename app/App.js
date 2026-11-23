@@ -180,7 +180,7 @@ function Caserito() {
   const estiloBarrio = (barrioAhora && barrioAhora.estilo) || null;
   useEffect(() => { setEstiloBarrio(estiloBarrio); }, [estiloBarrio]);
 
-  if (!fuentes) return <Cargando texto="Caserito" />;
+  if (!fuentes) return <Cargando texto="Droper" />;
 
   const abrir = (d) => setAbierto(d.drop_id);
   const dropAbierto = drops.find((d) => d.drop_id === abierto);
