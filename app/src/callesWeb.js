@@ -5,7 +5,8 @@
 const ZONA = 0.01; // grados (~1,1 km)
 const cache = {}; // zona → lista de calles
 const pidiendo = {};
-const SERVIDOR = 'https://overpass-api.de/api/interpreter';
+// Varios servidores de OpenStreetMap: si uno está ocupado, probamos el siguiente
+const SERVIDORES = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter', 'https://overpass.private.coffee/api/interpreter'];
 const TIPOS = 'motorway|trunk|primary|secondary|tertiary|unclassified|residential|living_street|pedestrian|service|footway';
 
 function grosor(tipo, zoom) {
@@ -29,17 +30,25 @@ async function traerZona(z) {
   const [i, j] = z.split(':').map(Number);
   const s = i * ZONA, w = j * ZONA, n = s + ZONA, e = w + ZONA;
   const q = `[out:json][timeout:20];way["highway"~"^(${TIPOS})$"](${s},${w},${n},${e});out geom;`;
-  pidiendo[z] = fetch(SERVIDOR, { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
-    .then((r) => (r.ok ? r.json() : { elements: [] }))
-    .then((d) => {
-      const calles = (d.elements || []).filter((x) => x.geometry && x.geometry.length > 1)
-        .map((x) => ({ tipo: x.tags && x.tags.highway || '', puntos: x.geometry.map((p) => [p.lat, p.lon]) }));
-      if (calles.length) { cache[z] = calles; guardar(z, calles); }
-      delete pidiendo[z];
-      return calles;
-    })
-    .catch(() => { delete pidiendo[z]; return []; });
-  // OpenStreetMap a veces está ocupado: si vino vacío, se reintenta en la próxima vista
+  pidiendo[z] = (async () => {
+    for (const servidor of SERVIDORES) {
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 15000);
+        const r = await fetch(servidor, { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, signal: ctrl.signal });
+        clearTimeout(t);
+        if (!r.ok) continue;
+        const d = await r.json();
+        const calles = (d.elements || []).filter((x) => x.geometry && x.geometry.length > 1)
+          .map((x) => ({ tipo: x.tags && x.tags.highway || '', puntos: x.geometry.map((p) => [p.lat, p.lon]) }));
+        if (calles.length) { cache[z] = calles; guardar(z, calles); }
+        delete pidiendo[z];
+        return calles;
+      } catch (e) { /* probamos el siguiente servidor */ }
+    }
+    delete pidiendo[z];
+    return [];
+  })();
   return pidiendo[z];
 }
 
@@ -70,7 +79,7 @@ export function conectarCalles(L, m, { color = '#FFD100' } = {}) {
       dibujadas[z] = true;
       traerZona(z).then((calles) => {
         if (!vivo) return;
-        if (!calles.length) { dibujadas[z] = false; return; } // falló o vino vacío: reintenta al moverte
+        if (!calles.length) { dibujadas[z] = false; setTimeout(() => vivo && cargar(), 20000); return; } // falló: reintenta solo en 20 s
         const zoom = m.getZoom();
         calles.forEach((c) => L.polyline(c.puntos, { pane: 'calles', tipo: c.tipo, color, weight: grosor(c.tipo, zoom), opacity: 1, lineCap: 'round', lineJoin: 'round', interactive: false }).addTo(capa));
       });
