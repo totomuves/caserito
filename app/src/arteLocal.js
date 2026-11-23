@@ -122,6 +122,11 @@ const M = {
   escuadra: ([a, b, c]) => [tri(18, 84, 18, 20, 82, 84, a), tri(28, 74, 28, 46, 56, 74, b), circ(70, 32, 14, c)],
   tijeras: ([a, b, c, f]) => [circ(32, 70, 12, a), circ(32, 70, 6, f), circ(60, 74, 12, a), circ(60, 74, 6, f), path('M38 60L78 14L82 18L44 66Z', c), path('M54 64L26 16L22 20L48 70Z', b)],
   loto: ([a, b, c]) => [semi(50, 66, 30, true, a), semi(36, 66, 14, true, b), semi(64, 66, 14, true, b), semi(50, 66, 12, true, c), rect(14, 70, 72, 6, NEGRO)],
+  guitarra: ([a, b, c, f, t]) => [circ(40, 66, 20, a), circ(52, 50, 14, a), circ(43, 63, 6, f), rect(54, 14, 7, 44, c), rect(51, 8, 13, 10, t), rect(30, 74, 16, 4, b)],
+  rayo: ([a, b, c]) => [path('M56 6L26 54H46L36 94L76 40H54L66 6Z', a), circ(78, 22, 8, b), rect(14, 80, 18, 6, c)],
+  nota: ([a, b, c, f, t]) => [circ(32, 72, 13, a), circ(70, 64, 13, a), rect(40, 20, 6, 52, t), rect(78, 12, 6, 52, t), path('M40 20L84 12L84 26L40 34Z', b), circ(18, 24, 6, c)],
+  parlante: ([a, b, c, f, t]) => [rect(26, 10, 48, 80, a), circ(50, 62, 17, a === NEGRO ? '#FFFFFF' : NEGRO), circ(50, 62, 8, b), circ(50, 30, 9, a === NEGRO ? '#FFFFFF' : NEGRO), circ(50, 30, 4, c), rect(26, 86, 48, 4, f)],
+  audifonos: ([a, b, c, f]) => [semi(50, 54, 32, true, a), semi(50, 54, 24, true, f), rect(14, 50, 16, 30, b), rect(70, 50, 16, 30, b), rect(10, 56, 6, 18, c), rect(84, 56, 6, 18, c)],
   pata: ([a, b]) => [circ(50, 62, 18, a), circ(28, 40, 8, b), circ(42, 28, 8, b), circ(58, 28, 8, b), circ(72, 40, 8, b)],
 };
 const MOTIVO_RUBRO = {
@@ -130,15 +135,19 @@ const MOTIVO_RUBRO = {
   bienestar: 'loto', mascotas: 'pata',
 };
 const PALABRAS = [
+  // Música primero (un "bar de rock" es rock antes que bar)
+  [/rock|metal|punk|grunge|heavy/, 'rayo'], [/guitar|luthier|instrument/, 'guitarra'], [/jazz|blues|piano|conservatorio|escuela de m[uú]sica|ensayo/, 'nota'],
+  [/audio|sonido|parlante|amplific/, 'parlante'], [/aud[ií]fono|headphone|\bdj\b/, 'audifonos'],
   [/pizz/, 'pizza'], [/sushi|nikkei|japon/, 'sushi'], [/burger|hamburg|sanguch|sandw/, 'burger'], [/helad|gelat|ice ?cream/, 'helado'],
   [/panad|bakery|pan |masa madre|pasteler|reposter|torta/, 'pan'], [/cervec|beer|chopp|pub/, 'jarra'], [/vino|wine|bar\b|cocktail|coctel/, 'copa'],
   [/caf[eé]|coffee|espresso|tostad/, 'taza'], [/flor|florer/, 'flor'], [/libr|book/, 'libros'], [/vinil|disco|record|music/, 'disco'],
   [/silla|mueble|furniture/, 'silla'], [/optic|lente/, 'lentes'], [/peluq|barber|sal[oó]n/, 'tijeras'], [/veterin|mascot|pet\b|perr|gat/, 'pata'],
   [/plant|vivero|jard[ií]n/, 'planta'], [/galer[ií]a|arte\b|taller/, 'paleta'], [/antig[uü]/, 'reloj'], [/yoga|spa\b|masaj/, 'loto'],
 ];
-function motivoDe(categoria, pista) {
+function motivoDe(categoria, pista, s = 0) {
   const p = String(pista || '').toLowerCase() + ' ';
   for (const [re, m] of PALABRAS) if (re.test(p)) return m;
+  if (categoria === 'musica') return ['disco', 'guitarra', 'nota', 'parlante', 'rayo'][s % 5]; // música: cada local con su instrumento
   return MOTIVO_RUBRO[categoria] || null;
 }
 // Fondo detrás del pictograma (varía por local)
@@ -153,7 +162,7 @@ const FONDOS = [
 function composicionMotivo(s, r, motivo) {
   const [f, k, a, b, c] = colores(r, 5); // cinco colores distintos: fondo, figura de fondo y tres del pictograma
   const fondo = FONDOS[(s >>> 3) % FONDOS.length](k);
-  const figuras = [rect(0, 0, 100, 100, f), ...fondo, ...M[motivo]([a, b, c, f])];
+  const figuras = [rect(0, 0, 100, 100, f), ...fondo, ...M[motivo]([a, b, c, f, f === NEGRO || k === NEGRO ? '#FFFFFF' : NEGRO])];
   const espejo = (s >>> 6) % 2 && !['libros', 'taza', 'jarra', 'paleta', 'silla'].includes(motivo) ? 'translate(100 0) scale(-1 1)' : '';
   return { figuras, sello: rect(0, 0, 0, 0, 'none'), ojos: false, transform: espejo };
 }
@@ -162,7 +171,7 @@ function composicionMotivo(s, r, motivo) {
 export function composicion(id, categoria, pista = '') {
   const s = semilla(id);
   const r = azar(s);
-  const motivo = motivoDe(categoria, pista);
+  const motivo = motivoDe(categoria, pista, s >>> 9);
   if (motivo) return composicionMotivo(s, r, motivo);
   const fam = FAMILIAS[((s ^ (s >>> 11)) >>> 0) % FAMILIAS.length];
   const cols = colores(r, 4);

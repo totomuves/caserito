@@ -19,7 +19,7 @@ export const GRUPOS = [
       { id: 'ropa', texto: 'Ropa y vintage' },
       { id: 'accesorios', texto: 'Joyas, zapatos y accesorios' },
       { id: 'libros', texto: 'Libros' },
-      { id: 'musica', texto: 'Música y vinilos' },
+      { id: 'musica', texto: 'Música, rock y vinilos' },
       { id: 'arte', texto: 'Arte y galerías' },
       { id: 'plantas', texto: 'Plantas y flores' },
     ],
