@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { C, F, R, precio, ESTILO } from './tema';
-import { useCoordenadas, useLocalesMapa, useTiendasOsm, especialidad, traerRuta, BarraRuta } from './MapaComun';
+import { useCoordenadas, useLocalesMapa, useTiendasOsm, especialidad, traerRuta, PanelRuta, ANCHO_PANEL } from './MapaComun';
 import { caminar } from './Drop';
 import { arteHtml } from './arteLocal';
 import { conectarCalles, CSS_CALLES } from './callesWeb';
@@ -32,10 +32,24 @@ function estilos() {
   document.head.appendChild(st);
 }
 
+// Centra el mapa en ti; con ruta activa, te corre a la derecha (al centro de lo que no tapa el panel)
+function centrarEn(m, punto, zoom, conPanel, rumbo) {
+  const z = zoom || m.getZoom() || 17;
+  if (!conPanel) { m.setView(punto, z, { animate: false }); return; }
+  const visible = m.getSize().x / 1.5; // la caja del mapa mide 150% para poder girar
+  const dx = (visible * ANCHO_PANEL) / 2;
+  const r = (rumbo * Math.PI) / 180;
+  const p = m.project(punto, z).subtract([dx * Math.cos(r), dx * Math.sin(r)]);
+  m.setView(m.unproject(p, z), z, { animate: false });
+}
+
 export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVerMapa = () => {}, t = (a) => a, lugares = [], alAbrirLugar = () => {}, destino = null, alCerrarRuta = () => {} }) {
   const [ruta, setRuta] = useState(null);
   const vibrados = useRef(new Set());
   const encuadre = useRef(null);
+  const ultimoCentro = useRef(null);
+  const rumboRef = useRef(0);
+  const ultimaVista = useRef('');
   const capaRuta = useRef(null);
   const caja = useRef(null);
   const mapa = useRef(null);
@@ -49,6 +63,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
   const [brujula, setBrujula] = useState(false);
   const [rumbo, setRumbo] = useState(0);
   const [avisoBrujula, setAvisoBrujula] = useState('');
+  rumboRef.current = rumbo;
   useEffect(() => {
     if (!brujula) { setRumbo(0); return; }
     let ultimo = null, mostrado = null, cuadro = 0;
@@ -101,13 +116,16 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
     return () => { if (soltarCalles) soltarCalles(); m.remove(); mapa.current = null; capa.current = null; };
   }, [!!centro]);
 
+  // Con ruta el mapa crece un poco: Leaflet tiene que volver a medir
+  useEffect(() => { const id = setTimeout(() => { try { mapa.current && mapa.current.invalidateSize(); } catch (e) { /* nada */ } }, 30); return () => clearTimeout(id); }, [!!destino]);
+
   // Tú siempre al centro: el mapa se mueve contigo (2 cuadras a cada lado)
   // Ruta de "Cómo llegar" también en el mapa del inicio
   useEffect(() => {
     const g = capaRuta.current;
     if (!g) return;
     g.clearLayers();
-    if (!destino || !centro) { setRuta(null); return; }
+    if (!destino || !centro) { setRuta(null); encuadre.current = null; return; }
     let vivo = true;
     traerRuta(centro, destino).then((r) => {
       if (!vivo) return;
@@ -117,20 +135,35 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
       L.polyline(puntos, { color: '#E30A2F', weight: 5, lineCap: 'round', lineJoin: 'round', dashArray: r ? null : '8 10' }).addTo(g);
       // la primera vez, se aleja para mostrar la ruta completa (después te sigue con ese zoom)
       const clave = `${destino.lat},${destino.lng}`;
-      if (encuadre.current !== clave && mapa.current) { encuadre.current = clave; try { mapa.current.fitBounds(puntos, { padding: [44, 44], maxZoom: 18, animate: false }); } catch (e) { /* nada */ } }
+      if (encuadre.current !== clave && mapa.current) {
+        encuadre.current = clave;
+        try {
+          const m = mapa.current;
+          const tam = m.getSize();
+          const radio = Math.min((tam.x / 1.5) * (1 - ANCHO_PANEL) / 2, tam.y / 1.5 / 2) - 18;
+          let zoom = 13;
+          for (let z = 18; z >= 13; z--) {
+            const yoPx = m.project([centro.lat, centro.lng], z);
+            if (puntos.every((pt) => m.project(pt, z).distanceTo(yoPx) <= radio)) { zoom = z; break; }
+          }
+          centrarEn(m, [centro.lat, centro.lng], zoom, true, rumboRef.current);
+          ultimoCentro.current = [centro.lat, centro.lng];
+        } catch (e) { /* nada */ }
+      }
     });
     return () => { vivo = false; };
   }, [destino && destino.lat, destino && destino.lng, centro && Math.round(centro.lat * 3700), centro && Math.round(centro.lng * 3100), !!mapa.current]);
-  const ultimoCentro = useRef(null);
   useEffect(() => {
     const m = mapa.current;
     if (!m || !centro) return;
     // El GPS tiembla unos metros aunque estés quieto: solo recentramos si te moviste de verdad (> 6 m)
+    const vista = `${destino ? 'ruta' : 'libre'}:${destino ? Math.round(rumbo / 5) : 0}`;
     const u = ultimoCentro.current;
-    if (u && L.latLng(u).distanceTo([centro.lat, centro.lng]) < 6) return;
+    if (u && vista === ultimaVista.current && L.latLng(u).distanceTo([centro.lat, centro.lng]) < 6) return;
     ultimoCentro.current = [centro.lat, centro.lng];
-    m.setView([centro.lat, centro.lng], m.getZoom() || 17, { animate: false }); // mantiene el zoom que elegiste con los dedos
-  }, [centro && centro.lat, centro && centro.lng, !!mapa.current]);
+    ultimaVista.current = vista;
+    centrarEn(m, [centro.lat, centro.lng], null, !!destino, rumbo); // mantiene el zoom que elegiste con los dedos
+  }, [centro && centro.lat, centro && centro.lng, !!mapa.current, !!destino, destino ? Math.round(rumbo / 5) : 0]);
 
   useEffect(() => {
     const m = mapa.current;
@@ -153,18 +186,18 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
   }, [drops, coords, locales, tiendas, lugares, !!mapa.current, yo && Math.round(yo.lat * 11132), yo && Math.round(yo.lng * 9300)]);
 
   return (
-    <View style={{ marginHorizontal: 16, marginTop: 14, height: 300, borderRadius: R(20), overflow: 'hidden', borderWidth: 1, borderColor: C.borde, backgroundColor: ESTILO === 'moderno' ? '#FFFFFF' : '#FFF3B0' }}>
+    <View style={{ marginHorizontal: 16, marginTop: 14, height: destino ? 330 : 300, borderRadius: R(20), overflow: 'hidden', borderWidth: 1, borderColor: C.borde, backgroundColor: ESTILO === 'moderno' ? '#FFFFFF' : '#FFF3B0' }}>
       <div ref={caja} style={{ position: 'absolute', left: '-25%', top: '-25%', width: '150%', height: '150%', transform: `rotate(${-rumbo}deg)`, transition: 'transform .3s ease-out', '--contra': `${rumbo}deg` }} />
       <Pressable onPress={alternarBrujula} accessibilityRole="switch" accessibilityState={{ checked: brujula }} accessibilityLabel={t('Brújula: girar el mapa con el teléfono', 'Compass: rotate the map')}
-        style={{ position: 'absolute', left: 10, bottom: 10, height: 34, paddingHorizontal: 12, borderRadius: 16, backgroundColor: brujula ? C.amarillo : C.papel, borderWidth: 1, borderColor: C.borde, flexDirection: 'row', alignItems: 'center', gap: 6, zIndex: 500 }}>
+        style={{ position: 'absolute', left: destino ? `${ANCHO_PANEL * 100 + 3}%` : 10, bottom: 10, height: 34, paddingHorizontal: 12, borderRadius: 16, backgroundColor: brujula ? C.amarillo : C.papel, borderWidth: 1, borderColor: C.borde, flexDirection: 'row', alignItems: 'center', gap: 6, zIndex: 500 }}>
         <Text style={{ fontSize: 14, transform: [{ rotate: `${-rumbo}deg` }] }}>🧭</Text>
-        <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{avisoBrujula || (brujula ? t('Brújula activa', 'Compass on') : t('Brújula', 'Compass'))}</Text>
+        {destino && !avisoBrujula ? null : <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{avisoBrujula || (brujula ? t('Brújula activa', 'Compass on') : t('Brújula', 'Compass'))}</Text>}
       </Pressable>
-      {yo ? <div className="mini-yo" style={{ position: 'absolute', left: '50%', top: '50%', marginLeft: -9, marginTop: -9, zIndex: 450, pointerEvents: 'none' }} /> : null}
-      <View style={{ position: 'absolute', left: 10, top: 10, backgroundColor: C.papel, borderRadius: 14, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: C.borde, zIndex: 500 }}>
+      {yo ? <div className="mini-yo" style={{ position: 'absolute', left: destino ? `${50 + ANCHO_PANEL * 50}%` : '50%', top: '50%', marginLeft: -9, marginTop: -9, zIndex: 450, pointerEvents: 'none' }} /> : null}
+      {destino ? null : <View style={{ position: 'absolute', left: 10, top: 10, backgroundColor: C.papel, borderRadius: 14, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: C.borde, zIndex: 500 }}>
         <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{yo ? (yo.precision > 80 ? t(`Ubicación aproximada (±${yo.precision} m)`, `Approx. location (±${yo.precision} m)`) : t(`Tú · 2 cuadras${yo.precision ? ` · ±${yo.precision} m` : ''}`, 'You · 2 blocks around')) : t('Activa tu ubicación', 'Turn on location')}</Text>
-      </View>
-      {destino ? <BarraRuta destino={destino} ruta={ruta} yo={centro} compacta alCerrar={alCerrarRuta} alExterno={() => caminar(destino)} /> : null}
+      </View>}
+      {destino ? <PanelRuta destino={destino} ruta={ruta} yo={centro} alCerrar={alCerrarRuta} alExterno={() => caminar(destino)} /> : null}
       <Pressable onPress={alVerMapa} accessibilityRole="button" accessibilityLabel={t('Abrir mapa', 'Open map')}
         style={{ position: 'absolute', right: 10, bottom: 10, backgroundColor: C.negro, borderRadius: 16, paddingHorizontal: 14, height: 34, justifyContent: 'center', zIndex: 500 }}>
         <Text style={{ fontFamily: F.negrita, fontSize: 12, color: '#FFFFFF' }}>{t('Ver mapa →', 'Map →')}</Text>

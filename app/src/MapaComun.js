@@ -311,6 +311,57 @@ export function proximoPaso(ruta, yo) {
   return { ...p, a: Math.round(dist(p)) };
 }
 
+// El paso que viene y el siguiente (para el panel del mapa chico)
+export function pasosQueVienen(ruta, yo) {
+  const ahora = proximoPaso(ruta, yo);
+  if (!ahora) return { ahora: null, despues: null };
+  const i = ruta.pasos.findIndex((p) => p.lat === ahora.lat && p.lng === ahora.lng);
+  return { ahora, despues: i >= 0 ? ruta.pasos[i + 1] || null : null };
+}
+
+// Panel de indicaciones a la izquierda del mapa chico (un tercio del ancho)
+export const ANCHO_PANEL = 1 / 3;
+export function PanelRuta({ destino, ruta, alCerrar, alExterno, yo = null }) {
+  const { t } = useIdioma();
+  const { ahora, despues } = pasosQueVienen(ruta, yo);
+  const gris = { fontFamily: F.negrita, fontSize: 10, color: '#9A9A9A', letterSpacing: 0.5 };
+  return (
+    <View style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${ANCHO_PANEL * 100}%`, zIndex: 950, backgroundColor: C.negro, paddingHorizontal: 12, paddingVertical: 12, gap: 8 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Text style={{ fontSize: 18 }}>🚶</Text>
+        <Pressable onPress={alCerrar} accessibilityRole="button" accessibilityLabel={t('Cerrar ruta', 'Close route')} hitSlop={10}
+          style={{ width: 30, height: 30, borderRadius: 10, backgroundColor: '#333333', alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ fontFamily: F.negrita, fontSize: 14, color: '#FFFFFF' }}>✕</Text>
+        </Pressable>
+      </View>
+      <View>
+        <Text style={{ fontFamily: F.negrita, fontSize: 14, color: '#FFFFFF', lineHeight: 17 }} numberOfLines={2}>{destino.nombre}</Text>
+        <Text style={{ fontFamily: F.negrita, fontSize: 11, color: C.amarillo, marginTop: 2 }}>
+          {ruta ? `${ruta.minutos} min · ${ruta.metros < 1000 ? `${ruta.metros} m` : `${(ruta.metros / 1000).toFixed(1)} km`}` : t('Calculando…', 'Finding…')}
+        </Text>
+      </View>
+      <View style={{ height: 1, backgroundColor: '#333333' }} />
+      {ahora ? (
+        <View style={{ gap: 2 }}>
+          <Text style={gris}>{t('AHORA', 'NOW')}</Text>
+          <Text style={{ fontFamily: F.negrita, fontSize: 14, color: '#FFFFFF', lineHeight: 17 }} numberOfLines={4}>{ahora.texto}</Text>
+          {ahora.a > 15 ? <Text style={{ fontFamily: F.negrita, fontSize: 11, color: C.amarillo }}>{t(`en ${ahora.a} m`, `in ${ahora.a} m`)}</Text> : null}
+        </View>
+      ) : null}
+      {despues ? (
+        <View style={{ gap: 2 }}>
+          <Text style={gris}>{t('DESPUÉS', 'THEN')}</Text>
+          <Text style={{ fontFamily: F.media, fontSize: 11, color: '#DDDDDD', lineHeight: 14 }} numberOfLines={2}>{despues.texto}</Text>
+        </View>
+      ) : null}
+      <Pressable onPress={alExterno} accessibilityRole="button" accessibilityLabel={t('Abrir en Google Maps o Apple Maps', 'Open in maps app')}
+        style={{ marginTop: 'auto', height: 32, borderRadius: 10, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' }}>
+        <Text style={{ fontFamily: F.negrita, fontSize: 11 }}>{t('Abrir en Maps', 'Maps')}</Text>
+      </Pressable>
+    </View>
+  );
+}
+
 // Barra de la ruta: tiempo, distancia, abrir en otra app y cerrar
 export function BarraRuta({ destino, ruta, alCerrar, alExterno, yo = null, compacta = false }) {
   const paso = proximoPaso(ruta, yo);
