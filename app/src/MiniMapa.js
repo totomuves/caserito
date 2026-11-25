@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as Location from 'expo-location';
 import { Pressable, Text, View } from 'react-native';
-import MapView, { Marker, Polyline } from 'react-native-maps';
+import MapView, { Circle, Marker, Polyline } from 'react-native-maps';
 import { C, F, R, precio, ESTILO as SKIN } from './tema';
 import { useCoordenadas, useLocalesMapa, traerRuta, PanelRuta, ANCHO_PANEL } from './MapaComun';
 import { caminar } from './Drop';
@@ -10,7 +10,7 @@ import { LaminaPin, PosterPin } from './pinesNativo';
 import { ESTILO as ESTILO_MAPA, ESTILO_MODERNO } from './Mapa';
 
 
-export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVerMapa = () => {}, t = (a) => a, lugares = [], alAbrirLugar = () => {}, destino = null, alCerrarRuta = () => {} }) {
+export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVerMapa = () => {}, t = (a) => a, lugares = [], alAbrirLugar = () => {}, destino = null, alCerrarRuta = () => {}, radio = 200, textoRadio = '2 cuadras' }) {
   const coords = useCoordenadas(drops);
   const locales = useLocalesMapa();
   const centro = yo || pos;
@@ -59,13 +59,21 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
     }).then((s) => { sub = s; }).catch(() => setBrujula(false));
     return () => sub && sub.remove();
   }, [brujula]);
+  // La distancia elegida manda: 2 cuadras muestra 2 cuadras a la redonda, 1 km muestra 1 km, etc.
+  const deltaDe = (r) => (2 * r * 1.25) / 111320;
+  useEffect(() => {
+    if (!centro || destino || !mapa.current) return;
+    const d = deltaDe(radio);
+    mapa.current.animateToRegion({ latitude: centro.lat, longitude: centro.lng, latitudeDelta: d, longitudeDelta: d }, 400);
+  }, [radio, !!destino]);
   if (!centro) return null;
-  const delta = 0.0045; // como el zoom 17 del mapa
+  const delta = deltaDe(radio);
   return (
     <View onLayout={(e) => setAncho(e.nativeEvent.layout.width)} style={{ marginHorizontal: 16, marginTop: 14, height: destino ? 330 : 300, borderRadius: R(20), overflow: 'hidden', borderWidth: 1, borderColor: C.borde, backgroundColor: SKIN === 'moderno' ? '#FFFFFF' : '#FFF3B0' }}>
       <MapView ref={mapa} style={{ flex: 1 }} mapPadding={{ top: 0, right: 0, bottom: 0, left: destino ? Math.round(ancho * ANCHO_PANEL) : 0 }} scrollEnabled={false} zoomEnabled rotateEnabled={false} pitchEnabled={false}
         showsUserLocation={!!yo} showsPointsOfInterest={false} toolbarEnabled={false} customMapStyle={SKIN === 'moderno' ? ESTILO_MODERNO : ESTILO_MAPA}
         initialRegion={{ latitude: centro.lat, longitude: centro.lng, latitudeDelta: delta, longitudeDelta: delta }}>
+        {!destino ? <Circle center={{ latitude: centro.lat, longitude: centro.lng }} radius={radio} strokeColor="rgba(29,78,216,0.5)" strokeWidth={1.5} fillColor="rgba(29,78,216,0.05)" lineDashPattern={[6, 6]} /> : null}
         {ruta ? <Polyline coordinates={ruta.puntos.map((p) => ({ latitude: p.lat, longitude: p.lng }))} strokeColor="#111111" strokeWidth={9} lineCap="round" lineJoin="round" /> : null}
         {ruta ? <Polyline coordinates={ruta.puntos.map((p) => ({ latitude: p.lat, longitude: p.lng }))} strokeColor="#E30A2F" strokeWidth={5} lineCap="round" lineJoin="round" /> : null}
         {lugares.map((lg) => (
@@ -89,7 +97,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
         })()}
       </MapView>
       {destino ? null : <View style={{ position: 'absolute', left: 10, top: 10, backgroundColor: C.papel, borderRadius: 14, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: C.borde }}>
-        <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{yo ? (yo.precision > 80 ? t(`Ubicación aproximada (±${yo.precision} m)`, `Approx. location (±${yo.precision} m)`) : t(`Tú · 2 cuadras${yo.precision ? ` · ±${yo.precision} m` : ''}`, 'You · 2 blocks around')) : t('Activa tu ubicación', 'Turn on location')}</Text>
+        <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{yo ? (yo.precision > 80 ? t(`Ubicación aproximada (±${yo.precision} m)`, `Approx. location (±${yo.precision} m)`) : t(`Tú · ${textoRadio}${yo.precision ? ` · ±${yo.precision} m` : ''}`, `You · ${textoRadio}`)) : t('Activa tu ubicación', 'Turn on location')}</Text>
       </View>}
       <Pressable onPress={() => setBrujula(!brujula)} accessibilityRole="switch" accessibilityState={{ checked: brujula }} accessibilityLabel={t('Brújula: girar el mapa con el teléfono', 'Compass')}
         style={{ position: 'absolute', left: destino ? Math.round(ancho * ANCHO_PANEL) + 10 : 10, bottom: 10, height: 34, paddingHorizontal: 12, borderRadius: 16, backgroundColor: brujula ? C.amarillo : C.papel, borderWidth: 1, borderColor: C.borde, flexDirection: 'row', alignItems: 'center', gap: 6 }}>

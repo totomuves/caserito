@@ -43,10 +43,11 @@ function centrarEn(m, punto, zoom, conPanel, rumbo) {
   m.setView(m.unproject(p, z), z, { animate: false });
 }
 
-export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVerMapa = () => {}, t = (a) => a, lugares = [], alAbrirLugar = () => {}, destino = null, alCerrarRuta = () => {} }) {
+export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVerMapa = () => {}, t = (a) => a, lugares = [], alAbrirLugar = () => {}, destino = null, alCerrarRuta = () => {}, radio = 200, textoRadio = '2 cuadras' }) {
   const [ruta, setRuta] = useState(null);
   const vibrados = useRef(new Set());
   const encuadre = useRef(null);
+  const capaRadio = useRef(null);
   const ultimoCentro = useRef(null);
   const rumboRef = useRef(0);
   const ultimaVista = useRef('');
@@ -103,18 +104,39 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
     if (!caja.current || mapa.current || !centro) return;
     caja.current.classList.add('droper-mini');
     if (ESTILO === 'moderno') caja.current.classList.add('moderno');
-    const m = L.map(caja.current, { zoomControl: false, attributionControl: true, dragging: false, scrollWheelZoom: false, doubleClickZoom: 'center', touchZoom: 'center', minZoom: 12, maxZoom: 19, boxZoom: false, keyboard: false, zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false });
+    const m = L.map(caja.current, { zoomControl: false, attributionControl: true, dragging: false, scrollWheelZoom: false, doubleClickZoom: 'center', touchZoom: 'center', minZoom: 9, maxZoom: 19, zoomSnap: 0.25, zoomDelta: 0.5, boxZoom: false, keyboard: false, zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false });
     L.tileLayer(LLAVE_CARTO
       ? `https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${LLAVE_CARTO}`
       : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(m);
     m.setView([centro.lat, centro.lng], 17, { animate: false });
     capa.current = L.layerGroup().addTo(m);
     capaRuta.current = L.layerGroup().addTo(m);
+    capaRadio.current = L.layerGroup().addTo(m);
     const soltarCalles = ESTILO === 'moderno' ? conectarCalles(L, m) : null;
     mapa.current = m;
     setTimeout(() => m.invalidateSize(), 50);
     return () => { if (soltarCalles) soltarCalles(); m.remove(); mapa.current = null; capa.current = null; };
   }, [!!centro]);
+
+  // La distancia elegida manda: 2 cuadras muestra 2 cuadras a la redonda, 1 km muestra 1 km, etc.
+  useEffect(() => {
+    const g = capaRadio.current;
+    if (!g) return;
+    g.clearLayers();
+    if (destino || !centro) return;
+    L.circle([centro.lat, centro.lng], { radius: radio, color: '#1D4ED8', weight: 1.5, opacity: 0.5, dashArray: '6 6', fill: true, fillOpacity: 0.04, interactive: false }).addTo(g);
+  }, [radio, !!mapa.current, !!destino, centro && Math.round(centro.lat * 11132), centro && Math.round(centro.lng * 9300)]);
+  useEffect(() => {
+    const m = mapa.current;
+    if (!m || !centro || destino) return; // con ruta, el zoom lo pone la ruta
+    const tam = m.getSize();
+    const px = Math.min(tam.x, tam.y) / 1.5 - 24; // lo que se ve de la caja (mide 150% para girar)
+    const mPorPx = (2 * radio) / Math.max(px, 60);
+    const z = Math.log2((156543.03 * Math.cos((centro.lat * Math.PI) / 180)) / mPorPx);
+    const zoom = Math.max(9, Math.min(18, Math.floor(z * 4) / 4));
+    centrarEn(m, [centro.lat, centro.lng], zoom, false, 0);
+    ultimoCentro.current = [centro.lat, centro.lng];
+  }, [radio, !!mapa.current, !!destino, !!centro]);
 
   // Con ruta el mapa crece un poco: Leaflet tiene que volver a medir
   useEffect(() => { const id = setTimeout(() => { try { mapa.current && mapa.current.invalidateSize(); } catch (e) { /* nada */ } }, 30); return () => clearTimeout(id); }, [!!destino]);
@@ -195,7 +217,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
       </Pressable>
       {yo ? <div className="mini-yo" style={{ position: 'absolute', left: destino ? `${50 + ANCHO_PANEL * 50}%` : '50%', top: '50%', marginLeft: -9, marginTop: -9, zIndex: 450, pointerEvents: 'none' }} /> : null}
       {destino ? null : <View style={{ position: 'absolute', left: 10, top: 10, backgroundColor: C.papel, borderRadius: 14, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: C.borde, zIndex: 500 }}>
-        <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{yo ? (yo.precision > 80 ? t(`Ubicación aproximada (±${yo.precision} m)`, `Approx. location (±${yo.precision} m)`) : t(`Tú · 2 cuadras${yo.precision ? ` · ±${yo.precision} m` : ''}`, 'You · 2 blocks around')) : t('Activa tu ubicación', 'Turn on location')}</Text>
+        <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{yo ? (yo.precision > 80 ? t(`Ubicación aproximada (±${yo.precision} m)`, `Approx. location (±${yo.precision} m)`) : t(`Tú · ${textoRadio}${yo.precision ? ` · ±${yo.precision} m` : ''}`, `You · ${textoRadio}`)) : t('Activa tu ubicación', 'Turn on location')}</Text>
       </View>}
       {destino ? <PanelRuta destino={destino} ruta={ruta} yo={centro} alCerrar={alCerrarRuta} alExterno={() => caminar(destino)} /> : null}
       <Pressable onPress={alVerMapa} accessibilityRole="button" accessibilityLabel={t('Abrir mapa', 'Open map')}
