@@ -68,7 +68,23 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
   }, []);
   const f = frases[i % frases.length];
 
-  const visibles = (filtro === 'todo' ? drops : drops.filter((d) => tieneCategoria(d, filtro))).slice().sort((a, b) => (a.cuadras || 0) - (b.cuadras || 0));
+  // Distancia real a cada drop (si sabemos dónde está el local); si no, las cuadras que manda la base
+  const metrosA = (d) => {
+    const p = coords[d.local_id];
+    if (p && pos && !pos.aprox) return Math.hypot((p.lat - pos.lat) * 111320, (p.lng - pos.lng) * 93000);
+    return (d.cuadras || 0) * 100;
+  };
+  // Siempre el más cercano primero
+  const visibles = (filtro === 'todo' ? drops : drops.filter((d) => tieneCategoria(d, filtro))).slice().sort((a, b) => metrosA(a) - metrosA(b));
+  // Con muchos drops: una fila con lo más cerca y después una fila por categoría (la que tiene el drop más cercano, arriba)
+  const filasPorCategoria = (() => {
+    if (filtro !== 'todo' || visibles.length <= 4) return null;
+    const grupos = {};
+    visibles.forEach((d) => { const c = d.categoria || 'otros'; (grupos[c] = grupos[c] || []).push(d); });
+    const cats = Object.keys(grupos);
+    if (cats.length < 2) return null;
+    return cats.map((c) => ({ id: c, drops: grupos[c] })); // ya vienen ordenadas: la categoría del drop más cercano primero
+  })();
 
   async function alternar(g) {
     setGustos(gustos.map((x) => (x.id === g.id ? { ...x, activo: !x.activo } : x)));
@@ -139,30 +155,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
       </Text>
     </View>
   );
-  const dropsModernos = (
-    <>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', paddingHorizontal: 18, paddingTop: 20 }}>
-        <Text style={{ fontFamily: F.negrita, fontSize: 22, letterSpacing: -0.6 }}>{t('Cerca de ti', 'Cerca · Near you')}</Text>
-        <Pressable onPress={alVerMapa} accessibilityRole="button"><Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.gris }}>{t('Ver en el mapa', 'Ver mapa')}</Text></Pressable>
-      </View>
-      {selectorDistancia}
-      {lejos && visibles.length ? <Text style={{ fontFamily: F.media, fontSize: 13, color: C.gris, paddingHorizontal: 18, paddingTop: 6 }}>{t(`Nada a menos de ${textoRadio}: estos son los más cercanos.`, `Nothing within ${textoRadio}: these are the closest.`)}</Text> : null}
-      {visibles.length === 0 ? (
-        <View style={{ paddingHorizontal: 18, paddingTop: 8, gap: 6 }}>
-          <Text style={{ fontFamily: F.media, fontSize: 14, color: C.gris }}>{t('No hay drops por aquí ahora. Vuelve más rato: los locales sueltan sorpresas durante el día.', 'No drops right now. Vuelve más rato.')}</Text>
-          {/* Diagnóstico corto (para saber qué pasa si debería haber drops) */}
-          <Pressable onPress={alRecargar} accessibilityRole="button">
-            <Text style={{ fontFamily: F.media, fontSize: 11, color: '#8A8A8A' }}>
-              {diag.aprox ? 'Sin ubicación exacta' : diag.lat ? `Buscando en ${diag.lat.toFixed(4)}, ${diag.lng.toFixed(4)}${diag.precision ? ` (±${diag.precision} m)` : ''}` : 'Esperando ubicación'}
-              {` · ${diag.cerca ?? '–'} a 3 km · ${diag.ciudad ?? '–'} en la ciudad`}
-              {diag.errorCerca || diag.errorCiudad ? ` · error: ${diag.errorCerca || diag.errorCiudad}` : ''}
-              {diag.hora ? ` · ${diag.hora}` : ''} · tocar para recargar
-            </Text>
-          </Pressable>
-        </View>
-      ) : (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 14, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 20 }}>
-          {visibles.map((d) => {
+  const tarjetaDrop = (d) => {
             const p = coords[d.local_id];
             return (
               <Tintineo key={d.drop_id} activo={!!(p && pos && !pos.aprox && Math.hypot((p.lat - pos.lat) * 111320, (p.lng - pos.lng) * 93000) <= 20)}
@@ -198,9 +191,46 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
                 </View>
               </Tintineo>
             );
-          })}
-        </ScrollView>
-      )}
+  };
+  const filaDrops = (lista) => (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 14, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 20 }}>
+      {lista.map(tarjetaDrop)}
+    </ScrollView>
+  );
+  const dropsModernos = (
+    <>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', paddingHorizontal: 18, paddingTop: 20 }}>
+        <Text style={{ fontFamily: F.negrita, fontSize: 22, letterSpacing: -0.6 }}>{t('Cerca de ti', 'Cerca · Near you')}</Text>
+        <Pressable onPress={alVerMapa} accessibilityRole="button"><Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.gris }}>{t('Ver en el mapa', 'Ver mapa')}</Text></Pressable>
+      </View>
+      {selectorDistancia}
+      {lejos && visibles.length ? <Text style={{ fontFamily: F.media, fontSize: 13, color: C.gris, paddingHorizontal: 18, paddingTop: 6 }}>{t(`Nada a menos de ${textoRadio}: estos son los más cercanos.`, `Nothing within ${textoRadio}: these are the closest.`)}</Text> : null}
+      {visibles.length === 0 ? (
+        <View style={{ paddingHorizontal: 18, paddingTop: 8, gap: 6 }}>
+          <Text style={{ fontFamily: F.media, fontSize: 14, color: C.gris }}>{t('No hay drops por aquí ahora. Vuelve más rato: los locales sueltan sorpresas durante el día.', 'No drops right now. Vuelve más rato.')}</Text>
+          {/* Diagnóstico corto (para saber qué pasa si debería haber drops) */}
+          <Pressable onPress={alRecargar} accessibilityRole="button">
+            <Text style={{ fontFamily: F.media, fontSize: 11, color: '#8A8A8A' }}>
+              {diag.aprox ? 'Sin ubicación exacta' : diag.lat ? `Buscando en ${diag.lat.toFixed(4)}, ${diag.lng.toFixed(4)}${diag.precision ? ` (±${diag.precision} m)` : ''}` : 'Esperando ubicación'}
+              {` · ${diag.cerca ?? '–'} a 3 km · ${diag.ciudad ?? '–'} en la ciudad`}
+              {diag.errorCerca || diag.errorCiudad ? ` · error: ${diag.errorCerca || diag.errorCiudad}` : ''}
+              {diag.hora ? ` · ${diag.hora}` : ''} · tocar para recargar
+            </Text>
+          </Pressable>
+        </View>
+      ) : filasPorCategoria ? (
+        <>
+          {filaDrops(visibles.slice(0, 6))}
+          {filasPorCategoria.map((g) => (
+            <View key={g.id}>
+              <Text style={{ fontFamily: F.negrita, fontSize: 17, letterSpacing: -0.3, paddingHorizontal: 18, paddingTop: 4 }}>
+                {tur ? categoriaTur(g.id, lang) || textoCategoria(g.id) : textoCategoria(g.id)} <Text style={{ color: C.gris, fontSize: 13 }}>· {g.drops.length}</Text>
+              </Text>
+              {filaDrops(g.drops)}
+            </View>
+          ))}
+        </>
+      ) : filaDrops(visibles)}
     </>
   );
   // ¿Estás dentro de un patio o mall? Se muestra su plano en vez del mapa de calles
