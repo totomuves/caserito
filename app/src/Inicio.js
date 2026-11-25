@@ -4,7 +4,7 @@ import { supabase } from './supabase';
 import { C, F, letrista, CATEGORIAS, textoCategoria, tieneCategoria, precio, cuadras, R, ESTILO, sobrio, fondoBanner, tintaBanner, acentoBanner, bannerClaro } from './tema';
 import { Ola, Brillo, Pildora, EtiquetaPrecio, Boton, FondoBauhaus, PuntosPop, GloboPop, Estallido, ONOMATOPEYAS, Seguro, Tintineo } from './componentes';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR, categoriaTur, SelectorIdioma } from './idioma';
-import Logo from './Logo';
+import Logo, { IconoDropper } from './Logo';
 import { SelectorBarrios, useCoordenadas, lugarDe } from './MapaComun';
 import { useEstilo } from './estilo';
 import Portada from './Portada';
@@ -117,7 +117,10 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
   const cabeceraModerna = (
     <View style={{ backgroundColor: fondoBanner('cabecera'), paddingHorizontal: 18, paddingTop: 12, paddingBottom: 18, borderBottomLeftRadius: 28, borderBottomRightRadius: 28 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Logo ancho={132} claro={!bannerClaro('cabecera')} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <IconoDropper tam={40} />
+          <Logo ancho={112} claro={!bannerClaro('cabecera')} />
+        </View>
         <View style={{ flexDirection: 'row', gap: 8 }}>
           <Pressable onPress={() => setVerIdiomas(!verIdiomas)} accessibilityRole="button" accessibilityLabel="Idioma · Language"
             style={{ height: 36, paddingHorizontal: 12, borderRadius: 14, backgroundColor: tur ? C.negro : '#FFFFFF', justifyContent: 'center' }}>
