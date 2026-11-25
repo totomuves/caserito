@@ -43,7 +43,7 @@ export default function Login() {
 
   return (
     <div className="app">
-      <header className="barra"><span className="marca"><img src="/dropper-logo.svg?v=2" alt="Dropper" style={{ height: 30, display: 'block' }} /><small style={{ color: 'var(--amarillo)', fontWeight: 800 }}>Local</small></span></header>
+      <header className="barra"><span className="marca"><img src="/dropper-logo-blanco.svg?v=3" alt="Dropper" style={{ height: 30, display: 'block' }} /><small style={{ color: 'var(--amarillo)', fontWeight: 800 }}>Local</small></span></header>
       <div className="toldo" />
       <form className="contenido" onSubmit={enviar}>
         <h1 className="letrista">{codigoEquipo && modo === 'crear' ? 'CREA TU CUENTA' : modo === 'entrar' ? 'ENTRA A TU LOCAL' : modo === 'crear' ? 'INSCRIBE TU LOCAL' : 'RECUPERA TU CLAVE'}</h1>

@@ -1,3 +1,4 @@
+import PinLocal from './PinLocal.jsx';
 import React, { useState } from 'react';
 import { LaminaLocal } from './arteLocal.jsx';
 import { supabase, explicar } from './supabase.js';
@@ -16,6 +17,7 @@ export default function ConfigurarLocal({ usuario, local, alGuardar, alCancelar,
   const [repPremio, setRepPremio] = useState((local && local.repetidas_premio) || '');
   const [direccion, setDireccion] = useState((local && local.direccion) || '');
   const [pos, setPos] = useState(null);
+  const puntoActual = (() => { const h = local && local.ubicacion; if (!h || typeof h !== 'string' || h.length < 50) return null; try { const b = new Uint8Array(h.match(/../g).map((x) => parseInt(x, 16))); const v = new DataView(b.buffer); const le = b[0] === 1; let o = 5; if (v.getUint32(1, le) & 0x20000000) o += 4; return { lng: v.getFloat64(o, le), lat: v.getFloat64(o + 8, le) }; } catch (e) { return null; } })();
   const [logo, setLogo] = useState((local && local.logo_url) || '');
   const [subiendo, setSubiendo] = useState(false);
   const [error, setError] = useState('');
@@ -158,9 +160,11 @@ export default function ConfigurarLocal({ usuario, local, alGuardar, alCancelar,
       </div>
       <div className="tarjeta">
         <b>Ubicación del local</b>
-        <p className="ayuda">{editando ? 'Solo si cambió: aprieta el botón estando dentro del local.' : 'Aprieta el botón estando dentro del local. Así los caseritos te encuentran a la cuadra exacta.'}</p>
+        <p className="ayuda">{editando ? 'Si quedó mal, arrastra el pin hasta la puerta del local, o aprieta el botón estando adentro.' : 'Aprieta el botón estando dentro del local. Así los caseritos te encuentran a la cuadra exacta.'}</p>
         <button type="button" className="boton negro" onClick={ubicar}>{pos ? 'Ubicación marcada ✓' : 'Estoy en mi local'}</button>
-        {pos && <p className="ayuda">Precisión: ±{pos.precision} m</p>}
+        {pos && !pos.manual && <p className="ayuda">Precisión: ±{pos.precision} m</p>}
+        {pos && pos.manual && <p className="ayuda">Ubicación ajustada a mano ✓ (se guarda al apretar Guardar)</p>}
+        <PinLocal punto={pos || puntoActual} alCambiar={setPos} />
         {editando && !pos && local.barrio && <p className="ayuda">Tu local está en <b>{local.barrio}</b>{local.barrio_id === null ? ' (fuera de los barrios de Dropper por ahora)' : ''}. El barrio se reconoce solo por la ubicación.</p>}
       </div>
       {error && <div className="error">{error}</div>}

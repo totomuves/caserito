@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 // Mapa simple para el admin (Leaflet desde el CDN, sin instalar nada)
 let cargando = null;
-function cargarLeaflet() {
+export function cargarLeaflet() {
   if (window.L) return Promise.resolve(window.L);
   if (cargando) return cargando;
   cargando = new Promise((ok, mal) => {
