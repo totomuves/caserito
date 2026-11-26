@@ -132,7 +132,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
   const scroll = React.useRef(null);
   const comoLlegar = alComoLlegar ? (x) => { alComoLlegar(x); try { scroll.current && scroll.current.scrollTo({ y: 0, animated: true }); } catch (e) { /* nada */ } } : null;
   // Desde qué distancia aparecen los drops (y siempre del más cercano al más lejano)
-  const DISTANCIAS = [{ m: 200, es: '2 cuadras', en: '2 blocks' }, { m: 500, es: '5 cuadras', en: '5 blocks' }, { m: 1000, es: '1 km', en: '1 km' }, { m: 3000, es: '3 km', en: '3 km' }, { m: 10000, es: '10 km', en: '10 km' }];
+  const DISTANCIAS = [{ m: 200, es: '2 cuadras', en: '2 blocks' }, { m: 500, es: '5 cuadras', en: '5 blocks' }, { m: 1000, es: '1 km', en: '1 km' }, { m: 3000, es: '3 km', en: '3 km' }];
   const textoRadio = (DISTANCIAS.find((x) => x.m === radio) || { es: `${radio} m` }).es;
   const selectorDistancia = (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingHorizontal: 16, paddingTop: 8, alignItems: 'center' }}>

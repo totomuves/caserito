@@ -74,7 +74,7 @@ function Caserito() {
   const [destino, setDestino] = useState(null); // Cómo llegar: ruta dibujada en el mapa de la app
   // Distancia desde la que aparecen los drops en "Cerca de ti" (la elige la persona; se recuerda)
   const [radio, setRadioState] = useState(3000);
-  useEffect(() => { AsyncStorage.getItem('droper_radio').then((v) => { const n = Number(v); if (n >= 100) setRadioState(n); }).catch(() => {}); }, []);
+  useEffect(() => { AsyncStorage.getItem('droper_radio').then((v) => { const n = Number(v); if (n >= 100) setRadioState(Math.min(n, 3000)); /* el máximo ahora es 3 km */ }).catch(() => {}); }, []);
   const setRadio = (n) => { setRadioState(n); AsyncStorage.setItem('droper_radio', String(n)).catch(() => {}); };
   // Barrio que el caserito va a visitar (null = donde está ahora)
   const [visita, setVisita] = useState(null);
