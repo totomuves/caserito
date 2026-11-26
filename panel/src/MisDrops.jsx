@@ -76,7 +76,7 @@ export default function MisDrops({ local, alEditar, alDuplicar, aviso }) {
           <div className="tarjeta" key={d.id}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
               <b>{d.titulo}</b>
-              <span style={{ fontSize: 12, fontWeight: 800, color: vivo ? 'var(--azul)' : 'var(--gris)', whiteSpace: 'nowrap' }}>{vivo ? 'EN VIVO' : 'TERMINADO'}</span>
+              <span style={{ fontSize: 12, fontWeight: 800, color: vivo ? 'var(--azul)' : 'var(--gris)', whiteSpace: 'nowrap' }}>{!vivo ? 'TERMINADO' : new Date(d.inicia_at).getTime() > ahora ? `PROGRAMADO · ${new Date(d.inicia_at).toLocaleString('es-CL', { weekday: 'short', hour: '2-digit', minute: '2-digit' })}` : 'EN VIVO'}</span>
             </div>
             <span className="ayuda">
               {TIPO[d.tipo]} · {formatoPrecio(d.precio) || 'sin precio'} · {d.canjes}/{d.cupo} canjes · {d.anotados} anotados
