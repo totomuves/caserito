@@ -11,7 +11,7 @@ import { LaminaPin, PosterPin } from './pinesNativo';
 import { ESTILO as ESTILO_MAPA, ESTILO_MODERNO } from './Mapa';
 
 
-export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVerMapa = () => {}, t = (a) => a, lugares = [], alAbrirLugar = () => {}, destino = null, alCerrarRuta = () => {}, radio = 200, textoRadio = '2 cuadras' }) {
+export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVerMapa = () => {}, t = (a) => a, lugares = [], alAbrirLugar = () => {}, destino = null, alCerrarRuta = () => {}, radio = 200, textoRadio = '2 cuadras', visitando = null }) {
   const coords = useCoordenadas(drops);
   const locales = useLocalesMapa();
   const centro = yo || pos;
@@ -98,7 +98,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
         })()}
       </MapView>
       {destino ? null : <View style={{ position: 'absolute', left: 10, top: 10, backgroundColor: C.papel, borderRadius: 14, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: C.borde }}>
-        <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{yo ? (yo.precision > 80 ? t(`Ubicación aproximada (±${yo.precision} m)`, `Approx. location (±${yo.precision} m)`) : t(`Tú · ${textoRadio}${yo.precision ? ` · ±${yo.precision} m` : ''}`, `You · ${textoRadio}`)) : t('Activa tu ubicación', 'Turn on location')}</Text>
+        <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{yo ? (yo.precision > 80 ? t(`Ubicación aproximada (±${yo.precision} m)`, `Approx. location (±${yo.precision} m)`) : t(`Tú · ${textoRadio}${yo.precision ? ` · ±${yo.precision} m` : ''}`, `You · ${textoRadio}`)) : visitando ? t(`Mirando ${visitando}`, `Viewing ${visitando}`) : t('Activa tu ubicación', 'Turn on location')}</Text>
       </View>}
       <Pressable onPress={() => { guardarBrujula(!brujula); setBrujula(!brujula); }} accessibilityRole="switch" accessibilityState={{ checked: brujula }} accessibilityLabel={t('Brújula: girar el mapa con el teléfono', 'Compass')}
         style={{ position: 'absolute', left: destino ? Math.round(ancho * ANCHO_PANEL) + 10 : 10, bottom: 10, height: 34, paddingHorizontal: 12, borderRadius: 16, backgroundColor: brujula ? C.amarillo : C.papel, borderWidth: 1, borderColor: C.borde, flexDirection: 'row', alignItems: 'center', gap: 6 }}>

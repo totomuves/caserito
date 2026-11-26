@@ -455,7 +455,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
 
       {moderno ? (
         <>
-          {enLugar ? bloqueLugar : <Seguro><MiniMapa pos={visita ? { lat: visita.lat, lng: visita.lng } : pos} yo={!visita && pos && !pos.aprox ? pos : null} drops={drops.filter((d) => !d.lejos_marca)} alAbrir={alAbrir} alVerMapa={alVerMapa} t={t} lugares={lugares} alAbrirLugar={alAbrirLugar} destino={destino} alCerrarRuta={alCerrarRuta} radio={visita ? 200 : radio} textoRadio={visita ? '2 cuadras' : textoRadio} /></Seguro>}
+          {enLugar ? bloqueLugar : <Seguro><MiniMapa pos={visita ? { lat: visita.lat, lng: visita.lng } : pos} yo={!visita && pos && !pos.aprox ? pos : null} visitando={visita ? (b ? b.nombre : t('otro barrio', 'another area')) : null} drops={drops.filter((d) => !d.lejos_marca)} alAbrir={alAbrir} alVerMapa={alVerMapa} t={t} lugares={lugares} alAbrirLugar={alAbrirLugar} destino={destino} alCerrarRuta={alCerrarRuta} radio={visita ? 200 : radio} textoRadio={visita ? '2 cuadras' : textoRadio} /></Seguro>}
           {filaLugares}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingTop: 16 }}>
             {CATEGORIAS.map((c) => <Pildora key={c.id} texto={tur ? categoriaTur(c.id, lang) || c.texto : c.texto} categoria={c.id} activa={filtro === c.id} onPress={() => setFiltro(c.id)} />)}
