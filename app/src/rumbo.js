@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import * as Location from 'expo-location';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Rumbo del teléfono (brújula) en la app. activo=false → 0.
 export async function pedirPermisoRumbo() { return true; }
@@ -19,3 +20,9 @@ export function useRumbo(activo) {
   }, [activo]);
   return rumbo;
 }
+
+// Brújula encendida por defecto (salvo que la apagues: se recuerda)
+let pref = true;
+AsyncStorage.getItem('dropper_brujula').then((v) => { if (v === 'no') pref = false; }).catch(() => {});
+export function brujulaGuardada() { return pref; }
+export function guardarBrujula(si) { pref = !!si; AsyncStorage.setItem('dropper_brujula', si ? 'si' : 'no').catch(() => {}); }

@@ -9,7 +9,7 @@ import { ArteLocal } from './arteLocal';
 import { LaminaPin, PosterPin } from './pinesNativo';
 import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa, traerRuta, BarraRuta } from './MapaComun';
 import { caminar } from './Drop';
-import { useRumbo } from './rumbo';
+import { useRumbo, brujulaGuardada, guardarBrujula } from './rumbo';
 
 // Estilo amarillo pálido del diseño "pantallas" (Google Maps en Android)
 // Moderno: fondo gris muy claro, calles blancas con borde marcado y nombres oscuros
@@ -43,7 +43,7 @@ export const ESTILO = [
 export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], visita = null, alVisitar = () => {}, lugares = [], alAbrirLugar = () => {}, destino = null, alCerrarRuta = () => {}, alComoLlegarMapa = null }) {
   const [ruta, setRuta] = useState(null);
   const [siguiendo, setSiguiendo] = useState(true);
-  const [brujula, setBrujula] = useState(false);
+  const [brujula, setBrujula] = useState(() => brujulaGuardada());
   const rumbo = useRumbo(brujula);
   useEffect(() => { if (mapa.current) mapa.current.animateCamera({ heading: brujula ? rumbo : 0 }, { duration: 250 }); }, [rumbo, brujula]);
   const desde = yo || pos;
@@ -116,7 +116,7 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
             strokeColor="#E30A2F" strokeWidth={6} lineDashPattern={ruta ? undefined : [8, 10]} />
         ) : null}
       </MapView>
-      <Pressable onPress={() => { setBrujula(!brujula); setSiguiendo(true); }} accessibilityRole="switch" accessibilityState={{ checked: brujula }} accessibilityLabel="Brújula"
+      <Pressable onPress={() => { guardarBrujula(!brujula); setBrujula(!brujula); setSiguiendo(true); }} accessibilityRole="switch" accessibilityState={{ checked: brujula }} accessibilityLabel="Brújula"
         style={{ position: 'absolute', right: 12, bottom: 386, zIndex: 950, width: 46, height: 46, borderRadius: 14, backgroundColor: brujula ? C.amarillo : '#FFFFFF', borderWidth: 2, borderColor: C.borde, alignItems: 'center', justifyContent: 'center' }}>
         <Text style={{ fontSize: 20 }}>🧭</Text>
       </Pressable>
@@ -129,7 +129,7 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
       {destino ? <BarraRuta destino={destino} ruta={ruta} yo={desde} alCerrar={alCerrarRuta} alExterno={() => caminar(destino)} /> : null}
       <SelectorBarrios barrios={barrios} vista={vista} alElegir={irA} />
       <FiltrosMapa drops={drops} filtro={filtro} alElegir={(f) => { setFiltro(f); setSel(null); }} arriba={barrios.length > 1 ? 58 : 10} />
-      <HojaMapa drops={visibles} pos={pos} sel={sel} alAbrir={alAbrir} coords={coords} alComoLlegar={alComoLlegarMapa} />
+      {destino ? null : <HojaMapa drops={visibles} pos={pos} sel={sel} alAbrir={alAbrir} coords={coords} alComoLlegar={alComoLlegarMapa} />}
     </View>
   );
 }

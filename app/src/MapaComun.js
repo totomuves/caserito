@@ -288,15 +288,21 @@ function textoPaso(p) {
   return `Dobla ${giro}${calle}`.replace('Dobla ', giro ? 'Dobla ' : 'Sigue ');
 }
 export async function traerRuta(desde, hasta) {
-  const url = `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${desde.lng},${desde.lat};${hasta.lng},${hasta.lat}?overview=full&geometries=geojson&steps=true`;
+  // Paseo de drops: varias paradas en una sola ruta
+  const puntos = [desde, ...(hasta.paradas && hasta.paradas.length ? hasta.paradas : [hasta])];
+  const url = `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${puntos.map((p) => `${p.lng},${p.lat}`).join(';')}?overview=full&geometries=geojson&steps=true`;
   try {
     const r = await fetch(url);
     const d = await r.json();
     const ruta = d.routes && d.routes[0];
     if (!ruta) return null;
-    const pasos = ((ruta.legs && ruta.legs[0] && ruta.legs[0].steps) || [])
+    const paradas = puntos.slice(1);
+    const pasos = (ruta.legs || []).flatMap((leg, k) => (leg.steps || [])
       .filter((p) => p.maneuver && p.maneuver.type !== 'depart' || p.distance > 5)
-      .map((p) => ({ texto: textoPaso(p), metros: Math.round(p.distance), lat: p.maneuver.location[1], lng: p.maneuver.location[0] }));
+      .map((p) => ({
+        texto: p.maneuver.type === 'arrive' && paradas.length > 1 ? `Llegaste a ${paradas[k].nombre || `la parada ${k + 1}`}` : textoPaso(p),
+        metros: Math.round(p.distance), lat: p.maneuver.location[1], lng: p.maneuver.location[0],
+      })));
     return { puntos: ruta.geometry.coordinates.map(([lng, lat]) => ({ lat, lng })), metros: Math.round(ruta.distance), minutos: Math.max(1, Math.round(ruta.distance / 75)), pasos };
   } catch (e) { return null; }
 }
@@ -354,6 +360,9 @@ export function PanelRuta({ destino, ruta, alCerrar, alExterno, yo = null }) {
           <Text style={{ fontFamily: F.media, fontSize: 11, color: '#DDDDDD', lineHeight: 14 }} numberOfLines={2}>{despues.texto}</Text>
         </View>
       ) : null}
+      {destino.paradas && destino.paradas.length > 1 ? (
+        <Text style={{ fontFamily: F.media, fontSize: 11, color: '#DDDDDD', lineHeight: 14 }} numberOfLines={3}>{destino.paradas.map((p, k) => `${k + 1} ${p.nombre}`).join(' · ')}</Text>
+      ) : null}
       <Pressable onPress={alExterno} accessibilityRole="button" accessibilityLabel={t('Abrir en Google Maps o Apple Maps', 'Open in maps app')}
         style={{ marginTop: 'auto', height: 32, borderRadius: 10, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' }}>
         <Text style={{ fontFamily: F.negrita, fontSize: 11 }}>{t('Abrir en Maps', 'Maps')}</Text>
@@ -362,28 +371,38 @@ export function PanelRuta({ destino, ruta, alCerrar, alExterno, yo = null }) {
   );
 }
 
-// Barra de la ruta: tiempo, distancia, abrir en otra app y cerrar
-export function BarraRuta({ destino, ruta, alCerrar, alExterno, yo = null, compacta = false }) {
-  const paso = proximoPaso(ruta, yo);
+// Indicaciones abajo (mapa grande): el paso que viene en grande, después el local, los minutos y cerrar
+export function BarraRuta({ destino, ruta, alCerrar, alExterno, yo = null }) {
   const { t } = useIdioma();
+  const { ahora, despues } = pasosQueVienen(ruta, yo);
+  const tiempo = ruta ? `${ruta.minutos} min · ${ruta.metros < 1000 ? `${ruta.metros} m` : `${(ruta.metros / 1000).toFixed(1)} km`}` : t('Calculando la ruta…', 'Finding route…');
   return (
-    <View style={{ position: 'absolute', left: compacta ? 8 : 12, right: compacta ? 8 : 12, top: compacta ? 8 : 60, zIndex: 950, backgroundColor: C.negro, borderRadius: R(16), paddingHorizontal: 14, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-      <Text style={{ fontSize: 20 }}>🚶</Text>
-      <View style={{ flex: 1 }}>
-        <Text style={{ fontFamily: F.negrita, fontSize: 15, color: '#FFFFFF' }} numberOfLines={1}>{destino.nombre}</Text>
-        <Text style={{ fontFamily: F.media, fontSize: 12, color: C.amarillo }}>
-          {ruta ? t(`${ruta.minutos} min caminando · ${ruta.metros < 1000 ? `${ruta.metros} m` : `${(ruta.metros / 1000).toFixed(1)} km`}`, `${ruta.minutos} min walking`) : t('Calculando la ruta…', 'Finding route…')}
-        </Text>
-        {paso ? <Text style={{ fontFamily: F.negrita, fontSize: 13, color: '#FFFFFF', marginTop: 2 }} numberOfLines={2}>➜ {paso.texto}{paso.a > 15 ? ` · en ${paso.a} m` : ''}</Text> : null}
+    <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 1001, backgroundColor: C.negro, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 18, paddingTop: 10, paddingBottom: 92, gap: 12 }}>
+      <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: '#444444', alignSelf: 'center' }} />
+      {ahora ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <Text style={{ fontSize: 26, color: '#FFFFFF' }}>➜</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: F.negrita, fontSize: 18, lineHeight: 22, color: '#FFFFFF' }} numberOfLines={2}>{ahora.texto}</Text>
+            {ahora.a > 15 ? <Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.amarillo }}>{t(`en ${ahora.a} m`, `in ${ahora.a} m`)}</Text> : null}
+          </View>
+        </View>
+      ) : null}
+      {ahora ? <View style={{ height: 1, backgroundColor: '#333333' }} /> : null}
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontFamily: F.negrita, fontSize: 14, color: '#FFFFFF' }} numberOfLines={1}>{destino.nombre}</Text>
+          <Text style={{ fontFamily: F.media, fontSize: 12, color: '#BBBBBB' }} numberOfLines={1}>{tiempo}{despues ? t(` · después: ${despues.texto.toLowerCase()}`, ` · then: ${despues.texto.toLowerCase()}`) : ''}</Text>
+        </View>
+        <Pressable onPress={alExterno} accessibilityRole="button" accessibilityLabel={t('Abrir en Google Maps o Apple Maps', 'Open in maps app')}
+          style={{ height: 36, paddingHorizontal: 12, borderRadius: 12, backgroundColor: '#FFFFFF', justifyContent: 'center' }}>
+          <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>Maps</Text>
+        </Pressable>
+        <Pressable onPress={alCerrar} accessibilityRole="button" accessibilityLabel={t('Cerrar ruta', 'Close route')} hitSlop={8}
+          style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: '#333333', alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ fontFamily: F.negrita, fontSize: 15, color: '#FFFFFF' }}>✕</Text>
+        </Pressable>
       </View>
-      <Pressable onPress={alExterno} accessibilityRole="button" accessibilityLabel={t('Abrir en Google Maps o Apple Maps', 'Open in maps app')}
-        style={{ height: 34, paddingHorizontal: 10, borderRadius: 12, backgroundColor: '#FFFFFF', justifyContent: 'center' }}>
-        <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{t('Abrir en Maps', 'Maps')}</Text>
-      </Pressable>
-      <Pressable onPress={alCerrar} accessibilityRole="button" accessibilityLabel={t('Cerrar ruta', 'Close route')} hitSlop={8}
-        style={{ width: 34, height: 34, borderRadius: 12, backgroundColor: '#333333', alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontFamily: F.negrita, fontSize: 16, color: '#FFFFFF' }}>✕</Text>
-      </Pressable>
     </View>
   );
 }

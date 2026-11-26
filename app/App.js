@@ -26,6 +26,9 @@ import { useLugares } from './src/MapaComun';
 import Ayuda from './src/Ayuda';
 import Cuenta from './src/Cuenta';
 import { barrioDe } from './src/barrios';
+import { useSeguidos } from './src/seguir';
+import Entrega from './src/Entrega';
+import Permiso from './src/Permiso';
 import { estadoAvisos, activarAvisos, descartarAvisos, ubicarAviso, alTocarAviso, avisarPuerta, avisarBarrio, avisarNuevos } from './src/avisos';
 
 export default function App() {
@@ -113,8 +116,26 @@ function Caserito() {
     supabase.rpc('barrios_mapa').then(({ data, error }) => { if (!error && data) setBarrios(data); });
   }, [usuario]);
 
+  // 1b) La primera vez: una sola pantalla para ubicación + brújula (si ya diste la ubicación, no aparece)
+  const [permiso, setPermiso] = useState(null); // null = revisando · 'pedir' · 'si' · 'no'
+  useEffect(() => {
+    (async () => {
+      const visto = await AsyncStorage.getItem('dropper_permiso').catch(() => null);
+      if (visto) { setPermiso('si'); return; }
+      let dada = false;
+      try {
+        if (Platform.OS === 'web') dada = !!(navigator.permissions && (await navigator.permissions.query({ name: 'geolocation' })).state === 'granted');
+        else dada = (await Location.getForegroundPermissionsAsync()).granted;
+      } catch (e) { /* nada */ }
+      setPermiso(dada ? 'si' : 'pedir');
+    })();
+  }, []);
+  const listoPermiso = (si) => { AsyncStorage.setItem('dropper_permiso', 'visto').catch(() => {}); setPermiso(si ? 'si' : 'no'); };
+
   // 2) Ubicación (si no la da, usamos el centro de Barrio Italia)
   useEffect(() => {
+    if (permiso === null || permiso === 'pedir') return;
+    if (permiso === 'no') { setPos((x) => x || { ...BARRIO_ITALIA, aprox: true }); return; }
     let sub;
     // Solo cambiamos la posición si te moviste de verdad (> 8 m): el GPS tiembla y no queremos recargar por nada
     const mover = (c) => {
@@ -148,7 +169,7 @@ function Caserito() {
       if (p) mover(p.coords);
     })().catch(() => setPos({ ...BARRIO_ITALIA, aprox: true }));
     return () => sub && sub.remove();
-  }, []);
+  }, [permiso]);
 
   // 3) Drops vigentes cerca
   // La búsqueda de drops solo se rehace si te moviste más de 40 m (o cada 30 s)
@@ -259,6 +280,7 @@ function Caserito() {
 
   // 5) Llegó desde el QR o el NFC de un local (?local=ID): abrimos su drop en vivo, sin pasos extra
   const localQr = useRef(Platform.OS === 'web' ? leerLocalQr() : null);
+  const dropLink = useRef(Platform.OS === 'web' ? leerParam('d') : null); // link compartido: dropper.site/?d=ID
   const [avisoQr, setAvisoQr] = useState('');
   useEffect(() => {
     if (!localQr.current || cargando) return;
@@ -268,6 +290,24 @@ function Caserito() {
     if (suyos.length) { setAbierto(suyos[0].drop_id); setPestana('inicio'); }
     else setAvisoQr('sin_drops');
   }, [cargando, drops]);
+  useEffect(() => {
+    if (!dropLink.current || cargando) return;
+    const id = dropLink.current;
+    if (drops.some((d) => d.drop_id === id) || dropsDelMapa.some((d) => d.drop_id === id)) { dropLink.current = null; setAbierto(id); setPestana('inicio'); }
+  }, [cargando, drops, dropsDelMapa]);
+  // Drop nuevo mientras miras la app: el repartidor te entrega el flyer
+  const conocidos = useRef(null);
+  const [entrega, setEntrega] = useState(null);
+  useEffect(() => {
+    if (cargando) return;
+    const ids = drops.map((d) => d.drop_id);
+    if (conocidos.current === null) { conocidos.current = new Set(ids); return; }
+    const nuevo = drops.find((d) => !conocidos.current.has(d.drop_id));
+    ids.forEach((id) => conocidos.current.add(id));
+    if (nuevo) setEntrega(nuevo);
+  }, [cargando, drops]);
+  // Locales que sigues (♥)
+  const { seguidos, alternar: alternarSeguir } = useSeguidos(usuario);
 
   // 4) Avisos push: si ya dio permiso, renovamos el token y el idioma al abrir
   const idioma = tur ? 'sp' : 'es';
@@ -283,7 +323,7 @@ function Caserito() {
   // Llegó a la puerta de un local con drop: aviso con su QR listo
   useEffect(() => { if (avisos === 'activo' && !lejos) avisarPuerta(drops, tur); }, [drops, avisos, lejos, tur]);
   // Apareció un drop nuevo dentro de tu distancia → notificación
-  useEffect(() => { if (avisos === 'activo' && !lejos && !visita) avisarNuevos(drops, tur, radio); }, [drops, avisos, lejos, visita, tur, radio]);
+  useEffect(() => { if (avisos === 'activo' && !lejos && !visita) avisarNuevos(Platform.OS === 'web' ? [...drops, ...dropsDelMapa.filter((d) => seguidos.has(d.local_id) && !drops.some((x) => x.drop_id === d.drop_id))] : drops, tur, radio); }, [drops, dropsDelMapa, seguidos, avisos, lejos, visita, tur, radio]);
   // Al entrar al perímetro de un barrio: aviso tipo "red disponible" (una vez al día por barrio)
   const dentroDeBarrio = (() => { const r = barrioDe(pos, barrios); return r && r.dentro ? r.barrio : null; })();
   useEffect(() => { if (avisos === 'activo' && dentroDeBarrio) avisarBarrio(dentroDeBarrio, drops.length, tur); }, [dentroDeBarrio && dentroDeBarrio.id, avisos]);
@@ -306,9 +346,10 @@ function Caserito() {
 
   // Si las fuentes fallan o se demoran, seguimos con las del sistema (nunca quedarse pegado)
   if (!fuentes && !errorFuentes && !paciencia) return <Cargando texto="Dropper" />;
+  if (permiso === 'pedir') return <SafeAreaProvider><SafeAreaView style={{ flex: 1, backgroundColor: C.amarillo }}><Permiso t={t} alListo={listoPermiso} /></SafeAreaView></SafeAreaProvider>;
 
   const abrir = (d) => setAbierto(d.drop_id);
-  const dropAbierto = drops.find((d) => d.drop_id === abierto);
+  const dropAbierto = drops.find((d) => d.drop_id === abierto) || dropsDelMapa.find((d) => d.drop_id === abierto);
 
   return (
     <SafeAreaProvider>
@@ -324,13 +365,13 @@ function Caserito() {
           ) : cargando ? (
             <Cargando fuente={F.negrita} texto={t('Buscando drops cerca…', 'Buscando drops cerca… · Finding drops')} />
           ) : dropAbierto ? (
-            <Drop drop={dropAbierto} usuario={usuario} alCerrar={() => { setAbierto(null); cargar(); }} alComoLlegar={(d) => { setDestino(d); setAbierto(null); setLugarAbierto(null); setPestana('inicio'); }} />
+            <Drop drop={dropAbierto} usuario={usuario} siguiendo={seguidos.has(dropAbierto.local_id)} alSeguir={alternarSeguir} alCerrar={() => { setAbierto(null); cargar(); }} alComoLlegar={(d) => { setDestino(d); setAbierto(null); setLugarAbierto(null); setPestana('inicio'); }} />
           ) : lugarAbierto ? (
             <Plano lugar={lugarAbierto} drops={drops} alAbrir={abrir} alCerrar={() => setLugarAbierto(null)} />
           ) : pestana === 'ayuda' ? (
             <Ayuda alCerrar={() => setPestana('inicio')} />
           ) : pestana === 'inicio' ? (
-            <Inicio drops={drops} destino={destino} alCerrarRuta={() => setDestino(null)} alComoLlegar={(d) => { setDestino(d); setAbierto(null); setLugarAbierto(null); }} radio={radio} alCambiarRadio={setRadio} dropsMapa={dropsDelMapa} diag={diag} alRecargar={() => cargarRef2.current && cargarRef2.current()} usuario={usuario} pos={pos} alVerMapa={() => setPestana('mapa')} lejos={lejos} alAbrir={abrir} alRefrescar={cargar} alAyuda={() => setPestana('ayuda')}
+            <Inicio drops={drops} destino={destino} alCerrarRuta={() => setDestino(null)} alComoLlegar={(d) => { setDestino(d); setAbierto(null); setLugarAbierto(null); }} radio={radio} alCambiarRadio={setRadio} dropsMapa={dropsDelMapa} diag={diag} alRecargar={() => cargarRef2.current && cargarRef2.current()} usuario={usuario} pos={pos} alVerMapa={() => setPestana('mapa')} lejos={lejos} alAbrir={abrir} alRefrescar={cargar} alAyuda={() => setPestana('ayuda')} alVerAlbum={() => setPestana('album')} seguidos={seguidos}
               avisoQr={avisoQr} alCerrarAvisoQr={() => setAvisoQr('')} barrioActual={barrioDe(pos, barrios)} barrioLejos={centroLejos && centroLejos.nombre}
               barrios={barrios} visita={visita} alVisitar={setVisita} lugares={lugares} alAbrirLugar={setLugarAbierto}
               avisos={avisos} avisoMotivo={avisoMotivo} alPrenderAvisos={prenderAvisos} alCerrarAvisos={cerrarAvisos} />
@@ -342,6 +383,7 @@ function Caserito() {
             <Album usuario={usuario} alIrAlMapa={() => setPestana('mapa')} barrios={barrios} barrioInicial={(visita || barrioDe(pos, barrios).barrio || {}).id} />
           )}
 
+          {entrega && !dropAbierto ? <Entrega drop={entrega} t={t} alAbrir={() => { setAbierto(entrega.drop_id); setEntrega(null); }} alCerrar={() => setEntrega(null)} /> : null}
           {!dropAbierto && (
             <View style={{ position: 'absolute', left: 12, right: 12, bottom: 14, height: 64, backgroundColor: C.papel, borderWidth: estilo === 'moderno' ? 1 : 3, borderColor: C.borde, borderRadius: R(22), overflow: 'hidden', flexDirection: 'row', zIndex: 5000, elevation: 20, shadowColor: C.sombra, shadowOffset: estilo === 'moderno' ? { width: 0, height: 6 } : { width: 5, height: 5 }, shadowOpacity: 1, shadowRadius: estilo === 'moderno' ? 14 : 0 }}>
               <Tab id="inicio" texto={t("Inicio", "Inicio")} actual={pestana} setear={(p) => { setLugarAbierto(null); setPestana(p); }} figura="cuadrado" fondo={C.amarillo} />
@@ -408,6 +450,18 @@ function Tab({ id, texto, actual, setear, figura, fondo }) {
       <Text style={{ color: C.negro, fontFamily: activa ? F.negrita : F.media, fontSize: 11 }}>{texto}</Text>
     </Pressable>
   );
+}
+
+// Lee un parámetro de la dirección (?d=ID) y lo saca para que no se repita al recargar
+function leerParam(nombre) {
+  try {
+    const u = new URL(window.location.href);
+    const v = u.searchParams.get(nombre);
+    if (!v) return null;
+    u.searchParams.delete(nombre);
+    window.history.replaceState({}, '', u.pathname + u.search + u.hash);
+    return /^[0-9a-f-]{36}$/i.test(v) ? v : null;
+  } catch { return null; }
 }
 
 // Lee ?local=ID de la dirección (QR o NFC del local) y lo saca para que no se repita al recargar

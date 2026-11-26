@@ -7,7 +7,7 @@ import { CSS_PINES, laminaPinHtml, tamLamina, posterPinHtml, tamPoster } from '.
 import { conectarCalles, CSS_CALLES } from './callesWeb';
 import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, useTiendasOsm, SelectorBarrios, FiltrosMapa, HojaMapa, traerRuta, BarraRuta } from './MapaComun';
 import { caminar } from './Drop';
-import { useRumbo, pedirPermisoRumbo } from './rumbo';
+import { useRumbo, pedirPermisoRumbo, brujulaGuardada, guardarBrujula } from './rumbo';
 
 const L = require('leaflet');
 
@@ -97,7 +97,7 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
   const capaRuta = useRef(null);
   const seguir = useRef(true);
   // Brújula: el mapa gira con el teléfono (modo caminar: te sigue y no se arrastra)
-  const [brujula, setBrujula] = useState(false);
+  const [brujula, setBrujula] = useState(() => brujulaGuardada());
   const rumbo = useRumbo(brujula);
   // las láminas y pósters giran al revés para quedar derechos
   useEffect(() => { if (caja.current && caja.current.style) caja.current.style.setProperty('--contra', `${rumbo}deg`); }, [rumbo]);
@@ -150,6 +150,7 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
     const soltarCalles = ESTILO === 'moderno' ? conectarCalles(L, m) : null;
     m.on('dragstart', () => { seguir.current = false; setSiguiendo(false); });
     mapa.current = m;
+    if (brujula) { m.dragging.disable(); if (yo) m.setView([yo.lat, yo.lng], 17, { animate: false }); } // brújula encendida desde el inicio: modo caminar
     setTimeout(() => m.invalidateSize(), 50);
     return () => { if (soltarCalles) soltarCalles(); m.remove(); mapa.current = null; marcaYo.current = null; };
   }, []);
@@ -276,9 +277,9 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
       </View>
       <Pressable onPress={async () => {
           const m = mapa.current;
-          if (brujula) { setBrujula(false); if (m) m.dragging.enable(); return; }
+          if (brujula) { setBrujula(false); guardarBrujula(false); if (m) m.dragging.enable(); return; }
           if (!(await pedirPermisoRumbo())) return;
-          setBrujula(true); seguir.current = true; setSiguiendo(true);
+          setBrujula(true); guardarBrujula(true); seguir.current = true; setSiguiendo(true);
           if (m) { m.dragging.disable(); const a = yo || pos; m.setView([a.lat, a.lng], Math.max(m.getZoom(), 17), { animate: false }); }
         }} accessibilityRole="switch" accessibilityState={{ checked: brujula }} accessibilityLabel="Brújula: girar el mapa con el teléfono"
         style={{ position: 'absolute', right: 12, bottom: 386, zIndex: 950, width: 46, height: 46, borderRadius: R(14), backgroundColor: brujula ? C.amarillo : C.papel, borderWidth: 3, borderColor: C.borde, alignItems: 'center', justifyContent: 'center' }}>
@@ -293,7 +294,7 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
       ) : null}
       <FiltrosMapa drops={drops} filtro={filtro} alElegir={(f) => { setFiltro(f); setSel(null); }} arriba={barrios.length > 1 ? 58 : 10} />
       {destino ? <BarraRuta destino={destino} ruta={ruta} yo={yo || pos} alCerrar={alCerrarRuta} alExterno={() => caminar(destino)} /> : null}
-      <HojaMapa drops={visibles} pos={pos} sel={sel} alAbrir={alAbrir} coords={coords} alComoLlegar={alComoLlegarMapa} />
+      {destino ? null : <HojaMapa drops={visibles} pos={pos} sel={sel} alAbrir={alAbrir} coords={coords} alComoLlegar={alComoLlegarMapa} />}
     </View>
   );
 }

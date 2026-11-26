@@ -4,6 +4,7 @@ import { C, F, R, precio, ESTILO } from './tema';
 import { useCoordenadas, useLocalesMapa, useTiendasOsm, especialidad, traerRuta, PanelRuta, ANCHO_PANEL } from './MapaComun';
 import { caminar } from './Drop';
 import { arteHtml } from './arteLocal';
+import { brujulaGuardada, guardarBrujula } from './rumbo';
 import { conectarCalles, CSS_CALLES } from './callesWeb';
 import { CSS_PINES, laminaPinHtml, tamLamina, posterPinHtml, tamPoster } from './pinesWeb';
 
@@ -61,7 +62,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
   const centro = yo || pos;
 
   // Brújula: el mapa gira según hacia dónde apunta el teléfono (lo de adelante queda arriba)
-  const [brujula, setBrujula] = useState(false);
+  const [brujula, setBrujula] = useState(() => brujulaGuardada());
   const [rumbo, setRumbo] = useState(0);
   const [avisoBrujula, setAvisoBrujula] = useState('');
   rumboRef.current = rumbo;
@@ -88,14 +89,14 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
   }, [brujula]);
   async function alternarBrujula() {
     setAvisoBrujula('');
-    if (brujula) { setBrujula(false); return; }
+    if (brujula) { setBrujula(false); guardarBrujula(false); return; }
     try {
       const D = window.DeviceOrientationEvent;
       if (D && typeof D.requestPermission === 'function') {
         const r = await D.requestPermission(); // iPhone pide permiso
         if (r !== 'granted') { setAvisoBrujula(t('Sin permiso para la brújula', 'No compass permission')); return; }
       } else if (!D) { setAvisoBrujula(t('Este equipo no tiene brújula', 'No compass here')); return; }
-      setBrujula(true);
+      setBrujula(true); guardarBrujula(true);
     } catch (e) { setAvisoBrujula(t('No se pudo activar la brújula', 'Compass failed')); }
   }
 

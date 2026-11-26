@@ -126,3 +126,24 @@ h2 { font-size: 20px; margin: 0; }
 .boton, button.boton { box-shadow: 4px 4px 0 var(--rojo); }
 .tarjeta, .card { box-shadow: 5px 5px 0 var(--negro); }
 .barra { border-bottom: 3px solid var(--negro); box-shadow: 0 10px 0 -3px var(--amarillo); }
+
+/* Animación: el repartidor entrega el flyer del drop */
+.entrega { position: fixed; inset: 0; z-index: 2000; background: rgba(255, 209, 0, .97); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; cursor: pointer; animation: entrega-fondo .25s ease-out; overflow: hidden; }
+.entrega .escena { position: relative; width: 300px; height: 260px; }
+.entrega .repartidor { position: absolute; left: 0; bottom: 0; width: 190px; height: 190px; border: 4px solid var(--negro); box-shadow: 6px 6px 0 var(--negro); background: #F9F2E5; animation: entrega-llega .5s cubic-bezier(.2, 1.4, .4, 1) both; }
+.entrega .repartidor img { width: 100%; height: 100%; display: block; }
+.entrega .flyer { position: absolute; left: 150px; bottom: 90px; width: 120px; padding: 10px; background: var(--papel); border: 3px solid var(--negro); box-shadow: 4px 4px 0 var(--negro); font-weight: 800; font-size: 13px; line-height: 1.2; transform-origin: left bottom; animation: entrega-vuela 1.1s .45s cubic-bezier(.3, .9, .4, 1) both; }
+.entrega .flyer .tag { display: inline-block; background: var(--rojo); color: #fff; font-size: 10px; padding: 2px 6px; margin-bottom: 6px; letter-spacing: .5px; }
+.entrega .flyer .precio { display: inline-block; margin-top: 6px; background: var(--amarillo); padding: 2px 6px; border: 2px solid var(--negro); }
+.entrega .mini { position: absolute; left: 170px; bottom: 120px; width: 34px; height: 44px; background: var(--papel); border: 2.5px solid var(--negro); animation: entrega-mini 1s both; }
+.entrega .mini:nth-child(3) { animation-delay: .9s; --x: 120px; --y: -150px; --r: 40deg; }
+.entrega .mini:nth-child(4) { animation-delay: 1s; --x: -40px; --y: -190px; --r: -30deg; background: var(--rojo); }
+.entrega .mini:nth-child(5) { animation-delay: 1.1s; --x: 150px; --y: -60px; --r: 70deg; background: var(--azul); }
+.entrega h2 { font-family: Jost, Archivo, sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -.5px; animation: entrega-texto .4s 1s both; text-align: center; padding: 0 16px; }
+.entrega p { margin: 0; font-weight: 700; animation: entrega-texto .4s 1.2s both; }
+@keyframes entrega-fondo { from { opacity: 0; } }
+@keyframes entrega-llega { from { transform: translateX(-140%) rotate(-12deg); } }
+@keyframes entrega-vuela { 0% { transform: scale(.2) rotate(-20deg); opacity: 0; } 30% { opacity: 1; } 70% { transform: translate(-10px, -40px) scale(1.08) rotate(6deg); } 100% { transform: translate(0, -30px) scale(1) rotate(4deg); } }
+@keyframes entrega-mini { 0% { transform: scale(.2); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(var(--x, 80px), var(--y, -120px)) rotate(var(--r, 20deg)); opacity: 0; } }
+@keyframes entrega-texto { from { transform: translateY(12px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .entrega, .entrega * { animation: none !important; } }

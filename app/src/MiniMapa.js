@@ -3,6 +3,7 @@ import * as Location from 'expo-location';
 import { Pressable, Text, View } from 'react-native';
 import MapView, { Circle, Marker, Polyline } from 'react-native-maps';
 import { C, F, R, precio, ESTILO as SKIN } from './tema';
+import { brujulaGuardada, guardarBrujula } from './rumbo';
 import { useCoordenadas, useLocalesMapa, traerRuta, PanelRuta, ANCHO_PANEL } from './MapaComun';
 import { caminar } from './Drop';
 import { ArteLocal } from './arteLocal';
@@ -47,7 +48,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
     if (mapa.current) mapa.current.animateCamera({ center: { latitude: centro.lat, longitude: centro.lng } }, { duration: 400 });
   }, [centro && centro.lat, centro && centro.lng]);
   // Brújula: el mapa gira con el teléfono
-  const [brujula, setBrujula] = useState(false);
+  const [brujula, setBrujula] = useState(() => brujulaGuardada());
   useEffect(() => {
     if (!brujula) { if (mapa.current) mapa.current.animateCamera({ heading: 0 }, { duration: 300 }); return; }
     let sub, mostrado = null;
@@ -99,7 +100,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
       {destino ? null : <View style={{ position: 'absolute', left: 10, top: 10, backgroundColor: C.papel, borderRadius: 14, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: C.borde }}>
         <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{yo ? (yo.precision > 80 ? t(`Ubicación aproximada (±${yo.precision} m)`, `Approx. location (±${yo.precision} m)`) : t(`Tú · ${textoRadio}${yo.precision ? ` · ±${yo.precision} m` : ''}`, `You · ${textoRadio}`)) : t('Activa tu ubicación', 'Turn on location')}</Text>
       </View>}
-      <Pressable onPress={() => setBrujula(!brujula)} accessibilityRole="switch" accessibilityState={{ checked: brujula }} accessibilityLabel={t('Brújula: girar el mapa con el teléfono', 'Compass')}
+      <Pressable onPress={() => { guardarBrujula(!brujula); setBrujula(!brujula); }} accessibilityRole="switch" accessibilityState={{ checked: brujula }} accessibilityLabel={t('Brújula: girar el mapa con el teléfono', 'Compass')}
         style={{ position: 'absolute', left: destino ? Math.round(ancho * ANCHO_PANEL) + 10 : 10, bottom: 10, height: 34, paddingHorizontal: 12, borderRadius: 16, backgroundColor: brujula ? C.amarillo : C.papel, borderWidth: 1, borderColor: C.borde, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
         <Text style={{ fontSize: 14 }}>🧭</Text>
         {destino ? null : <Text style={{ fontFamily: F.negrita, fontSize: 12 }}>{brujula ? t('Brújula activa', 'Compass on') : t('Brújula', 'Compass')}</Text>}

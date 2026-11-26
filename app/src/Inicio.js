@@ -13,6 +13,7 @@ import { PlanoLugar } from './Plano';
 import { marcarVisitado } from './Poster';
 import { ArteLocal } from './arteLocal';
 import { caminar } from './Drop';
+import { registrar } from './seguir';
 import Svg, { Path } from 'react-native-svg';
 
 function etiquetaPara(d, hora, t, cuad) {
@@ -24,7 +25,7 @@ function etiquetaPara(d, hora, t, cuad) {
   return cuad(d.cuadras).toUpperCase();
 }
 
-export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda, avisos, avisoMotivo, alPrenderAvisos, alCerrarAvisos, avisoQr, alCerrarAvisoQr, barrioActual, barrioLejos, barrios = [], visita = null, alVisitar = () => {}, pos = null, alVerMapa = () => {}, lugares = [], alAbrirLugar = () => {}, dropsMapa = null, diag = {}, alRecargar = () => {}, radio = 3000, alCambiarRadio = () => {}, alComoLlegar = null, destino = null, alCerrarRuta = () => {} }) {
+export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, alAyuda, avisos, avisoMotivo, alPrenderAvisos, alCerrarAvisos, avisoQr, alCerrarAvisoQr, barrioActual, barrioLejos, barrios = [], visita = null, alVisitar = () => {}, pos = null, alVerMapa = () => {}, lugares = [], alAbrirLugar = () => {}, dropsMapa = null, diag = {}, alRecargar = () => {}, radio = 3000, alCambiarRadio = () => {}, alComoLlegar = null, destino = null, alCerrarRuta = () => {}, alVerAlbum = () => {}, seguidos = null }) {
   const b = barrioActual && barrioActual.barrio;
   const nombreBarrio = (b && b.nombre) || 'Barrio Italia';
   const lugar = b ? (barrioActual.dentro ? `${b.nombre} · ${b.comuna}` : b.nombre) : 'Barrio Italia';
@@ -85,6 +86,38 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
     if (cats.length < 2) return null;
     return cats.map((c) => ({ id: c, drops: grupos[c] })); // ya vienen ordenadas: la categoría del drop más cercano primero
   })();
+  // Los drops que aparecen en tu lista cuentan como "vistos" para las estadísticas del local
+  const idsVistos = visibles.slice(0, 12).map((d) => d.drop_id).join(',');
+  useEffect(() => { visibles.slice(0, 12).forEach((d) => registrar(d.drop_id, 'vista')); }, [idsVistos]);
+  // Premio del barrio (el arte que se gana juntando láminas)
+  const [premio, setPremio] = useState(null);
+  const idBarrio = b && barrioActual.dentro ? b.id : null;
+  useEffect(() => {
+    if (!idBarrio) { setPremio(null); return; }
+    supabase.rpc('mi_arte', { p_barrio: idBarrio }).then((r) => setPremio(!r.error && r.data && r.data[0] && !r.data[0].canjeado_at ? r.data[0] : null), () => {});
+  }, [idBarrio, usuario && usuario.id]);
+  // Paseo de drops: une los más cercanos en una sola caminata (el siguiente siempre es el más cerca del anterior)
+  const paseo = (() => {
+    if (!pos || pos.aprox) return null;
+    const libres = visibles.filter((d) => coords[d.local_id]).map((d) => ({ d, p: coords[d.local_id] }));
+    const vistos = new Set();
+    const paradas = [];
+    let aqui = pos;
+    while (paradas.length < 4) {
+      let mejor = null, dm = Infinity;
+      libres.forEach((x) => {
+        if (vistos.has(x.d.local_id)) return;
+        const m = Math.hypot((x.p.lat - aqui.lat) * 111320, (x.p.lng - aqui.lng) * 93000);
+        if (m < dm) { dm = m; mejor = x; }
+      });
+      if (!mejor || dm > 1500) break;
+      vistos.add(mejor.d.local_id);
+      paradas.push({ lat: mejor.p.lat, lng: mejor.p.lng, nombre: mejor.d.local_nombre });
+      aqui = mejor.p;
+    }
+    return paradas.length >= 2 ? paradas : null;
+  })();
+  const minutosQuedan = (d) => Math.round((new Date(d.termina_at).getTime() - Date.now()) / 60000);
 
   async function alternar(g) {
     setGustos(gustos.map((x) => (x.id === g.id ? { ...x, activo: !x.activo } : x)));
@@ -174,9 +207,11 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
                     <Text style={{ fontFamily: F.negrita, fontSize: 11, letterSpacing: 1, color: C.rojoTexto, textTransform: 'uppercase' }}>
                       {tur ? categoriaTur(d.categoria, lang) || textoCategoria(d.categoria) : textoCategoria(d.categoria)} · {cuad(d.cuadras)}
                     </Text>
-                    <Text style={{ fontFamily: F.negrita, fontSize: 18, letterSpacing: -0.4 }} numberOfLines={1}>{d.local_nombre}</Text>
+                    <Text style={{ fontFamily: F.negrita, fontSize: 18, letterSpacing: -0.4 }} numberOfLines={1}>{seguidos && seguidos.has(d.local_id) ? <Text style={{ color: C.rojo }}>♥ </Text> : null}{d.local_nombre}</Text>
                     <FraseGlosario texto={d.frase || d.titulo} colorAyuda={C.rojoTexto} numberOfLines={2} style={{ fontFamily: F.media, fontSize: 14, lineHeight: 18, color: '#444444' }} />
-                    <Text style={{ fontFamily: F.media, fontSize: 12, color: C.gris }}>{t('Hasta las', 'Hasta')} {hora12(d)}</Text>
+                    {minutosQuedan(d) <= 60
+                      ? <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.rojoTexto }}>⚡ {t(`Se acaba en ${Math.max(1, minutosQuedan(d))} min`, `Ends in ${Math.max(1, minutosQuedan(d))} min`)}</Text>
+                      : <Text style={{ fontFamily: F.media, fontSize: 12, color: C.gris }}>{t('Hasta las', 'Hasta')} {hora12(d)}</Text>}
                   </View>
                 </Pressable>
                 <View style={{ flexDirection: 'row', gap: 8, padding: 14, paddingTop: 10 }}>
@@ -184,7 +219,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
                     <Text style={{ fontFamily: F.negrita, fontSize: 13, color: '#FFFFFF' }}>{t('Lo quiero', 'Lo quiero · I want it')}</Text>
                   </Pressable>
                   {p ? (
-                    <Pressable onPress={() => (comoLlegar ? comoLlegar({ ...p, nombre: d.local_nombre }) : caminar(p))} accessibilityRole="button" style={{ height: 42, paddingHorizontal: 12, borderRadius: 14, backgroundColor: C.crema, alignItems: 'center', justifyContent: 'center' }}>
+                    <Pressable onPress={() => { registrar(d.drop_id, 'como_llegar'); comoLlegar ? comoLlegar({ ...p, nombre: d.local_nombre }) : caminar(p); }} accessibilityRole="button" style={{ height: 42, paddingHorizontal: 12, borderRadius: 14, backgroundColor: C.crema, alignItems: 'center', justifyContent: 'center' }}>
                       <Text style={{ fontFamily: F.negrita, fontSize: 13 }}>{t('Cómo llegar', 'Directions')}</Text>
                     </Pressable>
                   ) : null}
@@ -204,6 +239,25 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
         <Pressable onPress={alVerMapa} accessibilityRole="button"><Text style={{ fontFamily: F.negrita, fontSize: 13, color: C.gris }}>{t('Ver en el mapa', 'Ver mapa')}</Text></Pressable>
       </View>
       {selectorDistancia}
+      {paseo && comoLlegar ? (
+        <Pressable onPress={() => comoLlegar({ ...paseo[paseo.length - 1], nombre: t(`Paseo: ${paseo.length} drops`, `Walk: ${paseo.length} drops`), paradas: paseo })} accessibilityRole="button"
+          style={{ marginHorizontal: 16, marginTop: 10, minHeight: 44, borderRadius: R(14), backgroundColor: C.negro, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 14 }}>
+          <Text style={{ fontSize: 16 }}>🚶</Text>
+          <Text style={{ fontFamily: F.negrita, fontSize: 14, color: '#FFFFFF' }}>{t(`Arma mi paseo · ${paseo.length} drops`, `Plan my walk · ${paseo.length} drops`)}</Text>
+        </Pressable>
+      ) : null}
+      {premio ? (
+        <Pressable onPress={alVerAlbum} accessibilityRole="button"
+          style={{ marginHorizontal: 16, marginTop: 10, borderRadius: R(14), borderWidth: 1.5, borderColor: C.azul, backgroundColor: '#FFFFFF', paddingHorizontal: 14, paddingVertical: 10, gap: 6 }}>
+          <Text style={{ fontFamily: F.negrita, fontSize: 13 }}>🎁 {t(`Premio del barrio: ${premio.nombre}`, `Neighborhood prize: ${premio.nombre}`)}</Text>
+          <View style={{ height: 8, borderRadius: 4, backgroundColor: '#E8EEF8', overflow: 'hidden' }}>
+            <View style={{ width: `${Math.min(100, (premio.tengo / premio.necesarias) * 100)}%`, height: '100%', backgroundColor: C.azul }} />
+          </View>
+          <Text style={{ fontFamily: F.media, fontSize: 12, color: C.gris }}>
+            {premio.codigo ? t('¡Lo ganaste! Toca para ver tu QR.', 'You won! Tap for your QR.') : premio.tengo >= premio.necesarias ? t('¡Ya puedes cambiarlo! Toca aquí.', 'Ready to claim! Tap here.') : t(`${premio.tengo} de ${premio.necesarias} láminas · el primero que las junte se lo lleva`, `${premio.tengo} of ${premio.necesarias} stickers`)}
+          </Text>
+        </Pressable>
+      ) : null}
       {lejos && visibles.length ? <Text style={{ fontFamily: F.media, fontSize: 13, color: C.gris, paddingHorizontal: 18, paddingTop: 6 }}>{t(`Nada a menos de ${textoRadio}: estos son los más cercanos.`, `Nothing within ${textoRadio}: these are the closest.`)}</Text> : null}
       {visibles.length === 0 ? (
         <View style={{ paddingHorizontal: 18, paddingTop: 8, gap: 6 }}>

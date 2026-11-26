@@ -7,8 +7,9 @@ import { C, F, letrista, precio, cuadras, textoCategoria, R, ESTILO, sobrio } fr
 import { Ola, Boton, EtiquetaPrecio, Brillo, FondoBauhaus, Figura, PuntosPop, GloboPop, Estallido } from './componentes';
 import { ArteLocal } from './arteLocal';
 import { useIdioma, FraseGlosario, CATEGORIA_TUR, categoriaTur } from './idioma';
+import { registrar, compartirDrop } from './seguir';
 
-export default function Drop({ drop, usuario, alCerrar, alComoLlegar = null }) {
+export default function Drop({ drop, usuario, alCerrar, alComoLlegar = null, siguiendo = false, alSeguir = null }) {
   const [mio, setMio] = useState(undefined);
   const [estado, setEstado] = useState(null);
   const [niveles, setNiveles] = useState([]);
@@ -17,6 +18,7 @@ export default function Drop({ drop, usuario, alCerrar, alComoLlegar = null }) {
   const [nota, setNota] = useState(null);
   const [destino, setDestino] = useState(null);
 
+  useEffect(() => { registrar(drop.drop_id, 'vista'); }, [drop.drop_id]);
   useEffect(() => {
     supabase.from('participaciones').select('codigo, canjeado_at')
       .eq('drop_id', drop.drop_id).eq('usuario_id', usuario.id).maybeSingle()
@@ -74,6 +76,13 @@ export default function Drop({ drop, usuario, alCerrar, alComoLlegar = null }) {
             {tur ? categoriaTur(drop.categoria, lang) || textoCategoria(drop.categoria) : textoCategoria(drop.categoria)} · {cuad(drop.cuadras)}{nota ? ` · ★ ${nota.promedio} (${nota.cantidad})` : ''}
           </Text>
         </View>
+        {alSeguir ? (
+          <Pressable onPress={() => alSeguir(drop.local_id)} accessibilityRole="switch" accessibilityState={{ checked: siguiendo }} hitSlop={6}
+            accessibilityLabel={siguiendo ? t(`Dejar de seguir a ${drop.local_nombre}`, `Unfollow ${drop.local_nombre}`) : t(`Seguir a ${drop.local_nombre}: te avisamos de sus drops`, `Follow ${drop.local_nombre}`)}
+            style={{ width: 44, height: 44, borderRadius: R(16), borderWidth: 2.5, borderColor: C.borde, backgroundColor: C.papel, alignItems: 'center', justifyContent: 'center' }}>
+            <Svg width={22} height={22} viewBox="0 0 24 24"><Path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21z" fill={siguiendo ? C.rojo : 'none'} stroke={C.negro} strokeWidth={2} strokeLinejoin="round" /></Svg>
+          </Pressable>
+        ) : null}
       </View>
       <Ola color={sobrio() ? C.amarillo : C.rojo} />
 
@@ -138,7 +147,7 @@ export default function Drop({ drop, usuario, alCerrar, alComoLlegar = null }) {
 
       {destino && destino.lat && !drop.dentro_del_radio ? (
         <View style={{ marginHorizontal: 16, marginTop: 14 }}>
-          <Boton texto={t(`Cómo llegar caminando · ${cuad(drop.cuadras)}`, `Camina pa’llá · ${cuad(drop.cuadras)}`)} fondo={C.amarillo} color={C.negro} onPress={() => (alComoLlegar ? alComoLlegar({ lat: destino.lat, lng: destino.lng, nombre: drop.local_nombre }) : caminar(destino))} />
+          <Boton texto={t(`Cómo llegar caminando · ${cuad(drop.cuadras)}`, `Camina pa’llá · ${cuad(drop.cuadras)}`)} fondo={C.amarillo} color={C.negro} onPress={() => { registrar(drop.drop_id, 'como_llegar'); alComoLlegar ? alComoLlegar({ lat: destino.lat, lng: destino.lng, nombre: drop.local_nombre }) : caminar(destino); }} />
           {destino.direccion ? <Text style={{ fontFamily: F.media, fontSize: 13, color: C.gris, textAlign: 'center', marginTop: 6 }}>{destino.direccion}</Text> : null}
         </View>
       ) : null}
@@ -148,9 +157,9 @@ export default function Drop({ drop, usuario, alCerrar, alComoLlegar = null }) {
           <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.amarillo }}>{t('Termina en', "Termina en")}</Text>
           <Text style={{ ...letrista, fontSize: 24, color: C.papel }}>{reloj}</Text>
         </View>
-        <Pressable onPress={() => Share.share({ message: t(`¡Dropper! ${drop.local_nombre} soltó un drop: ${drop.frase || drop.titulo}. Míralo aquí: https://dropper.site/?local=${drop.local_id}`, `¡Dropper! ${drop.local_nombre} soltó un drop: ${drop.frase || drop.titulo}. Check it: https://dropper.site/?local=${drop.local_id}`) })}
-          style={{ flex: 1, backgroundColor: C.azul, borderRadius: R(16), borderWidth: 2.5, borderColor: C.borde, padding: 12, justifyContent: 'center' }}>
-          <Text style={{ fontFamily: F.negrita, fontSize: 15, color: '#FFFFFF' }}>{t('Pasarle el dato a un amigo', "Pásale el dato · Tell a friend")}</Text>
+        <Pressable onPress={() => compartirDrop(drop, t)} accessibilityRole="button"
+          style={{ flex: 1, backgroundColor: '#25D366', borderRadius: R(16), borderWidth: 2.5, borderColor: C.borde, padding: 12, justifyContent: 'center' }}>
+          <Text style={{ fontFamily: F.negrita, fontSize: 15, color: '#0B2E17' }}>{t('Compartir por WhatsApp', 'Share · WhatsApp')}</Text>
         </Pressable>
       </View>
     </ScrollView>

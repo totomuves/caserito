@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { supabase, explicar } from './supabase';
-import { C, F, letrista, R } from './tema';
+import { C, F, letrista, R, ESTILO } from './tema';
 import { Ola, Boton } from './componentes';
 import { useIdioma, SelectorIdioma } from './idioma';
+import Honor from './Honor';
+import { Posters } from './Album';
 
 // "Tú": cuenta del caserito, apodo, idioma y comentarios de la beta
 const campo = { minHeight: 48, borderWidth: 2, borderColor: C.borde, borderRadius: R(16), backgroundColor: '#FFFFFF', paddingHorizontal: 12, fontFamily: F.normal, fontSize: 16, color: C.negro };
@@ -61,6 +63,7 @@ export default function Cuenta({ usuario, alAyuda }) {
       </View>
 
       <Comentarios />
+      {ESTILO === 'moderno' ? <><Posters t={t} /><Honor usuario={usuario} t={t} /></> : null}
     </ScrollView>
   );
 }

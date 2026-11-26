@@ -11,6 +11,7 @@ import { ArteLocal } from './arteLocal';
 import Honor from './Honor';
 import { PosterLugar, useVisitados } from './Poster';
 import { useLugares } from './MapaComun';
+import Svg, { Circle } from 'react-native-svg';
 
 const MARCOS = [
   { fondo: C.amarillo, num: C.negro, texto: C.negro },
@@ -114,6 +115,37 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
   const hitos = [5, 10, total].filter((h, k, a) => h > 0 && h <= total && a.indexOf(h) === k);
   const elegido = sel !== null ? locales[sel] : null;
 
+  const detalle = elegido ? (
+        <View style={{ margin: 16, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.borde, borderRadius: R(16), padding: 16, gap: 8 }}>
+          <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.rojoTexto, textTransform: 'uppercase' }}>
+            {t('Lámina', "Lámina")} {sel + 1} · {mias[elegido.id] ? t('ganada', "¡la tienes!") : t('te falta', "te falta")}
+          </Text>
+          {mias[elegido.id] ? (
+            <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+              {ESTILO === 'clasico' ? <Monstruito categoria={elegido.categoria} local={elegido} tam={72} /> : <View style={{ width: 90, borderWidth: 3, borderColor: C.borde, padding: 4, backgroundColor: C.papel }}><ArteBauhaus local={elegido} k={sel} alto={90} /></View>}
+              <View style={{ flex: 1 }}>
+                <Text style={{ ...letrista, fontSize: 22 }}>{apodoLamina(elegido).toUpperCase()}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  
+                  <Text style={{ fontFamily: F.negrita, fontSize: 14 }}>{elegido.nombre} · {t('lámina', 'lámina')} {sel + 1}{letraLamina(elegido)}</Text>
+                </View>
+              </View>
+            </View>
+          ) : (
+            <Text style={{ ...letrista, fontSize: 22 }}>{textoCategoria(elegido.categoria).toUpperCase()}</Text>
+          )}
+          <Text style={{ fontFamily: F.normal, fontSize: 14 }}>
+            {mias[elegido.id]
+              ? `${t('La ganaste el', "La ganaste el")} ${new Date(mias[elegido.id]).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' })}${elegido.producto_estrella ? ' · ' + t('producto estrella', "imperdible") + ': ' + elegido.producto_estrella : ''}.`
+              : t('Canjea cualquier drop de este local y la lámina es tuya. Búscalo en el mapa.', "Canjea any drop en este local y la lámina es tuya. Find it en el mapa.")}
+          </Text>
+          {!mias[elegido.id] && <Boton texto={t("Ver en el mapa", "Ver en el mapa")} onPress={alIrAlMapa} />}
+          {mias[elegido.id] && rep[elegido.id] ? <Repetidas r={rep[elegido.id]} t={t} pidiendo={pidiendo} msg={msgRep} alPedir={() => pedirCambio(elegido.id)} /> : null}
+        </View>
+  ) : null;
+  if (ESTILO === 'moderno') {
+    return <AlbumModerno {...{ barrio, barrios, barrioSel, setBarrioSel, locales, mias, rep, sel, setSel, tengo, total, arte, msgArte, pedirArte, detalle, t }} chile={Object.keys(mias).length} />;
+  }
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 110 }}>
       <View style={{ backgroundColor: sobrio() ? C.amarillo : C.azul, paddingHorizontal: 18, paddingTop: 14, paddingBottom: 12 }}>
@@ -226,34 +258,7 @@ export default function Album({ usuario, alIrAlMapa, barrios = [], barrioInicial
         })}
       </View>
 
-      {elegido && (
-        <View style={{ margin: 16, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.borde, borderRadius: R(16), padding: 16, gap: 8 }}>
-          <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.rojoTexto, textTransform: 'uppercase' }}>
-            {t('Lámina', "Lámina")} {sel + 1} · {mias[elegido.id] ? t('ganada', "¡la tienes!") : t('te falta', "te falta")}
-          </Text>
-          {mias[elegido.id] ? (
-            <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-              {ESTILO === 'clasico' ? <Monstruito categoria={elegido.categoria} local={elegido} tam={72} /> : <View style={{ width: 90, borderWidth: 3, borderColor: C.borde, padding: 4, backgroundColor: C.papel }}><ArteBauhaus local={elegido} k={sel} alto={90} /></View>}
-              <View style={{ flex: 1 }}>
-                <Text style={{ ...letrista, fontSize: 22 }}>{apodoLamina(elegido).toUpperCase()}</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  
-                  <Text style={{ fontFamily: F.negrita, fontSize: 14 }}>{elegido.nombre} · {t('lámina', 'lámina')} {sel + 1}{letraLamina(elegido)}</Text>
-                </View>
-              </View>
-            </View>
-          ) : (
-            <Text style={{ ...letrista, fontSize: 22 }}>{textoCategoria(elegido.categoria).toUpperCase()}</Text>
-          )}
-          <Text style={{ fontFamily: F.normal, fontSize: 14 }}>
-            {mias[elegido.id]
-              ? `${t('La ganaste el', "La ganaste el")} ${new Date(mias[elegido.id]).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' })}${elegido.producto_estrella ? ' · ' + t('producto estrella', "imperdible") + ': ' + elegido.producto_estrella : ''}.`
-              : t('Canjea cualquier drop de este local y la lámina es tuya. Búscalo en el mapa.', "Canjea any drop en este local y la lámina es tuya. Find it en el mapa.")}
-          </Text>
-          {!mias[elegido.id] && <Boton texto={t("Ver en el mapa", "Ver en el mapa")} onPress={alIrAlMapa} />}
-          {mias[elegido.id] && rep[elegido.id] ? <Repetidas r={rep[elegido.id]} t={t} pidiendo={pidiendo} msg={msgRep} alPedir={() => pedirCambio(elegido.id)} /> : null}
-        </View>
-      )}
+      {detalle}
     </ScrollView>
   );
 }
@@ -391,7 +396,7 @@ function EdicionEspecial({ ide, barrio, tengo, necesarias, t }) {
 
 
 // Pósters de patios y malls: se ganan al estar adentro
-function Posters({ t }) {
+export function Posters({ t }) {
   const lugares = useLugares();
   const vistos = useVisitados();
   if (!lugares.length) return null;
@@ -406,5 +411,97 @@ function Posters({ t }) {
         {lugares.map((g) => <PosterLugar key={g.id} lugar={g} ancho={150} bloqueado={!vistos.includes(g.id)} />)}
       </ScrollView>
     </View>
+  );
+}
+
+// Álbum moderno: limpio como Inicio. Anillo de avance, barrios, premio y láminas en 3 columnas
+function AlbumModerno({ barrio, barrios, barrioSel, setBarrioSel, locales, mias, rep, sel, setSel, tengo, total, arte, msgArte, pedirArte, detalle, t, chile }) {
+  const r = 32, largo = 2 * Math.PI * r;
+  const avance = total ? tengo / total : 0;
+  const sombra = { shadowColor: '#000000', shadowOpacity: 0.06, shadowRadius: 10, shadowOffset: { width: 0, height: 3 }, elevation: 2 };
+  const premioSimple = arte && !arte.codigo && !arte.canjeado_at && !arte.ganado && arte.tengo < arte.necesarias;
+  return (
+    <ScrollView contentContainerStyle={{ paddingBottom: 110 }} style={{ backgroundColor: '#F4F4F4' }}>
+      <View style={{ backgroundColor: C.azul, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 18, borderBottomLeftRadius: 28, borderBottomRightRadius: 28, flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+        <View style={{ flex: 1, gap: 4 }}>
+          <Text style={{ fontFamily: F.negrita, fontSize: 11, letterSpacing: 1.5, color: C.amarillo }}>{t('TU ÁLBUM', 'YOUR ALBUM')}</Text>
+          <Text style={{ fontFamily: F.negrita, fontSize: 28, letterSpacing: -1, color: '#FFFFFF' }} numberOfLines={1}>{barrio ? barrio.nombre : 'Barrio Italia'}</Text>
+          <Text style={{ fontFamily: F.media, fontSize: 12, color: '#DCE6F5' }}>{barrio ? `${barrio.comuna} · ` : ''}{t(`${chile} láminas en todo Chile`, `${chile} stickers in Chile`)}</Text>
+        </View>
+        <View style={{ width: 82, height: 82, alignItems: 'center', justifyContent: 'center' }} accessibilityLabel={t(`${tengo} de ${total} láminas`, `${tengo} of ${total}`)}>
+          <Svg width={82} height={82} style={{ position: 'absolute' }}>
+            <Circle cx={41} cy={41} r={r} stroke="rgba(255,255,255,0.22)" strokeWidth={9} fill="none" />
+            <Circle cx={41} cy={41} r={r} stroke={C.amarillo} strokeWidth={9} fill="none" strokeDasharray={`${largo * avance} ${largo}`} strokeLinecap="round" transform="rotate(-90 41 41)" />
+          </Svg>
+          <Text style={{ fontFamily: F.negrita, fontSize: 19, color: '#FFFFFF' }}>{tengo}/{total}</Text>
+          <Text style={{ fontFamily: F.media, fontSize: 9, color: '#DCE6F5' }}>{t('láminas', 'stickers')}</Text>
+        </View>
+      </View>
+
+      {barrios.length > 1 ? (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingTop: 14 }}>
+          {barrios.map((x) => {
+            const activo = x.id === barrioSel;
+            return (
+              <Pressable key={x.id} onPress={() => setBarrioSel(x.id)} accessibilityRole="button" accessibilityState={{ selected: activo }}
+                style={{ minHeight: 36, paddingHorizontal: 14, borderRadius: 18, borderWidth: activo ? 0 : 1.5, borderColor: '#DDDDDD', backgroundColor: activo ? C.negro : '#FFFFFF', justifyContent: 'center' }}>
+                <Text style={{ fontFamily: F.negrita, fontSize: 13, color: activo ? '#FFFFFF' : x.lanzado ? C.negro : '#777777' }}>{x.nombre.replace(/^Barrio /, '')}{!x.lanzado ? t(' · pronto', ' · soon') : ''}</Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      ) : null}
+
+      {premioSimple ? (
+        <View style={{ marginHorizontal: 16, marginTop: 14, backgroundColor: '#FFFFFF', borderRadius: 18, padding: 12, flexDirection: 'row', gap: 12, alignItems: 'center', ...sombra }}>
+          <View style={{ width: 54, height: 54, borderRadius: 12, backgroundColor: C.amarillo, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            {arte.imagen ? <Image source={{ uri: arte.imagen }} style={{ width: 54, height: 54 }} accessibilityIgnoresInvertColors /> : <Text style={{ fontSize: 24 }}>🎁</Text>}
+          </View>
+          <View style={{ flex: 1, gap: 5 }}>
+            <Text style={{ fontFamily: F.negrita, fontSize: 14 }} numberOfLines={1}>{t('Premio', 'Prize')}: {arte.nombre}</Text>
+            <View style={{ height: 7, borderRadius: 4, backgroundColor: '#E8EEF8', overflow: 'hidden' }}>
+              <View style={{ width: `${Math.min(100, (arte.tengo / arte.necesarias) * 100)}%`, height: '100%', backgroundColor: C.azul }} />
+            </View>
+            <Text style={{ fontFamily: F.media, fontSize: 11, color: C.gris }}>{t(`${arte.tengo} de ${arte.necesarias} · el primero que las junte se lo lleva`, `${arte.tengo} of ${arte.necesarias} · first one wins`)}</Text>
+          </View>
+        </View>
+      ) : arte ? <ArteBarrio a={arte} t={t} msg={msgArte} alPedir={pedirArte} /> : null}
+
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', paddingHorizontal: 18, paddingTop: 18 }}>
+        <Text style={{ fontFamily: F.negrita, fontSize: 18 }}>{t('Láminas', 'Stickers')}</Text>
+        <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.gris }}>{total ? t(`Tienes ${tengo} · faltan ${total - tengo}`, `${tengo} · ${total - tengo} to go`) : ''}</Text>
+      </View>
+      {total === 0 ? (
+        <Text style={{ fontFamily: F.media, fontSize: 14, color: C.gris, paddingHorizontal: 18, paddingTop: 8 }}>{t('Todavía no hay locales en este barrio. Cuando se sumen, aquí aparecen sus láminas.', 'No places here yet.')}</Text>
+      ) : null}
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 16, paddingTop: 10, gap: 10 }}>
+        {locales.map((l, k) => {
+          const ganada = !!mias[l.id];
+          const activa = sel === k;
+          const reps = rep[l.id] && rep[l.id].repetidas;
+          return (
+            <Pressable key={l.id} onPress={() => setSel(activa ? null : k)} accessibilityRole="button"
+              accessibilityLabel={ganada ? `${l.nombre}${reps ? `, ${reps} ${t('repetidas', 'duplicates')}` : ''}` : `${textoCategoria(l.categoria)}, ${t('te falta', 'missing')}`}
+              style={{ width: '31.2%' }}>
+              {ganada ? (
+                <View style={{ backgroundColor: '#FFFFFF', borderRadius: 14, overflow: 'hidden', borderWidth: activa ? 2 : 0, borderColor: C.negro, ...sombra }}>
+                  <View style={{ height: 78 }}>
+                    <ArteLocal id={l.id} categoria={l.categoria} pista={l.nombre} ancho="100%" alto={78} borde={false} />
+                    {reps ? <View style={{ position: 'absolute', right: 6, top: 6, backgroundColor: C.negro, borderRadius: 6, paddingHorizontal: 5, paddingVertical: 1 }}><Text style={{ fontFamily: F.negrita, fontSize: 9, color: C.amarillo }}>×{reps}</Text></View> : null}
+                  </View>
+                  <Text numberOfLines={1} style={{ fontFamily: F.negrita, fontSize: 11, paddingHorizontal: 8, paddingVertical: 6 }}>{l.nombre}</Text>
+                </View>
+              ) : (
+                <View style={{ height: 104, borderRadius: 14, borderWidth: 2, borderStyle: 'dashed', borderColor: activa ? C.negro : '#C9C9C9', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                  <Text style={{ fontFamily: F.negrita, fontSize: 26, color: '#8A8A8A' }}>?</Text>
+                  <Text numberOfLines={1} style={{ fontFamily: F.negrita, fontSize: 10, color: '#8A8A8A' }}>{textoCategoria(l.categoria)} · {t('te falta', 'missing')}</Text>
+                </View>
+              )}
+            </Pressable>
+          );
+        })}
+      </View>
+      {detalle}
+    </ScrollView>
   );
 }

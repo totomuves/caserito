@@ -31,3 +31,12 @@ export function useRumbo(activo) {
   }, [activo]);
   return rumbo;
 }
+
+// Brújula encendida por defecto (salvo que la apagues: se recuerda)
+export function brujulaGuardada() { try { return localStorage.getItem('dropper_brujula') !== 'no'; } catch (e) { return true; } }
+export function guardarBrujula(si) { try { localStorage.setItem('dropper_brujula', si ? 'si' : 'no'); } catch (e) { /* nada */ } }
+// En iPhone el permiso de la brújula solo se puede pedir con un toque: lo pedimos en el primer toque a la pantalla
+if (typeof window !== 'undefined' && window.DeviceOrientationEvent && typeof window.DeviceOrientationEvent.requestPermission === 'function' && brujulaGuardada()) {
+  const pedir = () => { window.removeEventListener('pointerup', pedir, true); window.DeviceOrientationEvent.requestPermission().catch(() => {}); };
+  window.addEventListener('pointerup', pedir, true);
+}

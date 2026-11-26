@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabase, explicar } from './supabase.js';
 import { frasesPara, formatoPrecio } from './frases.js';
+import Entrega from './Entrega.jsx';
 
 const TIPOS = [
   { id: 'normal', texto: 'Normal', ayuda: 'Precio fijo para los primeros que lleguen.' },
@@ -43,6 +44,7 @@ export default function Crear({ local, base, alTerminar }) {
   const [error, setError] = useState('');
   const [listo, setListo] = useState(null);
   const [enviando, setEnviando] = useState(false);
+  const [entrega, setEntrega] = useState(null);
 
   useEffect(() => {
     if (!base || base.tipo !== 'grupal') return;
@@ -100,6 +102,7 @@ export default function Crear({ local, base, alTerminar }) {
     setAprobada(false);
     if (editarId && alTerminar) { alTerminar('Cambios guardados.'); return; }
     setListo(data);
+    setEntrega(data);
   }
 
   const tipoActual = TIPOS.find((t) => t.id === tipo);
@@ -142,6 +145,12 @@ export default function Crear({ local, base, alTerminar }) {
           <input type="time" value={hasta} onChange={cambio(setHasta)} />
         </label>
       </div>
+      {!editarId && (
+        <div className="pildoras">
+          <button type="button" className="pildora roja" onClick={() => { const d = new Date(Date.now() + 30 * 60000); setHasta(String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0')); setAprobada(false); setListo(null); }}>⚡ Relámpago · 30 min</button>
+          <span className="ayuda" style={{ alignSelf: 'center' }}>Dura media hora y la app muestra la cuenta regresiva.</span>
+        </div>
+      )}
 
       {tipo === 'grupal' && (
         <div className="tarjeta">
@@ -180,6 +189,7 @@ export default function Crear({ local, base, alTerminar }) {
       </div>
 
       {error && <div className="error">{error}</div>}
+      {entrega && <Entrega drop={entrega} alTerminar={() => setEntrega(null)} />}
       {listo && (
         <div className="exito">
           <b className="letrista" style={{ fontSize: 20 }}>¡DROP PUBLICADO!</b>
