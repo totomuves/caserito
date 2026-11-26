@@ -64,7 +64,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
   useEffect(() => {
     if (!centro || destino || !mapa.current) return;
     const d = deltaDe(radio);
-    mapa.current.animateToRegion({ latitude: centro.lat, longitude: centro.lng, latitudeDelta: d, longitudeDelta: d }, 400);
+    mapa.current.animateToRegion({ latitude: centro.lat, longitude: centro.lng, latitudeDelta: d, longitudeDelta: d }, 700);
   }, [radio, !!destino]);
   if (!centro) return null;
   const delta = deltaDe(radio);

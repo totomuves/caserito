@@ -104,7 +104,7 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
     if (!caja.current || mapa.current || !centro) return;
     caja.current.classList.add('droper-mini');
     if (ESTILO === 'moderno') caja.current.classList.add('moderno');
-    const m = L.map(caja.current, { zoomControl: false, attributionControl: true, dragging: false, scrollWheelZoom: false, doubleClickZoom: 'center', touchZoom: 'center', minZoom: 9, maxZoom: 19, zoomSnap: 0.25, zoomDelta: 0.5, boxZoom: false, keyboard: false, zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false });
+    const m = L.map(caja.current, { zoomControl: false, attributionControl: true, dragging: false, scrollWheelZoom: false, doubleClickZoom: 'center', touchZoom: 'center', minZoom: 9, maxZoom: 19, zoomSnap: 0, zoomDelta: 0.5, boxZoom: false, keyboard: false, zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false });
     L.tileLayer(LLAVE_CARTO
       ? `https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${LLAVE_CARTO}`
       : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(m);
@@ -133,9 +133,22 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
     const px = Math.min(tam.x, tam.y) / 1.5 - 24; // lo que se ve de la caja (mide 150% para girar)
     const mPorPx = (2 * radio) / Math.max(px, 60);
     const z = Math.log2((156543.03 * Math.cos((centro.lat * Math.PI) / 180)) / mPorPx);
-    const zoom = Math.max(9, Math.min(18, Math.floor(z * 4) / 4));
-    centrarEn(m, [centro.lat, centro.lng], zoom, false, 0);
+    const zoom = Math.max(9, Math.min(18, z));
     ultimoCentro.current = [centro.lat, centro.lng];
+    // zoom in / zoom out suave hasta que se vea justo la distancia elegida
+    const desde = m.getZoom() || 17;
+    if (Math.abs(desde - zoom) < 0.05) { centrarEn(m, [centro.lat, centro.lng], zoom, false, 0); return; }
+    const inicio = Date.now();
+    const dura = Math.min(900, 250 + Math.abs(desde - zoom) * 120);
+    let cuadro = 0;
+    const paso = () => {
+      const k = Math.min(1, (Date.now() - inicio) / dura);
+      const suave = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+      try { centrarEn(m, [centro.lat, centro.lng], desde + (zoom - desde) * suave, false, 0); } catch (e) { return; }
+      if (k < 1) cuadro = requestAnimationFrame(paso);
+    };
+    cuadro = requestAnimationFrame(paso);
+    return () => cancelAnimationFrame(cuadro);
   }, [radio, !!mapa.current, !!destino, !!centro]);
 
   // Con ruta el mapa crece un poco: Leaflet tiene que volver a medir
