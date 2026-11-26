@@ -15,7 +15,7 @@
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#F9F2E5"
+        "backgroundColor": "#FFD100"
       }
     },
     "ios": {
@@ -57,7 +57,7 @@
       "name": "Dropper",
       "shortName": "Dropper",
       "themeColor": "#FFD100",
-      "backgroundColor": "#F9F2E5",
+      "backgroundColor": "#FFD100",
       "lang": "es",
       "description": "Dropper — tu barrio te tiene ofertas. Drops de Barrio Italia.",
       "favicon": "./assets/favicon.png"
@@ -66,7 +66,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#F9F2E5"
+      "backgroundColor": "#FFD100"
     }
   }
 }

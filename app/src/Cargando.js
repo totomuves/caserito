@@ -18,7 +18,7 @@ export default function Cargando({ texto = 'Buscando drops cerca…', fuente }) 
   const escala = latido.interpolate({ inputRange: [0, 1], outputRange: [1, 1.08] });
   const giro = latido.interpolate({ inputRange: [0, 1], outputRange: ['-3deg', '3deg'] });
   return (
-    <View style={{ flex: 1, backgroundColor: '#F9F2E5', alignItems: 'center', justifyContent: 'center', gap: 22 }} accessibilityRole="progressbar" accessibilityLabel={texto}>
+    <View style={{ flex: 1, backgroundColor: '#FFD100', alignItems: 'center', justifyContent: 'center', gap: 22 }} accessibilityRole="progressbar" accessibilityLabel={texto}>
       <Animated.View style={{ transform: [{ scale: escala }, { rotate: giro }], borderWidth: 4, borderColor: '#111111', shadowColor: '#111111', shadowOffset: { width: 6, height: 6 }, shadowOpacity: 1, shadowRadius: 0, elevation: 0 }}>
         <SvgXml xml={ICONO} width={132} height={132} />
       </Animated.View>
