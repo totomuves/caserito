@@ -2,6 +2,7 @@ import PinLocal from './PinLocal.jsx';
 import React, { useState } from 'react';
 import { LaminaLocal } from './arteLocal.jsx';
 import { supabase, explicar } from './supabase.js';
+import { subirImagen } from './imagenes.js';
 import { COCINAS } from './frases.js';
 import { GRUPOS, CON_COCINA, MAX_CATEGORIAS } from './categorias.js';
 import EliminarLocal from './EliminarLocal.jsx';
@@ -43,27 +44,13 @@ export default function ConfigurarLocal({ usuario, local, alGuardar, alCancelar,
   // Achica el logo a 400 px en WebP antes de subirlo (pesa ~20 KB)
   async function subirLogo(e) {
     const archivo = e.target.files && e.target.files[0];
+    e.target.value = '';
     if (!archivo) return;
     setError(''); setSubiendo(true);
-    try {
-      const img = await createImageBitmap(archivo);
-      const lado = 400, escala = Math.min(1, lado / Math.max(img.width, img.height));
-      const lienzo = document.createElement('canvas');
-      lienzo.width = Math.round(img.width * escala);
-      lienzo.height = Math.round(img.height * escala);
-      lienzo.getContext('2d').drawImage(img, 0, 0, lienzo.width, lienzo.height);
-      const blob = await new Promise((r) => lienzo.toBlob(r, 'image/webp', 0.85));
-      const tipo = blob && blob.type === 'image/webp' ? 'image/webp' : 'image/jpeg';
-      const final = tipo === 'image/webp' ? blob : await new Promise((r) => lienzo.toBlob(r, 'image/jpeg', 0.85));
-      const ruta = `${usuario.id}/logo-${Date.now()}.${tipo === 'image/webp' ? 'webp' : 'jpg'}`;
-      const up = await supabase.storage.from('caserito-logos').upload(ruta, final, { contentType: tipo, upsert: true });
-      if (up.error) throw up.error;
-      setLogo(supabase.storage.from('caserito-logos').getPublicUrl(ruta).data.publicUrl);
-    } catch (err) {
-      setError(explicar(err));
-    }
+    try { setLogo(await subirImagen(archivo, 'lamina', 600)); } catch (err) { setError(explicar(err)); }
     setSubiendo(false);
   }
+
 
   const usaCocina = categorias.some((c) => CON_COCINA.includes(c));
 
@@ -130,14 +117,27 @@ export default function ConfigurarLocal({ usuario, local, alGuardar, alCancelar,
           </div>
         </div>
       )}
-      <div className="tarjeta" style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-        {local ? <LaminaLocal id={local.id} categoria={categorias[0] || local.categoria} pista={nombre} tam={72} /> : (
-          <span style={{ width: 72, height: 72, border: '2.5px dashed var(--negro)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 26 }}>?</span>
-        )}
-        <span className="ayuda" style={{ fontSize: 14 }}>
-          <b style={{ display: 'block', color: 'var(--negro)' }}>Tu logo es tu lámina</b>
-          {local ? 'Cada local tiene su propia lámina Bauhaus, única. Es la que ven los caseritos en el mapa y en su álbum.' : 'Al guardar, tu local recibe su propia lámina Bauhaus, única. Es su logo en el mapa y en el álbum.'}
-        </span>
+      <div className="tarjeta" style={{ boxShadow: '5px 5px 0 var(--negro)', gap: 12 }}>
+        <b className="letrista" style={{ fontSize: 20 }}>TU LÁMINA</b>
+        <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+          {local || logo ? (
+            <span style={{ background: '#fff', border: '3px solid var(--negro)', boxShadow: '4px 4px 0 var(--negro)', padding: 5, transform: 'rotate(-2deg)', flexShrink: 0 }}>
+              {local ? <LaminaLocal id={local.id} categoria={categorias[0] || local.categoria} pista={nombre} tam={96} imagen={logo || null} style={{ boxShadow: 'none', border: 0 }} />
+                : <img src={logo} alt="" style={{ width: 96, height: 96, objectFit: 'cover', display: 'block' }} />}
+            </span>
+          ) : (
+            <span style={{ width: 96, height: 96, border: '2.5px dashed var(--negro)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 26, flexShrink: 0 }}>?</span>
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
+            <span className="ayuda">La que ganan tus clientes en el álbum y la que se ve en el mapa. Un dibujo, tu producto estrella o tu fachada. Cuadrada, idealmente.</span>
+            <label className="boton" style={{ minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, boxShadow: '3px 3px 0 var(--negro)' }}>
+              {subiendo ? 'Subiendo…' : logo ? 'Cambiar imagen' : 'Subir imagen'}
+              <input type="file" accept="image/*" onChange={subirLogo} disabled={subiendo} style={{ display: 'none' }} />
+            </label>
+            {logo ? <button type="button" className="pildora" onClick={() => setLogo('')}>Usar la que hace Dropper</button> : null}
+          </div>
+        </div>
+        {logo && local && logo !== local.logo_url ? <span className="ayuda">Aprieta “Guardar cambios” para dejarla.</span> : null}
       </div>
       <label className="campo">Tu producto estrella (para la lámina del álbum)
         <input value={estrella} onChange={(e) => setEstrella(e.target.value)} placeholder="Ej: arepa, cortado, vinilo, chaqueta vintage" />

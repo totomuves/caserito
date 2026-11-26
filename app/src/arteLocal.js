@@ -1,5 +1,6 @@
 import React from 'react';
 import Svg, { Rect, Circle, Path, G } from 'react-native-svg';
+import { Image } from 'react-native';
 
 // Arte generativo Bauhaus: cada local tiene su propia composición, siempre la misma
 // (sale de su id). Diez familias de composiciones × colores × posiciones = una distinta por local.
@@ -189,7 +190,10 @@ export function composicion(id, categoria, pista = '') {
 }
 
 // Componente (iOS, Android y web)
-export function ArteLocal({ id, categoria, pista = '', ancho = 80, alto = 80, borde = true }) {
+export function ArteLocal({ id, categoria, pista = '', ancho = 80, alto = 80, borde = true, imagen = null }) {
+  if (imagen && /^https:\/\//.test(imagen)) {
+    return <Image source={{ uri: imagen }} style={{ width: ancho, height: alto, borderWidth: borde ? 2.5 : 0, borderColor: NEGRO }} resizeMode="cover" accessibilityIgnoresInvertColors />;
+  }
   const { figuras, sello, ojos, transform } = composicion(id, categoria, pista);
   const dibujar = (f, i) => {
     if (f.t === 'rect') return <Rect key={i} {...f.a} />;
@@ -214,7 +218,9 @@ export function ArteLocal({ id, categoria, pista = '', ancho = 80, alto = 80, bo
 }
 
 // Versión en texto SVG (para los pines HTML del mapa web)
-export function arteHtml(id, categoria, pista = '') {
+export function arteHtml(id, categoria, pista = '', imagen = null) {
+  // Si el local subió su propia lámina, se usa esa
+  if (imagen && /^https:\/\//.test(imagen)) return `<img src="${imagen.replace(/"/g, '%22')}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`;
   const { figuras, sello, ojos, transform } = composicion(id, categoria, pista);
   const attrs = (a) => Object.entries(a).map(([k, v]) => `${k}="${typeof v === 'number' ? Math.round(v * 10) / 10 : v}"`).join(' ');
   const cuerpo = `<g${transform ? ` transform="${transform}"` : ''}>${figuras.map((f) => `<${f.t} ${attrs(f.a)}/>`).join('')}</g><${sello.t} ${attrs(sello.a)}/>`

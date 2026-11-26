@@ -39,7 +39,7 @@ function ArteBauhaus({ local, alto = 80 }) {
   // Arte único por local (composición Bauhaus generada desde su id)
   return (
     <View style={{ height: alto, borderWidth: 2, borderColor: C.borde, overflow: 'hidden' }}>
-      <ArteLocal id={local.id} categoria={local.categoria} pista={local.nombre} ancho="100%" alto={alto} borde={false} />
+      <ArteLocal id={local.id} categoria={local.categoria} pista={local.nombre} ancho="100%" alto={alto} borde={false} imagen={local.logo_url} />
     </View>
   );
 }
@@ -486,7 +486,7 @@ function AlbumModerno({ barrio, barrios, barrioSel, setBarrioSel, locales, mias,
               {ganada ? (
                 <View style={{ backgroundColor: '#FFFFFF', borderRadius: 14, overflow: 'hidden', borderWidth: activa ? 2 : 0, borderColor: C.negro, ...sombra }}>
                   <View style={{ height: 78 }}>
-                    <ArteLocal id={l.id} categoria={l.categoria} pista={l.nombre} ancho="100%" alto={78} borde={false} />
+                    <ArteLocal id={l.id} categoria={l.categoria} pista={l.nombre} ancho="100%" alto={78} borde={false} imagen={l.logo_url} />
                     {reps ? <View style={{ position: 'absolute', right: 6, top: 6, backgroundColor: C.negro, borderRadius: 6, paddingHorizontal: 5, paddingVertical: 1 }}><Text style={{ fontFamily: F.negrita, fontSize: 9, color: C.amarillo }}>×{reps}</Text></View> : null}
                   </View>
                   <Text numberOfLines={1} style={{ fontFamily: F.negrita, fontSize: 11, paddingHorizontal: 8, paddingVertical: 6 }}>{l.nombre}</Text>

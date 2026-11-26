@@ -13,7 +13,7 @@ export default function MisDrops({ local, alEditar, alDuplicar, aviso }) {
   async function cargar() {
     const desde = new Date(Date.now() - 14 * 24 * 3600 * 1000).toISOString();
     const { data, error } = await supabase.from('drops')
-      .select('id, tipo, titulo, precio, precio_normal, cupo, frase, inicia_at, termina_at, participaciones(canjeado_at)')
+      .select('id, tipo, titulo, precio, precio_normal, cupo, frase, foto_url, inicia_at, termina_at, participaciones(canjeado_at)')
       .eq('local_id', local.id).gte('termina_at', desde).order('termina_at', { ascending: false });
     if (error) setError(explicar(error));
     else setDrops((data || []).map((d) => ({

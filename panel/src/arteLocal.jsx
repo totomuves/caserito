@@ -188,7 +188,9 @@ export function composicion(id, categoria, pista = '') {
 }
 
 // Versión en texto SVG (para los pines HTML del mapa web)
-export function arteHtml(id, categoria, pista = '') {
+export function arteHtml(id, categoria, pista = '', imagen = null) {
+  // Si el local subió su propia lámina, se usa esa
+  if (imagen && /^https:\/\//.test(imagen)) return `<img src="${imagen.replace(/"/g, '%22')}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`;
   const { figuras, sello, ojos, transform } = composicion(id, categoria, pista);
   const attrs = (a) => Object.entries(a).map(([k, v]) => `${k}="${typeof v === 'number' ? Math.round(v * 10) / 10 : v}"`).join(' ');
   const cuerpo = `<g${transform ? ` transform="${transform}"` : ''}>${figuras.map((f) => `<${f.t} ${attrs(f.a)}/>`).join('')}</g><${sello.t} ${attrs(sello.a)}/>`
@@ -199,10 +201,10 @@ export function arteHtml(id, categoria, pista = '') {
 export { CREMA };
 
 // La lámina del local es su logo (mismo arte que en la app)
-export function LaminaLocal({ id, categoria, pista = '', tam = 44, style }) {
+export function LaminaLocal({ id, categoria, pista = '', tam = 44, style, imagen = null }) {
   if (!id) return null;
   return (
     <span role="img" aria-label="Lámina del local" style={{ position: 'relative', display: 'inline-block', width: tam, height: tam, border: '2.5px solid #111', boxShadow: '2px 2px 0 #111', overflow: 'hidden', flexShrink: 0, background: '#FFF6E5', ...style }}
-      dangerouslySetInnerHTML={{ __html: arteHtml(id, categoria, pista) }} />
+      dangerouslySetInnerHTML={{ __html: arteHtml(id, categoria, pista, imagen) }} />
   );
 }

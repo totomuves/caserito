@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { supabase, explicar } from './supabase.js';
 import { frasesPara, formatoPrecio } from './frases.js';
 import Entrega from './Entrega.jsx';
+import { subirImagen } from './imagenes.js';
+import { LaminaLocal } from './arteLocal.jsx';
 
 const TIPOS = [
   { id: 'normal', texto: 'Normal', ayuda: 'Precio fijo para los primeros que lleguen.' },
@@ -45,6 +47,16 @@ export default function Crear({ local, base, alTerminar }) {
   const [listo, setListo] = useState(null);
   const [enviando, setEnviando] = useState(false);
   const [entrega, setEntrega] = useState(null);
+  const [foto, setFoto] = useState(base && base.foto_url ? base.foto_url : '');
+  const [subiendoFoto, setSubiendoFoto] = useState(false);
+  async function elegirFoto(e) {
+    const archivo = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!archivo) return;
+    setError(''); setSubiendoFoto(true);
+    try { setFoto(await subirImagen(archivo, 'drop', 900)); setListo(null); } catch (err) { setError(explicar(err)); }
+    setSubiendoFoto(false);
+  }
 
   useEffect(() => {
     if (!base || base.tipo !== 'grupal') return;
@@ -86,6 +98,7 @@ export default function Crear({ local, base, alTerminar }) {
       frase: fraseActual,
       frase_aprobada: true,
       termina_at: termina.toISOString(),
+      foto_url: foto || null,
     };
     const { data, error } = editarId
       ? await supabase.from('drops').update(campos).eq('id', editarId).select().single()
@@ -130,6 +143,34 @@ export default function Crear({ local, base, alTerminar }) {
       <label className="campo">¿Qué ofreces?
         <input value={titulo} onChange={cambio(setTitulo)} placeholder="Ej: arepa reina pepiada + jugo" />
       </label>
+
+      <div className="tarjeta" style={{ boxShadow: '5px 5px 0 var(--negro)', gap: 12 }}>
+        <b className="letrista" style={{ fontSize: 20 }}>GRÁFICA DEL DROP</b>
+        <span className="ayuda">Opcional. Una foto de lo que ofreces: así sale en la tarjeta. Sin foto, se usa tu lámina.</span>
+        <div style={{ width: 230, alignSelf: 'center', background: '#fff', border: '2.5px solid var(--negro)', boxShadow: '4px 4px 0 var(--negro)' }}>
+          <div style={{ height: 110, position: 'relative', overflow: 'hidden', background: 'var(--crema)' }}>
+            {foto ? <img src={foto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              : <LaminaLocal id={local.id} categoria={local.categoria} pista={local.nombre} tam={226} imagen={local.logo_url} style={{ border: 0, boxShadow: 'none', height: 110 }} />}
+            <span style={{ position: 'absolute', left: 10, top: 10, background: 'var(--negro)', color: 'var(--amarillo)', fontSize: 10, fontWeight: 800, padding: '3px 7px' }}>QUEDAN {cupo || '–'}</span>
+            {precio ? <span style={{ position: 'absolute', right: 10, bottom: 6, background: 'var(--amarillo)', border: '2px solid var(--negro)', fontWeight: 900, fontSize: 17, padding: '1px 9px' }}>{formatoPrecio(Number(precio))}</span> : null}
+          </div>
+          <div style={{ padding: '10px 12px' }}>
+            <div style={{ fontWeight: 900, fontSize: 15 }}>{local.nombre}</div>
+            <div style={{ fontSize: 12, color: '#444' }}>{titulo || 'Lo que ofreces'}</div>
+          </div>
+        </div>
+        <div className="pildoras">
+          <label className="pildora activa" style={{ display: 'flex', alignItems: 'center' }}>
+            {subiendoFoto ? 'Subiendo…' : '📷 Sacar foto'}
+            <input type="file" accept="image/*" capture="environment" onChange={elegirFoto} disabled={subiendoFoto} style={{ display: 'none' }} />
+          </label>
+          <label className="pildora" style={{ display: 'flex', alignItems: 'center' }}>
+            Elegir de la galería
+            <input type="file" accept="image/*" onChange={elegirFoto} disabled={subiendoFoto} style={{ display: 'none' }} />
+          </label>
+          {foto ? <button type="button" className="pildora" onClick={() => { setFoto(''); setListo(null); }}>Sin foto</button> : null}
+        </div>
+      </div>
 
       <div className="fila">
         <label className="campo">Precio drop

@@ -155,7 +155,7 @@ function TarjetaLamina({ l }) {
   return (
     <View style={{ width: 88, padding: 3, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.borde }}>
       <View style={{ height: 44, borderWidth: 2, borderColor: C.borde, overflow: 'hidden' }}>
-        <ArteLocal id={l.id} categoria={l.categoria} pista={l.nombre} ancho="100%" alto={44} borde={false} />
+        <ArteLocal id={l.id} categoria={l.categoria} pista={l.nombre} ancho="100%" alto={44} borde={false} imagen={l.logo_url} />
       </View>
       <Text numberOfLines={1} style={{ fontSize: 9.5, fontWeight: '800', marginTop: 2 }}>{l.nombre}</Text>
       <Text numberOfLines={2} style={{ fontSize: 8.5, lineHeight: 10, fontWeight: '800', color: C.rojo }}>★ {especialidad(l)}</Text>

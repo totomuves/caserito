@@ -68,7 +68,7 @@ export default function Drop({ drop, usuario, alCerrar, alComoLlegar = null, sig
           <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={C.negro} strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round"><Path d="M15 18l-6-6 6-6" /></Svg>
         </Pressable>
         <View accessibilityLabel={`Lámina de ${drop.local_nombre}`} style={{ width: 44, height: 44, borderWidth: 2.5, borderColor: C.borde, overflow: 'hidden', backgroundColor: C.papel }}>
-          <ArteLocal id={drop.local_id} categoria={drop.categoria} pista={drop.local_nombre} ancho={39} alto={39} borde={false} />
+          <ArteLocal id={drop.local_id} categoria={drop.categoria} pista={drop.local_nombre} ancho={39} alto={39} borde={false} imagen={drop.lamina_url} />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={{ ...letrista, fontSize: 22, color: sobrio() ? C.negro : C.papel, textShadowColor: C.negro, textShadowOffset: { width: sobrio() ? 0 : 2, height: sobrio() ? 0 : 2 }, textShadowRadius: 0 }} numberOfLines={1}>{drop.local_nombre}</Text>
@@ -98,6 +98,10 @@ export default function Drop({ drop, usuario, alCerrar, alComoLlegar = null, sig
       </View>
       )}
 
+      {drop.foto_url && !(drop.tipo === 'sorpresa' && !mio) ? (
+        <Image source={{ uri: drop.foto_url }} accessibilityLabel={drop.titulo} accessibilityIgnoresInvertColors resizeMode="cover"
+          style={{ marginHorizontal: 16, marginTop: 14, height: 200, borderWidth: 2.5, borderColor: C.borde, borderRadius: R(16), backgroundColor: C.crema }} />
+      ) : null}
       <View style={{ marginHorizontal: 16, marginTop: 14, backgroundColor: C.papel, borderWidth: 2.5, borderColor: C.borde, borderRadius: R(16), padding: 18, gap: 10 }}>
         <Text style={{ fontFamily: F.negrita, fontSize: 12, color: C.rojoTexto, textTransform: 'uppercase' }}>
           {drop.tipo === 'recien_llegado' ? t('Recién llegado', "Recién llegado · Just in") : drop.tipo === 'grupal' ? t('Drop grupal', "Drop grupal · Group") : drop.tipo === 'sorpresa' ? t('Drop sorpresa', "Drop sorpresa · Mystery") : 'Drop'} · {t('quedan', "quedan:")} {quedan}

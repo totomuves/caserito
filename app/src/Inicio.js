@@ -195,7 +195,7 @@ export default function Inicio({ drops, usuario, lejos, alAbrir, alRefrescar, al
                 style={{ width: 240, backgroundColor: '#FFFFFF', borderRadius: 22, borderWidth: 1, borderColor: C.borde, shadowColor: '#111111', shadowOpacity: 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 3 }}>
                 <Pressable onPress={() => alAbrir(d)} accessibilityRole="button" accessibilityLabel={`${d.local_nombre}, ${d.frase || d.titulo}`}>
                   <View style={{ height: 120, borderTopLeftRadius: 22, borderTopRightRadius: 22, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: C.crema }}>
-                    <ArteLocal id={d.local_id} categoria={d.categoria} pista={d.local_nombre} ancho={240} alto={240} borde={false} />
+                    <ArteLocal id={d.local_id} categoria={d.categoria} pista={d.local_nombre} ancho={240} alto={(d.tipo !== 'sorpresa' && d.foto_url) || d.lamina_url ? 120 : 240} borde={false} imagen={(d.tipo !== 'sorpresa' && d.foto_url) || d.lamina_url} />
                     <View style={{ position: 'absolute', left: 12, top: 12, backgroundColor: C.negro, borderRadius: 10, paddingHorizontal: 9, paddingVertical: 4 }}>
                       <Text style={{ fontFamily: F.negrita, fontSize: 11, color: C.amarillo }}>{t('QUEDAN', 'QUEDAN')} {d.quedan}</Text>
                     </View>

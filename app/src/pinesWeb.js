@@ -28,7 +28,7 @@ export const CSS_PINES = `
 export function laminaPinHtml(l, d, tintinea = false) {
   return `<div class="mini-lam${d ? ' con-drop' : ''}${tintinea ? ' tintinea' : ''}" title="${esc(l.nombre)}">`
     + (d ? `<div class="precio">${d.tipo === 'sorpresa' ? '¿?' : esc(precio(d.precio) || 'DROP')}</div>` : '')
-    + `<div class="carta">${arteHtml(l.id, l.categoria, l.nombre)}</div><div class="nom">${esc(l.nombre)}</div><div class="punta"></div></div>`;
+    + `<div class="carta">${arteHtml(l.id, l.categoria, l.nombre, l.logo_url || (d && d.lamina_url))}</div><div class="nom">${esc(l.nombre)}</div><div class="punta"></div></div>`;
 }
 export const tamLamina = (d) => ({ iconSize: [58, d ? 78 : 62], iconAnchor: [29, d ? 76 : 60] });
 

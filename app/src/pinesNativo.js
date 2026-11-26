@@ -14,7 +14,7 @@ export function LaminaPin({ l, d }) {
         </View>
       ) : null}
       <View style={{ backgroundColor: '#FFFFFF', borderRadius: 8, padding: 2, borderWidth: d ? 2 : 1, borderColor: d ? '#111111' : '#D9D9DF' }}>
-        <ArteLocal id={l.id} categoria={l.categoria} pista={l.nombre} ancho={36} alto={36} borde={false} />
+        <ArteLocal id={l.id} categoria={l.categoria} pista={l.nombre} ancho={36} alto={36} borde={false} imagen={l.logo_url || (d && d.lamina_url)} />
       </View>
       <Text numberOfLines={1} style={{ fontFamily: F.negrita, fontSize: 8, maxWidth: 56, marginTop: 1, color: '#111111' }}>{l.nombre}</Text>
       <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#111111', marginTop: 2 }} />
