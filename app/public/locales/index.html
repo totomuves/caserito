@@ -30,11 +30,12 @@
   @media (max-width:760px) { header nav { display:none; } .chip { margin-left:auto; } }
   .portada { background:var(--amarillo); border-radius:0 0 40px 40px; overflow:hidden; position:relative; margin-bottom:20px; }
   .portada .circulo { position:absolute; right:-110px; top:-110px; width:320px; height:320px; border-radius:50%; background:var(--rojo); }
+  @media (max-width: 640px) { .portada .circulo { width:200px; height:200px; right:-90px; top:-90px; } }
   .portada .cuadro { position:absolute; left:0; bottom:0; width:110px; height:64px; background:var(--azul); }
   .hero { position:relative; display:grid; grid-template-columns:1.15fr .85fr; gap:28px; align-items:center; padding:52px 0 56px; }
-  .hero h1 { font-size:clamp(44px, 7.5vw, 86px); line-height:.92; margin:0; letter-spacing:-3px; }
+  .hero h1 { position:relative; z-index:2; font-size:clamp(34px, 9vw, 86px); line-height:.92; margin:0; letter-spacing:-3px; }
   .hero h1 span { display:block; color:var(--rojo); }
-  .hero p { font-size:20px; font-weight:600; max-width:520px; }
+  .hero p { position:relative; z-index:2; font-size:20px; font-weight:600; max-width:520px; }
   .hero img { border-radius:18px; transform:rotate(2deg); box-shadow:0 18px 40px rgba(0,0,0,.25); border:3px solid var(--negro); }
   @media (max-width:820px) { .hero { grid-template-columns:1fr; } .hero img { max-width:340px; } }
   .botones { display:flex; flex-wrap:wrap; gap:12px; margin-top:22px; }
@@ -78,7 +79,7 @@
 <body>
 <header>
   <div class="envoltorio fila">
-    <a href="/conoce/" aria-label="Dropper" style="display:flex;gap:8px;align-items:center"><img src="/marca/dropper-icono.svg" alt="" style="height:38px;border-radius:9px"><img class="logo" src="/marca/dropper-letras.svg" alt="Dropper"></a>
+    <a href="/conoce/" aria-label="Dropper" style="display:flex;gap:8px;align-items:center"><img src="/marca/dropper-icono.svg?v=4" alt="" style="height:38px;border-radius:9px"><img class="logo" src="/marca/dropper-letras.svg?v=4" alt="Dropper"></a>
     <nav aria-label="Secciones"><a href="#como">Cómo funciona</a><a href="#lamina">Tu lámina y tu kit</a><a href="#costo">Cuánto cuesta</a><a href="#sumarme">Sumarme</a></nav>
     <span class="chip">Para locales</span>
   </div>
@@ -93,7 +94,7 @@
       <a class="boton secundario" href="#sumarme">Quiero sumarme</a>
     </div>
   </div>
-    <img src="/marca/dropper-completo.svg" alt="Dropper: el repartidor del barrio" style="transform:rotate(-2deg);background:#F9F2E5">
+    <img src="/marca/dropper-completo.svg?v=4" alt="Dropper: el repartidor del barrio" style="transform:rotate(-2deg);background:#F9F2E5">
   </div>
 </div></div>
 <main class="envoltorio">
