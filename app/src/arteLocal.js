@@ -130,13 +130,22 @@ const M = {
   audifonos: ([a, b, c, f]) => [semi(50, 54, 32, true, a), semi(50, 54, 24, true, f), rect(14, 50, 16, 30, b), rect(70, 50, 16, 30, b), rect(10, 56, 6, 18, c), rect(84, 56, 6, 18, c)],
   escenario: ([a, b, c, f, t]) => [semi(50, 84, 42, true, a), rect(8, 84, 84, 8, t), tri(18, 6, 30, 6, 44, 70, b), tri(70, 6, 82, 6, 56, 70, b), circ(50, 46, 7, c), rect(48, 52, 4, 30, c)],
   pata: ([a, b]) => [circ(50, 62, 18, a), circ(28, 40, 8, b), circ(42, 28, 8, b), circ(58, 28, 8, b), circ(72, 40, 8, b)],
+  pesa: ([a, b, c]) => [rect(22, 47, 56, 6, c), rect(14, 30, 10, 40, a), rect(26, 34, 8, 32, b), rect(66, 34, 8, 32, b), rect(76, 30, 10, 40, a)],
+  bici: ([a, b, c, f]) => [circ(28, 64, 17, a), circ(28, 64, 9, f), circ(72, 64, 17, b), circ(72, 64, 9, f), tri(28, 64, 50, 36, 56, 64, c), rect(46, 30, 16, 5, c), rect(66, 34, 6, 30, c)],
+  carta: ([a, b, c, f]) => [rect(20, 22, 38, 56, b), rect(40, 18, 40, 60, a), circ(60, 44, 9, f), tri(52, 52, 68, 52, 60, 64, f), rect(46, 24, 7, 7, c)],
+  dado: ([a, b, c, f]) => [rect(22, 22, 56, 56, a), circ(36, 36, 6, f), circ(50, 50, 6, f), circ(64, 64, 6, f), rect(22, 72, 56, 6, b), rect(72, 22, 6, 56, c)],
+  control: ([a, b, c, f]) => [circ(30, 56, 18, a), circ(70, 56, 18, a), rect(30, 38, 40, 36, a), rect(24, 52, 14, 5, f), rect(28.5, 47.5, 5, 14, f), circ(68, 50, 4, b), circ(76, 58, 4, c)],
+  celular: ([a, b, c, f]) => [rect(32, 14, 36, 72, a), rect(37, 22, 26, 50, b), circ(50, 79, 4, f), rect(44, 17, 12, 2, f), tri(44, 40, 58, 47, 44, 54, c)],
+  llave: ([a, b, c, f]) => [circ(32, 32, 16, a), circ(32, 32, 7, f), rect(30, 26, 10, 12, f), tri(40, 36, 46, 30, 84, 74, b), tri(40, 36, 78, 80, 84, 74, b), circ(80, 76, 7, c)],
 };
 const MOTIVO_RUBRO = {
   cafe: 'taza', comer: 'plato', tomar: 'copa', dulce: 'helado', almacen: 'bolsa', libros: 'libros', musica: 'disco', ropa: 'ropa',
   accesorios: 'lentes', plantas: 'planta', arte: 'paleta', deco: 'lampara', antiguedades: 'reloj', diseno: 'escuadra', belleza: 'tijeras',
-  bienestar: 'loto', mascotas: 'pata',
+  bienestar: 'loto', mascotas: 'pata', deporte: 'pesa', bicis: 'bici', juegos: 'dado', tecnologia: 'celular',
 };
 const PALABRAS = [
+  [/gimnas|\bgym\b|crossfit|box(?!er)|fitness|entrenamiento|pilates/, 'pesa'], [/bici|bike|cicl/, 'bici'], [/carta|magic|pok[eé]mon|tcg|yu-?gi|naipe/, 'carta'], [/videojuego|gamer|consola|playstation|nintendo|xbox|arcade/, 'control'],
+  [/juego|board ?game|c[oó]mic|manga|rol\b/, 'dado'], [/celular|t[eé]cnico|reparaci[oó]n|computa|tecnolog/, 'celular'], [/ferreter|cerrajer|taller mec/, 'llave'],
   // Música primero (un "bar de rock" es rock antes que bar)
   [/sala|concierto|en vivo|live|club de jazz|escenario|tocata/, 'escenario'], [/rock|metal|punk|grunge|heavy/, 'rayo'], [/guitar|luthier|instrument/, 'guitarra'], [/jazz|blues|piano|conservatorio|escuela de m[uú]sica|ensayo/, 'nota'],
   [/audio|sonido|parlante|amplific/, 'parlante'], [/aud[ií]fono|headphone|\bdj\b/, 'audifonos'],
@@ -150,6 +159,9 @@ function motivoDe(categoria, pista, s = 0) {
   const p = String(pista || '').toLowerCase() + ' ';
   for (const [re, m] of PALABRAS) if (re.test(p)) return m;
   if (categoria === 'envivo') return ['escenario', 'nota', 'rayo', 'guitarra'][s % 4];
+  if (categoria === 'juegos') return ['dado', 'carta', 'control'][s % 3];
+  if (categoria === 'bicis') return ['bici', 'llave'][s % 2];
+  if (categoria === 'tecnologia') return ['celular', 'llave'][s % 2];
   if (categoria === 'musica') return ['disco', 'guitarra', 'nota', 'parlante', 'rayo'][s % 5]; // música: cada local con su instrumento
   return MOTIVO_RUBRO[categoria] || null;
 }
@@ -166,7 +178,7 @@ function composicionMotivo(s, r, motivo) {
   const [f, k, a, b, c] = colores(r, 5); // cinco colores distintos: fondo, figura de fondo y tres del pictograma
   const fondo = FONDOS[(s >>> 3) % FONDOS.length](k);
   const figuras = [rect(0, 0, 100, 100, f), ...fondo, ...M[motivo]([a, b, c, f, f === NEGRO || k === NEGRO ? '#FFFFFF' : NEGRO])];
-  const espejo = (s >>> 6) % 2 && !['libros', 'taza', 'jarra', 'paleta', 'silla'].includes(motivo) ? 'translate(100 0) scale(-1 1)' : '';
+  const espejo = (s >>> 6) % 2 && !['libros', 'taza', 'jarra', 'paleta', 'silla', 'celular', 'carta'].includes(motivo) ? 'translate(100 0) scale(-1 1)' : '';
   return { figuras, sello: rect(0, 0, 0, 0, 'none'), ojos: false, transform: espejo };
 }
 

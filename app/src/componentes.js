@@ -76,6 +76,10 @@ const ICONOS = {
   belleza: 'M6 6a3 3 0 1 0 0 .1M6 18a3 3 0 1 0 0 .1M8.5 7.5L20 18M8.5 16.5L20 6',
   bienestar: 'M12 21c-5-3-8-7-8-11a8 8 0 0 1 8-6 8 8 0 0 1 8 6c0 4-3 8-8 11zM12 9v8',
   mascotas: 'M12 21c-3 0-5-2-5-4s2-4 5-4 5 2 5 4-2 4-5 4zM6 10a2 2 0 1 0 0 .1M10 6a2 2 0 1 0 0 .1M14 6a2 2 0 1 0 0 .1M18 10a2 2 0 1 0 0 .1',
+  deporte: 'M6 8v8M3 10v4M18 8v8M21 10v4M6 12h12',
+  bicis: 'M6 17a3.5 3.5 0 1 0 0 .1M18 17a3.5 3.5 0 1 0 0 .1M6 17l4-8h6l2 8M10 9l2-3h2M12 17l4-8',
+  juegos: 'M4 4h16v16H4zM8.5 8.5a.5.5 0 1 0 0 .1M12 12a.5.5 0 1 0 0 .1M15.5 15.5a.5.5 0 1 0 0 .1',
+  tecnologia: 'M7 2h10v20H7zM11 18h2',
 };
 
 export function IconoCategoria({ categoria, tam = 28, color = C.negro }) {

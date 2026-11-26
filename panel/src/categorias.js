@@ -23,6 +23,8 @@ export const GRUPOS = [
       { id: 'envivo', texto: 'Sala de música y conciertos en vivo' },
       { id: 'arte', texto: 'Arte y galerías' },
       { id: 'plantas', texto: 'Plantas y flores' },
+      { id: 'juegos', texto: 'Juegos de mesa, cartas y cómics' },
+      { id: 'tecnologia', texto: 'Tecnología y reparación de celulares' },
     ],
   },
   {
@@ -30,6 +32,8 @@ export const GRUPOS = [
     items: [
       { id: 'belleza', texto: 'Belleza, barbería y tattoo' },
       { id: 'bienestar', texto: 'Bienestar (yoga, masajes)' },
+      { id: 'deporte', texto: 'Gimnasio y deporte' },
+      { id: 'bicis', texto: 'Bicicletas y taller de bicis' },
       { id: 'mascotas', texto: 'Mascotas' },
       { id: 'otros', texto: 'Otro' },
     ],
