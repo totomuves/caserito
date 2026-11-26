@@ -137,15 +137,19 @@ const M = {
   control: ([a, b, c, f]) => [circ(30, 56, 18, a), circ(70, 56, 18, a), rect(30, 38, 40, 36, a), rect(24, 52, 14, 5, f), rect(28.5, 47.5, 5, 14, f), circ(68, 50, 4, b), circ(76, 58, 4, c)],
   celular: ([a, b, c, f]) => [rect(32, 14, 36, 72, a), rect(37, 22, 26, 50, b), circ(50, 79, 4, f), rect(44, 17, 12, 2, f), tri(44, 40, 58, 47, 44, 54, c)],
   llave: ([a, b, c, f]) => [circ(32, 32, 16, a), circ(32, 32, 7, f), rect(30, 26, 10, 12, f), tri(40, 36, 46, 30, 84, 74, b), tri(40, 36, 78, 80, 84, 74, b), circ(80, 76, 7, c)],
+  lavadora: ([a, b, c, f]) => [rect(22, 16, 56, 68, a), rect(22, 16, 56, 12, b), circ(50, 56, 19, f), circ(50, 56, 12, c), circ(32, 22, 3, f)],
+  cruz: ([a, b, c]) => [rect(40, 18, 20, 64, a), rect(18, 40, 64, 20, a), circ(76, 24, 8, b), rect(18, 78, 26, 5, c)],
+  camara: ([a, b, c, f]) => [rect(16, 32, 68, 46, a), rect(34, 24, 24, 10, a), circ(50, 55, 16, f), circ(50, 55, 10, b), rect(70, 37, 8, 6, c)],
+  lapiz: ([a, b, c, f]) => [rect(16, 70, 68, 8, c), tri(28, 62, 34, 52, 22, 56, f), rect(30, 28, 12, 34, a), rect(30, 22, 12, 8, b), tri(30, 62, 42, 62, 36, 72, f), rect(52, 30, 30, 4, b), rect(52, 40, 22, 4, b), rect(52, 50, 26, 4, b)],
 };
 const MOTIVO_RUBRO = {
   cafe: 'taza', comer: 'plato', tomar: 'copa', dulce: 'helado', almacen: 'bolsa', libros: 'libros', musica: 'disco', ropa: 'ropa',
   accesorios: 'lentes', plantas: 'planta', arte: 'paleta', deco: 'lampara', antiguedades: 'reloj', diseno: 'escuadra', belleza: 'tijeras',
-  bienestar: 'loto', mascotas: 'pata', deporte: 'pesa', bicis: 'bici', juegos: 'dado', tecnologia: 'celular',
+  bienestar: 'loto', mascotas: 'pata', deporte: 'pesa', bicis: 'bici', juegos: 'dado', tecnologia: 'celular', ferreteria: 'llave', lavanderia: 'lavadora', farmacia: 'cruz', fotografia: 'camara', clases: 'lapiz',
 };
 const PALABRAS = [
   [/gimnas|\bgym\b|crossfit|box(?!er)|fitness|entrenamiento|pilates/, 'pesa'], [/bici|bike|cicl/, 'bici'], [/carta|magic|pok[eé]mon|tcg|yu-?gi|naipe/, 'carta'], [/videojuego|gamer|consola|playstation|nintendo|xbox|arcade/, 'control'],
-  [/juego|board ?game|c[oó]mic|manga|rol\b/, 'dado'], [/celular|t[eé]cnico|reparaci[oó]n|computa|tecnolog/, 'celular'], [/ferreter|cerrajer|taller mec/, 'llave'],
+  [/juego|board ?game|c[oó]mic|manga|rol\b/, 'dado'], [/celular|t[eé]cnico|reparaci[oó]n|computa|tecnolog/, 'celular'], [/ferreter|cerrajer|taller mec/, 'llave'], [/lavander|laundry|tintorer/, 'lavadora'], [/farmac|botica|droguer/, 'cruz'], [/foto|estudio fotogr|c[aá]mara|revelado/, 'camara'],
   // Música primero (un "bar de rock" es rock antes que bar)
   [/sala|concierto|en vivo|live|club de jazz|escenario|tocata/, 'escenario'], [/rock|metal|punk|grunge|heavy/, 'rayo'], [/guitar|luthier|instrument/, 'guitarra'], [/jazz|blues|piano|conservatorio|escuela de m[uú]sica|ensayo/, 'nota'],
   [/audio|sonido|parlante|amplific/, 'parlante'], [/aud[ií]fono|headphone|\bdj\b/, 'audifonos'],
@@ -154,6 +158,7 @@ const PALABRAS = [
   [/caf[eé]|coffee|espresso|tostad/, 'taza'], [/flor|florer/, 'flor'], [/libr|book/, 'libros'], [/vinil|disco|record|music/, 'disco'],
   [/silla|mueble|furniture/, 'silla'], [/optic|lente/, 'lentes'], [/peluq|barber|sal[oó]n/, 'tijeras'], [/veterin|mascot|pet\b|perr|gat/, 'pata'],
   [/plant|vivero|jard[ií]n/, 'planta'], [/galer[ií]a|arte\b|taller/, 'paleta'], [/antig[uü]/, 'reloj'], [/yoga|spa\b|masaj/, 'loto'],
+  [/clases|academia|escuela|instituto|taller de|curso/, 'lapiz'],
 ];
 function motivoDe(categoria, pista, s = 0) {
   const p = String(pista || '').toLowerCase() + ' ';

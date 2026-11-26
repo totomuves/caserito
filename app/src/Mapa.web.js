@@ -3,9 +3,9 @@ import { Pressable, Text, View } from 'react-native';
 import { C, R, cuadras, textoCategoria, ESTILO } from './tema';
 import { figuraDe } from './componentes';
 import { arteHtml } from './arteLocal';
-import { CSS_PINES, laminaPinHtml, tamLamina, posterPinHtml, tamPoster } from './pinesWeb';
+import { CSS_PINES, laminaPinHtml, tamLamina, posterPinHtml, tamPoster, separarPines } from './pinesWeb';
 import { conectarCalles, CSS_CALLES } from './callesWeb';
-import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, useTiendasOsm, SelectorBarrios, FiltrosMapa, HojaMapa, traerRuta, BarraRuta } from './MapaComun';
+import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, useTiendasOsm, SelectorBarrios, FiltrosMapa, HojaMapa, traerRuta, BarraRuta, separarPuntos } from './MapaComun';
 import { caminar } from './Drop';
 import { useRumbo, pedirPermisoRumbo, brujulaGuardada, guardarBrujula } from './rumbo';
 
@@ -256,6 +256,7 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
     visibles.forEach((d) => { if (!dropDe[d.local_id]) dropDe[d.local_id] = d; });
     const puntos = locales.map((l) => ({ l, p: l.punto }));
     visibles.forEach((d) => { if (!locales.some((l) => l.id === d.local_id) && coords[d.local_id]) puntos.push({ l: { id: d.local_id, nombre: d.local_nombre, categoria: d.categoria }, p: coords[d.local_id] }); });
+    const items = [];
     puntos.forEach(({ l, p }) => {
       const d = dropDe[l.id];
       if (!cerca && !d) {
@@ -267,7 +268,9 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
       if (d) mk.on('click', () => setSel(d));
       else mk.bindPopup(`<b>${escapar(l.nombre)}</b><br>${escapar(textoCategoria(l.categoria))}${l.producto_estrella ? ' · ★ ' + escapar(l.producto_estrella) : ''}<br><span style="color:#4A4A4A">Sin drop ahora</span>`);
       mk.addTo(capa.current);
+      items.push({ marker: mk, latlng: L.latLng(p.lat, p.lng) });
     });
+    return separarPines(mapa.current, items, separarPuntos);
   }, [drops, coords, locales, filtro, cerca, yo && Math.round(yo.lat * 11132), yo && Math.round(yo.lng * 9300)]);
 
   return (

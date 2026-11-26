@@ -406,3 +406,37 @@ export function BarraRuta({ destino, ruta, alCerrar, alExterno, yo = null }) {
     </View>
   );
 }
+
+// Locales pegados: si dos láminas quedan a menos de `umbral` px, se abren en abanico alrededor
+// de su centro para que ninguna tape a la otra. Recibe puntos en píxeles {x, y} y devuelve los nuevos.
+export function separarPuntos(pts, umbral = 46) {
+  const out = pts.map((p) => ({ x: p.x, y: p.y }));
+  const usado = new Array(pts.length).fill(false);
+  for (let i = 0; i < pts.length; i++) {
+    if (usado[i]) continue;
+    const grupo = [i];
+    usado[i] = true;
+    for (let k = 0; k < grupo.length; k++) {
+      for (let j = 0; j < pts.length; j++) {
+        if (!usado[j] && Math.hypot(pts[j].x - pts[grupo[k]].x, pts[j].y - pts[grupo[k]].y) < umbral) { usado[j] = true; grupo.push(j); }
+      }
+    }
+    if (grupo.length < 2) continue;
+    const cx = grupo.reduce((s, g) => s + pts[g].x, 0) / grupo.length;
+    const cy = grupo.reduce((s, g) => s + pts[g].y, 0) / grupo.length;
+    const radio = 32 / Math.sin(Math.PI / grupo.length); // separación justa para que las láminas (58 px) no se toquen
+    grupo.forEach((g, n) => {
+      const ang = (grupo.length === 2 ? Math.PI : -Math.PI / 2) + (2 * Math.PI * n) / grupo.length;
+      out[g] = { x: cx + radio * Math.cos(ang), y: cy + radio * Math.sin(ang) };
+    });
+  }
+  return out;
+}
+
+// Lo mismo para los mapas del teléfono (react-native-maps): de grados a píxeles con la región visible y de vuelta
+export function separarCoords(puntos, region, tam) {
+  if (!region || !tam || !tam.w || !tam.h || puntos.length < 2) return puntos;
+  const px = puntos.map((p) => ({ x: ((p.lng - region.longitude) / region.longitudeDelta) * tam.w, y: ((region.latitude - p.lat) / region.latitudeDelta) * tam.h }));
+  const nuevos = separarPuntos(px, 50);
+  return nuevos.map((n, i) => (n.x === px[i].x && n.y === px[i].y ? puntos[i] : { lat: region.latitude - (n.y / tam.h) * region.latitudeDelta, lng: region.longitude + (n.x / tam.w) * region.longitudeDelta }));
+}

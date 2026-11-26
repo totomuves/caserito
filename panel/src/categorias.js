@@ -25,6 +25,8 @@ export const GRUPOS = [
       { id: 'plantas', texto: 'Plantas y flores' },
       { id: 'juegos', texto: 'Juegos de mesa, cartas y cómics' },
       { id: 'tecnologia', texto: 'Tecnología y reparación de celulares' },
+      { id: 'ferreteria', texto: 'Ferretería' },
+      { id: 'fotografia', texto: 'Fotografía y revelado' },
     ],
   },
   {
@@ -34,6 +36,9 @@ export const GRUPOS = [
       { id: 'bienestar', texto: 'Bienestar (yoga, masajes)' },
       { id: 'deporte', texto: 'Gimnasio y deporte' },
       { id: 'bicis', texto: 'Bicicletas y taller de bicis' },
+      { id: 'lavanderia', texto: 'Lavandería' },
+      { id: 'farmacia', texto: 'Farmacia' },
+      { id: 'clases', texto: 'Clases y talleres' },
       { id: 'mascotas', texto: 'Mascotas' },
       { id: 'otros', texto: 'Otro' },
     ],

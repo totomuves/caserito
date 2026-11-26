@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { C, F, R, precio, ESTILO } from './tema';
-import { useCoordenadas, useLocalesMapa, useTiendasOsm, especialidad, traerRuta, PanelRuta, ANCHO_PANEL } from './MapaComun';
+import { useCoordenadas, useLocalesMapa, useTiendasOsm, especialidad, traerRuta, PanelRuta, ANCHO_PANEL, separarPuntos } from './MapaComun';
 import { caminar } from './Drop';
 import { arteHtml } from './arteLocal';
 import { brujulaGuardada, guardarBrujula } from './rumbo';
 import { conectarCalles, CSS_CALLES } from './callesWeb';
-import { CSS_PINES, laminaPinHtml, tamLamina, posterPinHtml, tamPoster } from './pinesWeb';
+import { CSS_PINES, laminaPinHtml, tamLamina, posterPinHtml, tamPoster, separarPines } from './pinesWeb';
 
 const L = require('leaflet');
 const LLAVE_CARTO = process.env.EXPO_PUBLIC_CARTO_KEY || '';
@@ -212,13 +212,16 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
     drops.forEach((d) => { if (!dropDe[d.local_id]) dropDe[d.local_id] = d; });
     const puntos = locales.map((l) => ({ l, p: l.punto }));
     drops.forEach((d) => { if (!locales.some((l) => l.id === d.local_id) && coords[d.local_id]) puntos.push({ l: { id: d.local_id, nombre: d.local_nombre, categoria: d.categoria }, p: coords[d.local_id] }); });
+    const items = [];
     puntos.forEach(({ l, p }) => {
       const d = dropDe[l.id];
       const tintinea = !!(d && yo && Math.hypot((p.lat - yo.lat) * 111320, (p.lng - yo.lng) * 93000) <= 20);
       if (tintinea && !vibrados.current.has(d.drop_id)) { vibrados.current.add(d.drop_id); try { navigator.vibrate && navigator.vibrate([120, 80, 120, 80, 200]); } catch (e) { /* sin vibración */ } }
-      L.marker([p.lat, p.lng], { icon: L.divIcon({ className: '', html: laminaPinHtml(l, d, tintinea), ...tamLamina(d) }), zIndexOffset: d ? (tintinea ? 900 : 500) : 0 })
+      const mk = L.marker([p.lat, p.lng], { icon: L.divIcon({ className: '', html: laminaPinHtml(l, d, tintinea), ...tamLamina(d) }), zIndexOffset: d ? (tintinea ? 900 : 500) : 0 })
         .on('click', () => (d ? alAbrir(d) : alVerMapa())).addTo(g);
+      items.push({ marker: mk, latlng: L.latLng(p.lat, p.lng) });
     });
+    return separarPines(mapa.current, items, separarPuntos);
   }, [drops, coords, locales, tiendas, lugares, !!mapa.current, yo && Math.round(yo.lat * 11132), yo && Math.round(yo.lng * 9300)]);
 
   return (

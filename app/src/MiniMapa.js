@@ -4,7 +4,7 @@ import { Pressable, Text, View } from 'react-native';
 import MapView, { Circle, Marker, Polyline } from 'react-native-maps';
 import { C, F, R, precio, ESTILO as SKIN } from './tema';
 import { brujulaGuardada, guardarBrujula } from './rumbo';
-import { useCoordenadas, useLocalesMapa, traerRuta, PanelRuta, ANCHO_PANEL } from './MapaComun';
+import { useCoordenadas, useLocalesMapa, traerRuta, PanelRuta, ANCHO_PANEL, separarCoords } from './MapaComun';
 import { caminar } from './Drop';
 import { ArteLocal } from './arteLocal';
 import { LaminaPin, PosterPin } from './pinesNativo';
@@ -17,6 +17,8 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
   const centro = yo || pos;
   const mapa = useRef(null);
   const [ancho, setAncho] = useState(0);
+  const [alto, setAlto] = useState(0);
+  const [region, setRegion] = useState(null);
   const [ruta, setRuta] = useState(null);
   const encuadre = useRef(null);
   // Ruta de "Cómo llegar" en el mapa chico, con las indicaciones en un panel a la izquierda
@@ -70,8 +72,8 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
   if (!centro) return null;
   const delta = deltaDe(radio);
   return (
-    <View onLayout={(e) => setAncho(e.nativeEvent.layout.width)} style={{ marginHorizontal: 16, marginTop: 14, height: destino ? 330 : 300, borderRadius: R(20), overflow: 'hidden', borderWidth: 1, borderColor: C.borde, backgroundColor: SKIN === 'moderno' ? '#FFFFFF' : '#FFF3B0' }}>
-      <MapView ref={mapa} style={{ flex: 1 }} mapPadding={{ top: 0, right: 0, bottom: 0, left: destino ? Math.round(ancho * ANCHO_PANEL) : 0 }} scrollEnabled={false} zoomEnabled rotateEnabled={false} pitchEnabled={false}
+    <View onLayout={(e) => { setAncho(e.nativeEvent.layout.width); setAlto(e.nativeEvent.layout.height); }} style={{ marginHorizontal: 16, marginTop: 14, height: destino ? 330 : 300, borderRadius: R(20), overflow: 'hidden', borderWidth: 1, borderColor: C.borde, backgroundColor: SKIN === 'moderno' ? '#FFFFFF' : '#FFF3B0' }}>
+      <MapView ref={mapa} onRegionChangeComplete={setRegion} style={{ flex: 1 }} mapPadding={{ top: 0, right: 0, bottom: 0, left: destino ? Math.round(ancho * ANCHO_PANEL) : 0 }} scrollEnabled={false} zoomEnabled rotateEnabled={false} pitchEnabled={false}
         showsUserLocation={!!yo} showsPointsOfInterest={false} toolbarEnabled={false} customMapStyle={SKIN === 'moderno' ? ESTILO_MODERNO : ESTILO_MAPA}
         initialRegion={{ latitude: centro.lat, longitude: centro.lng, latitudeDelta: delta, longitudeDelta: delta }}>
         {!destino ? <Circle center={{ latitude: centro.lat, longitude: centro.lng }} radius={radio} strokeColor="rgba(29,78,216,0.5)" strokeWidth={1.5} fillColor="rgba(29,78,216,0.05)" lineDashPattern={[6, 6]} /> : null}
@@ -87,7 +89,9 @@ export default function MiniMapa({ pos, yo, drops = [], alAbrir = () => {}, alVe
           drops.forEach((d) => { if (!dropDe[d.local_id]) dropDe[d.local_id] = d; });
           const puntos = locales.map((l) => ({ l, p: l.punto }));
           drops.forEach((d) => { if (!locales.some((l) => l.id === d.local_id) && coords[d.local_id]) puntos.push({ l: { id: d.local_id, nombre: d.local_nombre, categoria: d.categoria }, p: coords[d.local_id] }); });
-          return puntos.map(({ l, p }) => {
+          const ajustados = separarCoords(puntos.map((x) => x.p), region, { w: ancho, h: alto });
+          return puntos.map(({ l }, i) => {
+            const p = ajustados[i];
             const d = dropDe[l.id];
             return (
               <Marker key={l.id} coordinate={{ latitude: p.lat, longitude: p.lng }} anchor={{ x: 0.5, y: 1 }} onPress={() => (d ? alAbrir(d) : alVerMapa())} tracksViewChanges={false}>

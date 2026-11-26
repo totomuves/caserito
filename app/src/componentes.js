@@ -80,6 +80,11 @@ const ICONOS = {
   bicis: 'M6 17a3.5 3.5 0 1 0 0 .1M18 17a3.5 3.5 0 1 0 0 .1M6 17l4-8h6l2 8M10 9l2-3h2M12 17l4-8',
   juegos: 'M4 4h16v16H4zM8.5 8.5a.5.5 0 1 0 0 .1M12 12a.5.5 0 1 0 0 .1M15.5 15.5a.5.5 0 1 0 0 .1',
   tecnologia: 'M7 2h10v20H7zM11 18h2',
+  ferreteria: 'M14 6a4 4 0 1 0 4 4l-9 9-3-3 9-9',
+  lavanderia: 'M5 3h14v18H5zM5 7h14M12 10a4 4 0 1 0 0 8a4 4 0 1 0 0-8z',
+  farmacia: 'M9 3h6v6h6v6h-6v6H9v-6H3V9h6z',
+  fotografia: 'M3 7h18v13H3zM8 7l2-3h4l2 3M12 10a3.5 3.5 0 1 0 0 7a3.5 3.5 0 1 0 0-7z',
+  clases: 'M4 20l4-1 11-11-3-3L5 16zM14 6l3 3',
 };
 
 export function IconoCategoria({ categoria, tam = 28, color = C.negro }) {

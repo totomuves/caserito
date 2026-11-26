@@ -43,3 +43,18 @@ export function posterPinHtml(g) {
     + `<i style="color:${tinta}">${g.tipo === 'mall' ? 'MALL' : 'PATIO'}</i><b style="color:${tinta}">${esc(g.nombre)}</b></div><div class="punta"></div></div>`;
 }
 export const tamPoster = { iconSize: [58, 92], iconAnchor: [29, 92] };
+
+// Abre en abanico las láminas que quedan encima de otras (se recalcula con cada zoom)
+export function separarPines(mapa, items, separar) {
+  if (!mapa || !items.length) return () => {};
+  const aplicar = () => {
+    try {
+      const pts = items.map((it) => mapa.latLngToContainerPoint(it.latlng));
+      const nuevos = separar(pts, 50);
+      items.forEach((it, i) => it.marker.setLatLng(nuevos[i] === pts[i] ? it.latlng : mapa.containerPointToLatLng([nuevos[i].x, nuevos[i].y])));
+    } catch (e) { /* el mapa todavía no está listo */ }
+  };
+  aplicar();
+  mapa.on('zoomend', aplicar);
+  return () => { try { mapa.off('zoomend', aplicar); } catch (e) { /* nada */ } };
+}

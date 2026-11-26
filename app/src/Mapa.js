@@ -7,7 +7,7 @@ import { C, letrista, cuadras, textoCategoria, ESTILO as SKIN } from './tema';
 import { figuraDe } from './componentes';
 import { ArteLocal } from './arteLocal';
 import { LaminaPin, PosterPin } from './pinesNativo';
-import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa, traerRuta, BarraRuta } from './MapaComun';
+import { paletaLocal, especialidad, COLOR_TIPO, urgente, etiquetaTag, centroPin, figuraPin, RUTA_PIN, filtrar, useCoordenadas, useLocalesMapa, SelectorBarrios, FiltrosMapa, HojaMapa, traerRuta, BarraRuta, separarCoords } from './MapaComun';
 import { caminar } from './Drop';
 import { useRumbo, brujulaGuardada, guardarBrujula } from './rumbo';
 
@@ -74,11 +74,13 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
   const [sel, setSel] = useState(null);
   const [filtro, setFiltro] = useState('todo');
   const [cerca, setCerca] = useState(true);
+  const [region, setRegion] = useState(null);
+  const [tam, setTam] = useState(null);
   const visibles = filtrar(drops, filtro);
 
   return (
     <View style={{ flex: 1, zIndex: 0 }}>
-      <MapView ref={mapa} onPanDrag={() => siguiendo && setSiguiendo(false)} followsUserLocation={siguiendo} onUserLocationChange={(e) => { const c = e.nativeEvent.coordinate; if (siguiendo && c && mapa.current) mapa.current.animateCamera({ center: { latitude: c.latitude, longitude: c.longitude } }, { duration: 400 }); }} onRegionChangeComplete={(r) => setCerca(r.latitudeDelta < 0.012)} style={{ flex: 1, backgroundColor: SKIN === 'moderno' ? '#FFFFFF' : '#FFF3B0' }} showsUserLocation customMapStyle={SKIN === 'moderno' ? ESTILO_MODERNO : ESTILO} showsPointsOfInterest={false}
+      <MapView ref={mapa} onPanDrag={() => siguiendo && setSiguiendo(false)} followsUserLocation={siguiendo} onUserLocationChange={(e) => { const c = e.nativeEvent.coordinate; if (siguiendo && c && mapa.current) mapa.current.animateCamera({ center: { latitude: c.latitude, longitude: c.longitude } }, { duration: 400 }); }} onRegionChangeComplete={(r) => { setCerca(r.latitudeDelta < 0.012); setRegion(r); }} onLayout={(e) => setTam({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })} style={{ flex: 1, backgroundColor: SKIN === 'moderno' ? '#FFFFFF' : '#FFF3B0' }} showsUserLocation customMapStyle={SKIN === 'moderno' ? ESTILO_MODERNO : ESTILO} showsPointsOfInterest={false}
         initialRegion={{ latitude: pos.lat, longitude: pos.lng, latitudeDelta: 0.012, longitudeDelta: 0.012 }}>
         {barrios.map((b) => (
           <Polygon key={b.id} coordinates={puntosDe(b.limite).map((p) => ({ latitude: p.lat, longitude: p.lng }))}
@@ -95,7 +97,9 @@ export default function Mapa({ drops, pos, yo = null, alAbrir, barrios = [], vis
           visibles.forEach((d) => { if (!dropDe[d.local_id]) dropDe[d.local_id] = d; });
           const puntos = locales.map((l) => ({ l, p: l.punto }));
           visibles.forEach((d) => { if (!locales.some((l) => l.id === d.local_id) && coords[d.local_id]) puntos.push({ l: { id: d.local_id, nombre: d.local_nombre, categoria: d.categoria }, p: coords[d.local_id] }); });
-          return puntos.map(({ l, p }) => {
+          const ajustados = cerca ? separarCoords(puntos.map((x) => x.p), region, tam) : puntos.map((x) => x.p);
+          return puntos.map(({ l }, i) => {
+            const p = ajustados[i];
             const d = dropDe[l.id];
             if (!cerca && !d) {
               return <Marker key={'p' + l.id} coordinate={{ latitude: p.lat, longitude: p.lng }} title={l.nombre} anchor={{ x: 0.5, y: 0.5 }} tracksViewChanges={false}>
