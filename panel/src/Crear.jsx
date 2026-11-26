@@ -18,6 +18,13 @@ const NIVELES_BASE = [
   { umbral: 50, beneficio: '2x1' },
 ];
 
+// Fecha para los campos de fecha y hora (hora de Chile del teléfono)
+function aLocal(d) {
+  const p = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function redondear(d) { const x = new Date(d); x.setMinutes(0, 0, 0); return x; }
+
 function horaPorDefecto() {
   const d = new Date(Date.now() + 2 * 3600 * 1000);
   return String(d.getHours()).padStart(2, '0') + ':00';
@@ -37,13 +44,12 @@ export default function Crear({ local, base, alTerminar }) {
   const [precio, setPrecio] = useState(base && base.precio != null ? String(base.precio) : '');
   const [precioNormal, setPrecioNormal] = useState(base && base.precio_normal != null ? String(base.precio_normal) : '');
   const [cupo, setCupo] = useState(base ? String(base.cupo) : '20');
-  const [hasta, setHasta] = useState(editarId ? horaDe(base.termina_at) : horaPorDefecto());
-  // ¿Cuándo parte? Ahora, o programado para hoy más tarde o para mañana
-  const [cuando, setCuando] = useState(() => {
-    if (!editarId || !base.inicia_at || new Date(base.inicia_at) <= new Date()) return 'ahora';
-    return new Date(base.inicia_at).toDateString() === new Date().toDateString() ? 'hoy' : 'manana';
-  });
-  const [desde, setDesde] = useState(editarId && base.inicia_at && new Date(base.inicia_at) > new Date() ? horaDe(base.inicia_at) : '12:00');
+  // Fecha y hora: parte ahora o cuando elijas, y termina cuando elijas
+  const programadoBase = !!(editarId && base.inicia_at && new Date(base.inicia_at) > new Date());
+  const [cuando, setCuando] = useState(programadoBase ? 'programar' : 'ahora');
+  const [inicio, setInicio] = useState(programadoBase ? aLocal(new Date(base.inicia_at)) : aLocal(redondear(new Date(Date.now() + 3600000))));
+  const [fin, setFin] = useState(editarId ? aLocal(new Date(base.termina_at)) : aLocal(redondear(new Date(Date.now() + 2 * 3600000))));
+  const hasta = fin.slice(11, 16);
   const [niveles, setNiveles] = useState(NIVELES_BASE);
   const [i, setI] = useState(0);
   const [frase, setFrase] = useState(base && base.frase ? base.frase : '');
@@ -80,35 +86,14 @@ export default function Crear({ local, base, alTerminar }) {
     return (e) => { setter(e.target.value); setAprobada(false); setListo(null); };
   }
 
-  function iniciaEn() {
-    if (cuando === 'ahora') return new Date();
-    const [h, m] = desde.split(':').map(Number);
-    const d = new Date();
-    if (cuando === 'manana') d.setDate(d.getDate() + 1);
-    d.setHours(h, m, 0, 0);
-    return d;
-  }
-  // La hora de término es la siguiente vez que llega esa hora después de que parte (12:00 AM = medianoche de hoy)
-  function terminaEn() {
-    const inicio = iniciaEn();
-    const [h, m] = hasta.split(':').map(Number);
-    const d = new Date(inicio);
-    d.setHours(h, m, 0, 0);
-    if (d <= inicio) d.setDate(d.getDate() + 1);
-    return d;
-  }
-  const diaDe = (d) => {
-    const hoy = new Date(); const man = new Date(); man.setDate(hoy.getDate() + 1);
-    if (d.toDateString() === hoy.toDateString()) return 'hoy';
-    if (d.toDateString() === man.toDateString()) return 'mañana';
-    return d.toLocaleDateString('es-CL', { weekday: 'long' });
-  };
-  const horaTexto = (d) => (d.getHours() === 0 && d.getMinutes() === 0 ? 'medianoche' : `las ${horaDe(d.toISOString())}`);
+  const iniciaEn = () => (cuando === 'ahora' ? new Date() : new Date(inicio));
+  const terminaEn = () => new Date(fin);
   const resumenHorario = (() => {
     const i = iniciaEn(), f = terminaEn();
-    // 00:00 se lee como "medianoche" del día anterior (hoy a medianoche, no mañana)
-    const finDia = f.getHours() === 0 && f.getMinutes() === 0 ? new Date(f.getTime() - 60000) : f;
-    return `${cuando === 'ahora' ? 'Parte ahora' : `Parte ${diaDe(i)} a ${horaTexto(i)}`} y termina ${diaDe(finDia)} a ${horaTexto(f)}.`;
+    if (isNaN(f) || isNaN(i)) return 'Elige fecha y hora.';
+    const fmt = (d) => d.toLocaleString('es-CL', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+    const horas = (f - i) / 3600000;
+    return `${cuando === 'ahora' ? 'Parte ahora' : `Parte el ${fmt(i)}`} y termina el ${fmt(f)}${horas > 0 ? ` (${horas < 1 ? `${Math.round(horas * 60)} min` : `${Math.round(horas * 10) / 10} h`})` : ''}.`;
   })();
 
   async function publicar() {
@@ -117,7 +102,8 @@ export default function Crear({ local, base, alTerminar }) {
     const termina = terminaEn();
     if (!titulo.trim()) { setError('Escribe qué ofreces.'); return; }
     if (cuando !== 'ahora' && inicia <= new Date()) { setError('La hora de partida ya pasó. Elige una más tarde o “Ahora”.'); return; }
-    if (termina <= new Date()) { setError('La hora de término ya pasó. Elige una hora más tarde.'); return; }
+    if (termina <= new Date()) { setError('La hora de término ya pasó. Elige una más tarde.'); return; }
+    if (termina <= inicia) { setError('El drop tiene que terminar después de que parte.'); return; }
     if (!(Number(cupo) > 0)) { setError('Indica cuántos hay.'); return; }
     if (editarId && Number(cupo) < (base.canjes || 0)) { setError(`Ya van ${base.canjes} canjes: el cupo no puede ser menor.`); return; }
     setEnviando(true);
@@ -215,26 +201,25 @@ export default function Crear({ local, base, alTerminar }) {
         <label className="campo">¿Cuántos?
           <input inputMode="numeric" value={cupo} onChange={cambio((v) => setCupo(v.replace(/\D/g, '')))} />
         </label>
-        <label className="campo">Hasta las
-          <input type="time" value={hasta} onChange={cambio(setHasta)} />
-        </label>
       </div>
       <div className="campo">¿Cuándo parte?
         <div className="pildoras">
-          {[['ahora', 'Ahora'], ['hoy', 'Hoy más tarde'], ['manana', 'Mañana']].map(([id, texto]) => (
-            <button type="button" key={id} className={'pildora' + (cuando === id ? ' activa' : '')} onClick={() => { setCuando(id); setAprobada(false); setListo(null); }}>{texto}</button>
-          ))}
+          <button type="button" className={'pildora' + (cuando === 'ahora' ? ' activa' : '')} onClick={() => { setCuando('ahora'); setAprobada(false); setListo(null); }}>Ahora</button>
+          <button type="button" className={'pildora' + (cuando === 'programar' ? ' activa' : '')} onClick={() => { setCuando('programar'); setAprobada(false); setListo(null); }}>Elegir fecha y hora</button>
         </div>
       </div>
-      {cuando !== 'ahora' && (
-        <label className="campo">Desde las
-          <input type="time" value={desde} onChange={cambio(setDesde)} />
+      {cuando === 'programar' && (
+        <label className="campo">Parte
+          <input type="datetime-local" value={inicio} min={aLocal(new Date())} onChange={(e) => { const v = e.target.value; setInicio(v); if (v && new Date(fin) <= new Date(v)) setFin(aLocal(new Date(new Date(v).getTime() + 2 * 3600000))); setAprobada(false); setListo(null); }} />
         </label>
       )}
+      <label className="campo">Termina
+        <input type="datetime-local" value={fin} min={aLocal(new Date())} onChange={cambio(setFin)} />
+      </label>
       <p className="ayuda" style={{ fontWeight: 700, color: 'var(--negro)' }}>{resumenHorario}</p>
       {!editarId && (
         <div className="pildoras">
-          <button type="button" className="pildora roja" onClick={() => { setCuando('ahora'); const d = new Date(Date.now() + 30 * 60000); setHasta(String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0')); setAprobada(false); setListo(null); }}>⚡ Relámpago · 30 min</button>
+          <button type="button" className="pildora roja" onClick={() => { setCuando('ahora'); setFin(aLocal(new Date(Date.now() + 30 * 60000))); setAprobada(false); setListo(null); }}>⚡ Relámpago · 30 min</button>
           <span className="ayuda" style={{ alignSelf: 'center' }}>Dura media hora y la app muestra la cuenta regresiva.</span>
         </div>
       )}
